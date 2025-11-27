@@ -1,0 +1,588 @@
+/* Estilos de la página de estadísticas globales del admin */
+
+.admin-estadisticas {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: adminEstFadeIn 0.5s ease;
+}
+
+@keyframes adminEstFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Título */
+
+.admin-estadisticas-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #061e48;
+  margin-bottom: 0.5rem;
+  animation: adminEstTitleSlide 0.4s ease;
+}
+
+@keyframes adminEstTitleSlide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Tarjetas superiores */
+
+.admin-estadisticas-top-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .admin-estadisticas-top-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-estadisticas-top-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .admin-estadisticas-top-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-estadistica-card {
+  background: #07133f;
+  border-radius: 18px;
+  padding: 1.4rem 1.2rem;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ffffff;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: adminEstCardUp 0.45s ease backwards;
+}
+
+@keyframes adminEstCardUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-estadistica-card::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle at top right,
+    rgba(0, 167, 213, 0.35),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.admin-estadistica-card:hover::before {
+  opacity: 1;
+}
+
+.admin-estadistica-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+}
+
+.admin-estadistica-card.hovered .admin-estadistica-icon {
+  transform: scale(1.1) rotateY(180deg);
+}
+
+/* Ícono de la tarjeta */
+
+.admin-estadistica-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 167, 213, 0.2);
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-estadistica-icon svg {
+  width: 28px;
+  height: 28px;
+  color: #00a7d5;
+  transition: color 0.3s ease;
+}
+
+.admin-estadistica-card:hover .admin-estadistica-icon {
+  background: rgba(0, 167, 213, 0.35);
+}
+
+.admin-estadistica-card:hover .admin-estadistica-icon svg {
+  color: #4dd4ff;
+}
+
+.admin-estadistica-card h2 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #d7e6ff;
+}
+
+.admin-estadistica-value {
+  font-size: 2rem;
+  font-weight: 700;
+  animation: numberPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes numberPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Paneles centrales */
+
+.admin-estadisticas-middle-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .admin-estadisticas-middle-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Panel genérico */
+
+.admin-estadisticas-panel {
+  background: #07133f;
+  color: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  animation: adminEstPanelIn 0.5s ease backwards;
+  min-height: 320px;
+  transition: all 0.3s ease;
+}
+
+@keyframes adminEstPanelIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.admin-estadisticas-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+.admin-estadisticas-panel-header {
+  padding: 0.8rem 1.25rem;
+  background: #061e48;
+  font-size: 0.98rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Indicadores del header */
+
+.admin-panel-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  50% { opacity: 0.5; transform: scale(1.2); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+
+.admin-panel-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 167, 213, 0.2);
+  border-radius: 999px;
+  color: #4dd4ff;
+  font-weight: 600;
+}
+
+.admin-panel-total {
+  font-size: 0.8rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+/* Distribución de roles */
+
+.admin-roles-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .admin-roles-content {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.admin-roles-chart-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-roles-chart-circle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #22c55e 0 130deg,
+    #3b82f6 130deg 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: adminEstDonutSpin 1s ease-out;
+  transition: transform 0.3s ease;
+}
+
+@keyframes adminEstDonutSpin {
+  from { transform: rotate(-40deg) scale(0.9); opacity: 0; }
+  to { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+.admin-roles-chart-circle:hover {
+  transform: scale(1.05);
+}
+
+.admin-roles-chart-inner {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background: #07133f;
+  box-shadow: inset 0 0 0 8px rgba(6, 30, 72, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-roles-chart-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.admin-roles-total {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  animation: numberCount 1s ease-out;
+}
+
+@keyframes numberCount {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.admin-roles-label {
+  font-size: 0.75rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+/* Leyenda */
+
+.admin-roles-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-roles-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.admin-roles-legend-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateX(4px);
+}
+
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.admin-roles-legend-item:hover .legend-dot {
+  transform: scale(1.2);
+  box-shadow: 0 0 12px currentColor;
+}
+
+.legend-dot-gm {
+  background: #22c55e;
+}
+
+.legend-dot-estudiantes {
+  background: #3b82f6;
+}
+
+.legend-label {
+  font-size: 0.9rem;
+  color: #e5eeff;
+  font-weight: 500;
+}
+
+.legend-value {
+  font-size: 0.8rem;
+  color: #9bb4ff;
+  margin-top: 0.15rem;
+}
+
+/* Misiones por categoría */
+
+.admin-misiones-chart {
+  padding: 2rem 1.5rem 1.5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 1.5rem;
+  min-height: 220px;
+}
+
+.admin-misiones-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.admin-misiones-bar {
+  width: 100%;
+  max-width: 50px;
+  border-radius: 10px 10px 4px 4px;
+  background: linear-gradient(180deg, #00a7d5, #003d73);
+  transform-origin: bottom;
+  animation: adminEstBarGrow 0.7s ease backwards;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+@keyframes adminEstBarGrow {
+  from { transform: scaleY(0); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+
+.admin-misiones-bar.hovered {
+  transform: scaleY(1.05);
+  background: linear-gradient(180deg, #4dd4ff, #0072a4);
+  box-shadow: 0 8px 20px rgba(0, 167, 213, 0.5);
+}
+
+/* Tooltip de las barras */
+
+.admin-misiones-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(6, 30, 72, 0.95);
+  color: #ffffff;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: tooltipPop 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes tooltipPop {
+  from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.admin-misiones-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(6, 30, 72, 0.95);
+}
+
+.admin-misiones-bar-label {
+  font-size: 0.85rem;
+  color: #cde8ff;
+  font-weight: 500;
+}
+
+.admin-misiones-bar-value {
+  font-size: 1rem;
+  color: #ffffff;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.admin-misiones-bar-wrapper:hover .admin-misiones-bar-value {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Paneles inferiores (líneas) */
+
+.admin-estadisticas-bottom-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 1024px) {
+  .admin-estadisticas-bottom-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-actividad-panel {
+  min-height: 300px;
+}
+
+.admin-actividad-chart {
+  padding: 1.5rem 1.5rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-line-chart-svg {
+  width: 100%;
+  height: 140px;
+  overflow: visible;
+}
+
+.admin-line-chart-path {
+  fill: none;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  animation: adminEstLineDraw 1.2s ease-out;
+  filter: drop-shadow(0 2px 8px rgba(0, 167, 213, 0.4));
+}
+
+@keyframes adminEstLineDraw {
+  from { stroke-dasharray: 300; stroke-dashoffset: 300; opacity: 0; }
+  to { stroke-dasharray: 300; stroke-dashoffset: 0; opacity: 1; }
+}
+
+.admin-line-chart-path-2 {
+  animation-delay: 0.2s;
+  filter: drop-shadow(0 2px 8px rgba(34, 197, 94, 0.4));
+}
+
+/* Puntos del gráfico */
+
+.admin-chart-dot {
+  fill: #00a7d5;
+  opacity: 0;
+  animation: dotAppear 0.4s ease forwards;
+  transition: all 0.3s ease;
+}
+
+.admin-chart-dot:nth-child(1) { animation-delay: 1.2s; }
+.admin-chart-dot:nth-child(2) { animation-delay: 1.3s; }
+.admin-chart-dot:nth-child(3) { animation-delay: 1.4s; }
+.admin-chart-dot:nth-child(4) { animation-delay: 1.5s; }
+.admin-chart-dot:nth-child(5) { animation-delay: 1.6s; }
+.admin-chart-dot:nth-child(6) { animation-delay: 1.7s; }
+.admin-chart-dot:nth-child(7) { animation-delay: 1.8s; }
+.admin-chart-dot:nth-child(8) { animation-delay: 1.9s; }
+.admin-chart-dot:nth-child(9) { animation-delay: 2.0s; }
+.admin-chart-dot:nth-child(10) { animation-delay: 2.1s; }
+.admin-chart-dot:nth-child(11) { animation-delay: 2.2s; }
+
+@keyframes dotAppear {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.admin-chart-dot:hover {
+  r: 4;
+  fill: #4dd4ff;
+  filter: drop-shadow(0 0 6px #4dd4ff);
+}
+
+.admin-chart-dot-green {
+  fill: #22c55e;
+}
+
+.admin-chart-dot-green:hover {
+  fill: #4ade80;
+  filter: drop-shadow(0 0 6px #4ade80);
+}
+
+.admin-actividad-xlabels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #9bb4ff;
+  padding: 0 0.5rem;
+  font-weight: 500;
+}
+
+.admin-actividad-xlabels span {
+  transition: all 0.3s ease;
+}
+
+.admin-actividad-xlabels span:hover {
+  color: #cde8ff;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+
+@media (max-width: 640px) {
+  .admin-actividad-chart {
+    padding: 1rem 1rem 1rem;
+  }
+  
+  .admin-misiones-chart {
+    gap: 1rem;
+  }
+  
+  .admin-misiones-bar {
+    max-width: 40px;
+  }
+}

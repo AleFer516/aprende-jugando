@@ -1,0 +1,488 @@
+/* Estilos para la página de inicio del GM */
+
+.gm-inicio {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Header de bienvenida */
+.gm-inicio-header {
+  margin-bottom: 1.5rem;
+}
+
+.gm-inicio-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0b1437;
+  margin: 0;
+}
+
+/* Grid de tarjetas de estadísticas */
+.gm-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.gm-stat-card {
+  background: #07133f;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.gm-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.gm-stat-label {
+  font-size: 0.9rem;
+  color: #9bb4ff;
+  margin: 0 0 0.75rem 0;
+  font-weight: 500;
+}
+
+.gm-stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* Grid principal de dos columnas */
+.gm-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 1.5rem;
+}
+
+.gm-dashboard-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gm-dashboard-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Paneles */
+.gm-panel {
+  background: #07133f;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gm-panel-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gm-panel-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.gm-panel-body {
+  padding: 1.5rem;
+}
+
+/* Tabla de misiones */
+.gm-missions-table-wrapper {
+  overflow-x: auto;
+}
+
+.gm-missions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gm-missions-table thead {
+  background: #061e48;
+}
+
+.gm-missions-table thead th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.gm-missions-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease;
+}
+
+.gm-missions-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gm-missions-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gm-missions-table tbody td {
+  padding: 1.25rem 1.25rem;
+  font-size: 0.95rem;
+  color: #e5eeff;
+}
+
+.gm-student-name {
+  color: #00d4ff;
+  font-weight: 500;
+}
+
+.gm-mission-desc {
+  color: #e5eeff;
+}
+
+.gm-mission-date {
+  color: #9bb4ff;
+}
+
+/* Barras de progreso */
+.gm-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gm-progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gm-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gm-progress-name {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.gm-progress-percent {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.gm-progress-bar-bg {
+  width: 100%;
+  height: 12px;
+  background: rgba(0, 167, 213, 0.15);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.gm-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a7d5, #00d4ff);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+/* Botón de acción en tabla de misiones */
+.gm-mission-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #00a7d5, #00d4ff);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 167, 213, 0.3);
+}
+
+.gm-mission-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.gm-mission-action-btn:hover {
+  background: linear-gradient(135deg, #00d4ff, #00a7d5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.5);
+}
+
+.gm-mission-action-btn:active {
+  transform: translateY(0);
+}
+
+/* Indicadores avanzados */
+.gm-indicators-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gm-indicator-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #e5eeff;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(0, 167, 213, 0.05);
+}
+
+.gm-indicator-item:hover {
+  background: rgba(0, 167, 213, 0.15);
+  transform: translateX(4px);
+}
+
+.gm-indicator-item.active {
+  background: rgba(0, 167, 213, 0.2);
+  border-left: 3px solid #00d4ff;
+}
+
+.gm-indicator-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gm-indicator-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gm-indicator-bullet {
+  width: 8px;
+  height: 8px;
+  background: #00d4ff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gm-indicator-name {
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.gm-indicator-chevron {
+  width: 20px;
+  height: 20px;
+  color: #9bb4ff;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.gm-indicator-chevron.rotated {
+  transform: rotate(180deg);
+}
+
+.gm-indicator-details {
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gm-indicator-description {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9bb4ff;
+  line-height: 1.5;
+}
+
+.gm-indicator-value-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid #00d4ff;
+}
+
+.gm-indicator-value-label {
+  font-size: 0.85rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+.gm-indicator-value-text {
+  font-size: 1.1rem;
+  color: #00d4ff;
+  font-weight: 700;
+}
+
+/* Misiones recientes */
+.gm-recent-missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.gm-recent-mission {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.gm-recent-mission:last-child {
+  border-bottom: none;
+}
+
+.gm-recent-mission:hover {
+  background: rgba(255, 255, 255, 0.03);
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  margin-left: -0.75rem;
+  margin-right: -0.75rem;
+  border-radius: 8px;
+}
+
+.gm-recent-mission-info {
+  flex: 1;
+}
+
+.gm-recent-mission-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.gm-recent-mission-date {
+  font-size: 0.85rem;
+  color: #9bb4ff;
+}
+
+.gm-recent-mission-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 167, 213, 0.15);
+  color: #00d4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.gm-recent-mission-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.gm-recent-mission-btn:hover {
+  background: rgba(0, 167, 213, 0.25);
+  transform: translateX(4px);
+}
+
+.gm-recent-mission-btn:active {
+  transform: translateX(4px) scale(0.95);
+}
+
+/* Scrollbar personalizado */
+.gm-missions-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.gm-missions-table-wrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+}
+
+.gm-missions-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 167, 213, 0.3);
+  border-radius: 999px;
+}
+
+.gm-missions-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 167, 213, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .gm-dashboard-grid {
+    grid-template-columns: 1fr 350px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .gm-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gm-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .gm-inicio-title {
+    font-size: 1.5rem;
+  }
+
+  .gm-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gm-stat-value {
+    font-size: 2rem;
+  }
+
+  .gm-missions-table thead th,
+  .gm-missions-table tbody td {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .gm-panel-body {
+    padding: 1rem;
+  }
+}

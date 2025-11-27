@@ -1,0 +1,768 @@
+/* Estilos para la página de Misiones del GM
+   Mantiene el mismo estilo que GMEstudiantes (filtros + tabla) */
+
+.gm-misiones {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  animation: fadeInPage 0.5s ease;
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+
+.gm-misiones-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gm-misiones-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #061e48;
+  margin: 0;
+}
+
+/* Botón Crear (igual estilo que agregar estudiante) */
+
+.gm-misiones-btn-crear {
+  padding: 0.65rem 1.5rem;
+  background: linear-gradient(135deg, #00a7d5, #00d4ff);
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.gm-misiones-btn-crear svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.gm-misiones-btn-crear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.gm-misiones-btn-crear:hover::before {
+  transform: translateX(100%);
+}
+
+.gm-misiones-btn-crear:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 167, 213, 0.5);
+}
+
+.gm-misiones-btn-crear:hover svg {
+  transform: rotate(90deg);
+}
+
+.gm-misiones-btn-crear:active {
+  transform: translateY(0);
+}
+
+/* Filtros (calcado de gm-estudiantes-filters) */
+
+.gm-misiones-filters {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gm-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gm-filter-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #061e48;
+  white-space: nowrap;
+}
+
+.gm-search-group {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* Selects de filtros (idéntico en estilo a gm-estudiantes-select) */
+
+.gm-misiones-select {
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  color: #061e48;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  appearance: none;
+  min-width: 140px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23061e48' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+}
+
+.gm-misiones-select:hover {
+  background: #f1f5f9;
+  border-color: #00a7d5;
+}
+
+.gm-misiones-select:focus {
+  background: #ffffff;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+/* Buscador dentro de filtros */
+
+.gm-misiones-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.gm-search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.gm-misiones-search-input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.75rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  color: #061e48;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.gm-misiones-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.gm-misiones-search-input:hover {
+  background: #f1f5f9;
+  border-color: #00a7d5;
+}
+
+.gm-misiones-search-input:focus {
+  background: #ffffff;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.gm-misiones-search-input:focus + .gm-search-icon {
+  color: #00a7d5;
+}
+
+/* Contador de resultados */
+
+.gm-misiones-count {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+  padding-left: 0.25rem;
+}
+
+/* Contenedor de tabla (igual a gm-estudiantes-table-container) */
+
+.gm-misiones-table-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: fadeInScale 0.5s ease;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gm-misiones-table-wrapper {
+  overflow-x: auto;
+}
+
+/* Tabla (mismo estilo base que estudiantes) */
+
+.gm-misiones-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gm-misiones-table thead {
+  background: linear-gradient(135deg, #061e48, #0a2664);
+}
+
+.gm-misiones-table thead th {
+  text-align: left;
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.gm-misiones-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.gm-misiones-table tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 167, 213, 0.05),
+    transparent
+  );
+  transform: translateX(2px);
+}
+
+.gm-misiones-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gm-misiones-table tbody td {
+  padding: 1.25rem 1.5rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+/* Columnas específicas */
+
+.gm-mision-titulo {
+  color: #00a7d5;
+  font-weight: 600;
+}
+
+.gm-mision-descripcion {
+  color: #475569;
+}
+
+.gm-mision-categoria {
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Badges de dificultad (estilo tipo estado) */
+
+.gm-mision-dificultad {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  transition: all 0.2s ease;
+}
+
+.gm-mision-dificultad-baja {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.15),
+    rgba(34, 197, 94, 0.1)
+  );
+  color: #16a34a;
+  border: 1.5px solid rgba(34, 197, 94, 0.3);
+}
+
+.gm-mision-dificultad-media {
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.18),
+    rgba(234, 179, 8, 0.1)
+  );
+  color: #d97706;
+  border: 1.5px solid rgba(234, 179, 8, 0.35);
+}
+
+.gm-mision-dificultad-alta {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.18),
+    rgba(239, 68, 68, 0.1)
+  );
+  color: #dc2626;
+  border: 1.5px solid rgba(239, 68, 68, 0.35);
+}
+
+/* Botón Gestionar */
+
+.gm-misiones-gestionar-btn {
+  padding: 0.45rem 1.1rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #00a7d5, #00d4ff);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 167, 213, 0.4);
+  transition: all 0.25s ease;
+}
+
+.gm-misiones-gestionar-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 167, 213, 0.6);
+  background: linear-gradient(135deg, #00d4ff, #00a7d5);
+}
+
+.gm-misiones-gestionar-btn:active {
+  transform: translateY(0);
+}
+
+/* Sin resultados */
+
+.gm-misiones-no-results {
+  text-align: center;
+  padding: 4rem 2rem !important;
+}
+
+.gm-misiones-no-results-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gm-misiones-no-results-content svg {
+  width: 64px;
+  height: 64px;
+  color: #cbd5e1;
+  opacity: 0.5;
+}
+
+.gm-misiones-no-results-content p {
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Scrollbar personalizado */
+
+.gm-misiones-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.gm-misiones-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.gm-misiones-table-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #00a7d5, #00d4ff);
+  border-radius: 999px;
+}
+
+.gm-misiones-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #00d4ff, #00a7d5);
+}
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+  .gm-misiones-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gm-misiones-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gm-filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gm-search-group {
+    width: 100%;
+  }
+
+  .gm-misiones-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .gm-misiones-title {
+    font-size: 1.4rem;
+  }
+
+  .gm-misiones-btn-crear {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .gm-misiones-table thead th,
+  .gm-misiones-table tbody td {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .gm-misiones-table thead th:nth-child(2),
+  .gm-misiones-table tbody td:nth-child(2) {
+    display: none; /* Oculta descripción en pantallas muy pequeñas */
+  }
+}
+
+/* ============================================ */
+/* MODAL CREAR MISIÓN - Estilos específicos */
+/* ============================================ */
+
+/* Modal más ancho para el formulario de misión */
+.gm-modal-crear-mision {
+  width: 95vw !important;
+  max-width: 950px !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 1.5rem !important;
+  box-sizing: border-box;
+}
+
+/* Fila con 3 campos (Título, Dificultad, Categoría) */
+.gm-mision-form-row-triple {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fila con 2 columnas (Competencias y Pistas) */
+.gm-mision-form-row-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Contenedor de listas dinámicas (competencias/pistas) */
+.gm-mision-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Item individual de lista con botón eliminar */
+.gm-mision-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.gm-mision-list-item input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.65rem 1rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  color: #334155;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.gm-mision-list-item input:hover {
+  background: #f1f5f9;
+  border-color: #00a7d5;
+}
+
+.gm-mision-list-item input:focus {
+  background: #ffffff;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.gm-mision-list-item input::placeholder {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+/* Botón eliminar (X) */
+.gm-mision-remove-btn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  color: #dc2626;
+  font-size: 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.gm-mision-remove-btn:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.15));
+  transform: scale(1.1);
+}
+
+.gm-mision-remove-btn:active {
+  transform: scale(0.95);
+}
+
+/* Botón agregar otra */
+.gm-mision-add-btn {
+  padding: 0.65rem 1rem;
+  background: rgba(0, 167, 213, 0.08);
+  border: 1.5px dashed rgba(0, 167, 213, 0.3);
+  border-radius: 8px;
+  color: #00a7d5;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.gm-mision-add-btn:hover {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: #00a7d5;
+  border-style: solid;
+  transform: translateY(-1px);
+}
+
+.gm-mision-add-btn:active {
+  transform: translateY(0);
+}
+
+/* Textareas del modal - heredar estilos de inputs */
+.gm-modal-crear-mision textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #000000;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.gm-modal-crear-mision textarea:focus {
+  border-color: #228be6;
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+  transform: translateY(-1px);
+}
+
+.gm-modal-crear-mision textarea::placeholder {
+  color: #94a3b8;
+}
+
+.gm-modal-crear-mision textarea.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.gm-modal-crear-mision textarea.error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Indicadores de requisitos de campos */
+.gm-mision-field-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.gm-mision-field-hint span {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.gm-mision-field-hint span::before {
+  content: "○";
+  font-size: 0.7rem;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.gm-mision-field-hint span.valid {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.gm-mision-field-hint span.valid::before {
+  content: "●";
+  color: #10b981;
+  transform: scale(1.2);
+}
+
+/* Asegurar que todos los inputs y selects no causen overflow */
+.gm-modal-crear-mision input,
+.gm-modal-crear-mision select,
+.gm-modal-crear-mision textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.gm-modal-crear-mision .admin-usuarios-form {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gm-modal-crear-mision .admin-usuarios-form-group {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* Scrollbar del modal */
+.gm-modal-crear-mision::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gm-modal-crear-mision::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.gm-modal-crear-mision::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00a7d5, #00d4ff);
+  border-radius: 999px;
+}
+
+.gm-modal-crear-mision::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00d4ff, #00a7d5);
+}
+
+/* Responsive para modal de misión */
+@media (max-width: 1024px) {
+  .gm-mision-form-row-triple {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .gm-mision-form-row-dual {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .gm-modal-crear-mision {
+    width: 90vw !important;
+    max-width: 90vw !important;
+    padding: 1.25rem 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .gm-modal-crear-mision {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 92vh;
+    padding: 1rem 0.75rem !important;
+  }
+
+  .gm-mision-list-item {
+    gap: 0.35rem;
+  }
+
+  .gm-mision-list-item input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .gm-mision-remove-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+}

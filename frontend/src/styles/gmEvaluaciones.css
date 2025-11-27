@@ -1,0 +1,446 @@
+/* Estilos para la página de Evaluaciones del GM */
+/* Basado en gmEstudiantes y gmMisiones para mantener consistencia */
+
+.gm-evaluaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  animation: fadeInEvalPage 0.5s ease;
+}
+
+@keyframes fadeInEvalPage {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+
+.gm-evaluaciones-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gm-evaluaciones-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #061e48;
+  margin: 0;
+}
+
+/* Filtros */
+
+.gm-evaluaciones-filters {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Se reutiliza la convención .gm-filter-group de otras pantallas */
+
+.gm-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gm-filter-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #061e48;
+  white-space: nowrap;
+}
+
+.gm-search-group {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* Selects de filtros */
+
+.gm-evaluaciones-select {
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  color: #061e48;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  appearance: none;
+  min-width: 140px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23061e48' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+}
+
+.gm-evaluaciones-select:hover {
+  background: #f1f5f9;
+  border-color: #00a7d5;
+}
+
+.gm-evaluaciones-select:focus {
+  background: #ffffff;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+/* Búsqueda */
+
+.gm-evaluaciones-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.gm-search-icon {
+  position: absolute;
+  left: 1rem;
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.gm-evaluaciones-search-input {
+  width: 100%;
+  padding: 0.5rem 1rem 0.5rem 2.75rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  color: #061e48;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.gm-evaluaciones-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.gm-evaluaciones-search-input:hover {
+  background: #f1f5f9;
+  border-color: #00a7d5;
+}
+
+.gm-evaluaciones-search-input:focus {
+  background: #ffffff;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.gm-evaluaciones-search-input:focus + .gm-search-icon {
+  color: #00a7d5;
+}
+
+/* Checkbox solo recientes */
+
+.gm-evaluaciones-extra {
+  padding-left: 0.25rem;
+}
+
+.gm-evaluaciones-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #475569;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.gm-evaluaciones-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gm-evaluaciones-checkbox-custom {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  box-sizing: border-box;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.gm-evaluaciones-checkbox input:checked + .gm-evaluaciones-checkbox-custom {
+  background: #00a7d5;
+  border-color: #00a7d5;
+}
+
+.gm-evaluaciones-checkbox input:checked
+  + .gm-evaluaciones-checkbox-custom::after {
+  content: "";
+  position: absolute;
+  inset: 2px 3px;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(45deg);
+}
+
+/* Contador de resultados */
+
+.gm-evaluaciones-count {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+  padding-left: 0.25rem;
+}
+
+/* Contenedor y tabla */
+
+.gm-evaluaciones-table-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: fadeInEvalTable 0.5s ease;
+}
+
+@keyframes fadeInEvalTable {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gm-evaluaciones-table-wrapper {
+  overflow-x: auto;
+}
+
+.gm-evaluaciones-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gm-evaluaciones-table thead {
+  background: linear-gradient(135deg, #061e48, #0a2664);
+}
+
+.gm-evaluaciones-table thead th {
+  text-align: left;
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.gm-evaluaciones-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.gm-evaluaciones-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gm-evaluaciones-table tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 167, 213, 0.05),
+    transparent
+  );
+  transform: translateX(2px);
+}
+
+.gm-evaluaciones-table tbody td {
+  padding: 1.25rem 1.5rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.gm-evaluacion-rut {
+  color: #64748b;
+  font-family: "Courier New", monospace;
+  font-weight: 500;
+}
+
+.gm-evaluacion-nombre {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.gm-evaluacion-fecha {
+  color: #334155;
+}
+
+/* Estado badge */
+
+.gm-evaluacion-estado-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.gm-evaluacion-estado-badge.pendiente {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.18),
+    rgba(249, 115, 22, 0.1)
+  );
+  color: #c05621;
+  border: 1.5px solid rgba(249, 115, 22, 0.45);
+}
+
+.gm-evaluacion-estado-badge.finalizado {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.15),
+    rgba(34, 197, 94, 0.1)
+  );
+  color: #15803d;
+  border: 1.5px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Botón Revisar */
+
+.gm-evaluaciones-revisar-btn {
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  border: none;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
+}
+
+.gm-evaluaciones-revisar-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.55);
+}
+
+.gm-evaluaciones-revisar-btn:active {
+  transform: translateY(0);
+}
+
+/* Sin resultados */
+
+.gm-evaluaciones-no-results {
+  text-align: center;
+  padding: 4rem 2rem !important;
+}
+
+.gm-evaluaciones-no-results-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gm-evaluaciones-no-results-content svg {
+  width: 64px;
+  height: 64px;
+  color: #cbd5e1;
+  opacity: 0.5;
+}
+
+.gm-evaluaciones-no-results-content p {
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Scrollbar personalizado */
+
+.gm-evaluaciones-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.gm-evaluaciones-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.gm-evaluaciones-table-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #00a7d5, #00d4ff);
+  border-radius: 999px;
+}
+
+.gm-evaluaciones-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #00d4ff, #00a7d5);
+}
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+  .gm-evaluaciones-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gm-evaluaciones-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gm-filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gm-search-group {
+    width: 100%;
+  }
+
+  .gm-evaluaciones-select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .gm-evaluaciones-title {
+    font-size: 1.4rem;
+  }
+
+  .gm-evaluaciones-table thead th,
+  .gm-evaluaciones-table tbody td {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .gm-evaluaciones-table thead th:nth-child(1),
+  .gm-evaluaciones-table tbody td:nth-child(1) {
+    display: none; /* Oculta el RUT en pantallas muy pequeñas */
+  }
+}

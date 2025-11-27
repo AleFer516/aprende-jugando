@@ -1,0 +1,162 @@
+/* src/styles/sobreNosotros.css */
+
+.sobre-page {
+  min-height: 100vh;
+}
+
+/* Animación suave de entrada del texto */
+@keyframes sobre-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación suave de entrada de la imagen */
+@keyframes sobre-image-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-sobre-text {
+  animation: sobre-text-in 0.7s ease-out;
+}
+
+.animate-sobre-image {
+  animation: sobre-image-in 0.8s ease-out;
+}
+
+/* Ajuste de layout en pantallas pequeñas */
+@media (max-width: 1023px) {
+  .sobre-contenido {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+  }
+}
+
+/* Overlay oscuro de toda la sección */
+.bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35); /* ajustable */
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+/* Colocar el contenido por encima del overlay */
+.sobre-contenido {
+  position: relative;
+  z-index: 2;
+}
+
+/* ========== INTERACTIVIDAD AÑADIDA ========== */
+
+/* Animación de flotación suave para la imagen */
+@keyframes float-gentle {
+  0%, 100% { 
+    transform: translateY(0px); 
+  }
+  50% { 
+    transform: translateY(-20px); 
+  }
+}
+
+/* Animación de brillo en texto */
+@keyframes text-glow {
+  0%, 100% { 
+    text-shadow: 0 0 10px rgba(255,255,255,0.3); 
+  }
+  50% { 
+    text-shadow: 0 0 25px rgba(255,255,255,0.6), 0 0 40px rgba(34,139,230,0.4); 
+  }
+}
+
+/* Animación de línea brillante bajo el título */
+@keyframes shimmer-line {
+  0% { 
+    transform: translateX(-100%); 
+  }
+  100% { 
+    transform: translateX(100%); 
+  }
+}
+
+/* Animación de pulso suave */
+@keyframes pulse-soft {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.85; 
+  }
+}
+
+/* Título interactivo */
+.title-interactive {
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.title-interactive::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: shimmer-line 3s ease-in-out infinite;
+}
+
+.title-interactive:hover {
+  animation: text-glow 2s ease-in-out infinite, pulse-soft 2s ease-in-out infinite;
+}
+
+/* Párrafos interactivos */
+.paragraph-interactive {
+  transition: all 0.4s ease;
+  padding-left: 0;
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+}
+
+.paragraph-interactive:hover {
+  padding-left: 1.5rem;
+  padding-right: 1rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-left-color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.08);
+  transform: translateX(8px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Imagen interactiva */
+.image-interactive {
+  animation: float-gentle 6s ease-in-out infinite;
+  transition: all 0.5s ease;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+}
+
+.image-interactive:hover {
+  animation: float-gentle 2s ease-in-out infinite;
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 35px rgba(255,255,255,0.4)) drop-shadow(0 10px 40px rgba(0,0,0,0.4));
+}
+
+/* Efecto de resplandor en el overlay al hacer hover en la imagen */
+.image-interactive:hover ~ .bg-overlay {
+  backdrop-filter: blur(6px);
+  transition: backdrop-filter 0.5s ease;
+}

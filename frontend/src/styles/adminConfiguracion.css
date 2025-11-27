@@ -1,0 +1,883 @@
+/* Estilos de la página de configuración del admin */
+
+.admin-config {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: configFadeIn 0.5s ease;
+}
+
+@keyframes configFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Título */
+
+.admin-config-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #061e48;
+  margin-bottom: 0.5rem;
+  animation: configTitleIn 0.4s ease;
+}
+
+@keyframes configTitleIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Grid superior */
+
+.admin-config-grid-top {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .admin-config-grid-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grid inferior */
+
+.admin-config-grid-bottom {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .admin-config-grid-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-config-column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+/* Tarjetas base */
+
+.admin-config-card {
+  background: #07133f;
+  color: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: configCardIn 0.5s ease backwards;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.admin-config-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.admin-config-card:hover::before {
+  opacity: 1;
+}
+
+@keyframes configCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.admin-config-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+.admin-config-card-large {
+  min-height: 260px;
+}
+
+.admin-config-card-roles {
+  min-height: 260px;
+}
+
+.admin-config-card-db,
+.admin-config-card-maint {
+  min-height: 150px;
+}
+
+/* Header de la tarjeta */
+
+.admin-config-card-header {
+  padding: 0.9rem 1.4rem;
+  background: #061e48;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-config-card-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Cuerpo de la tarjeta */
+
+.admin-config-card-body {
+  padding: 1.4rem 1.6rem 1.3rem;
+}
+
+/* ---- Configuración general ---- */
+
+.config-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.2rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.config-field-full {
+  grid-column: 1 / -1;
+}
+
+.config-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+/* Inputs dentro de tarjetas oscuras */
+.admin-config-card .config-label {
+  color: #cde8ff;
+  font-weight: 500;
+}
+
+.config-input {
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 0.75rem 1rem;
+  color: #000000;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* Inputs dentro de tarjetas oscuras */
+.admin-config-card .config-input {
+  background: #020826;
+  border: 1px solid #0f224b;
+  color: #ffffff;
+}
+
+.config-input:focus {
+  border-color: #228be6;
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+  transform: translateY(-1px);
+}
+
+.config-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Textarea modal */
+
+.config-textarea {
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 0.75rem 1rem;
+  color: #000000;
+  font-size: 0.95rem;
+  outline: none;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.config-textarea:focus {
+  border-color: #228be6;
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+  transform: translateY(-1px);
+}
+
+.config-textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Selects */
+
+.config-select {
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 0.75rem 1rem;
+  color: #000000;
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+/* Selects dentro de tarjetas oscuras - apariencia nativa del navegador */
+.admin-config-card .config-select {
+  background: #020826;
+  border: 1px solid #0f224b;
+  color: #ffffff;
+  appearance: auto;
+  padding: 0.5rem 0.75rem;
+}
+
+.config-select.small {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  appearance: auto;
+}
+
+.config-select:focus {
+  border-color: #228be6;
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+  transform: translateY(-1px);
+}
+
+.config-select:hover {
+  border-color: #94a3b8;
+}
+
+/* Upload */
+
+.config-upload {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.config-upload-hint {
+  font-size: 0.75rem;
+  color: #9bb4ff;
+}
+
+/* Radios */
+
+.config-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.config-radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.config-radio-option input {
+  display: none;
+}
+
+.config-radio-custom {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #4e84c1;
+  box-sizing: border-box;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.config-radio-option input:checked + .config-radio-custom {
+  border-color: #4dd4ff;
+  box-shadow: 0 0 0 3px rgba(77, 212, 255, 0.25);
+}
+
+.config-radio-option input:checked + .config-radio-custom::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 999px;
+  background: #4dd4ff;
+}
+
+/* Acciones generales */
+
+.config-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---- Botones reutilizables ---- */
+
+.config-btn-primary,
+.config-btn-outline {
+  position: relative;
+  border-radius: 999px;
+  border: none;
+  padding: 0.55rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.config-btn-primary::before,
+.config-btn-outline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.config-btn-primary:hover::before,
+.config-btn-outline:hover::before {
+  transform: translateX(100%);
+}
+
+.config-btn-primary {
+  background: linear-gradient(135deg, #228be6, #1c7ed6);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(34, 139, 230, 0.3);
+}
+
+.config-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 139, 230, 0.5);
+}
+
+.config-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.config-btn-primary:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.config-btn-primary:disabled::before {
+  display: none;
+}
+
+.config-btn-outline {
+  background: #061e48;
+  border: 1px solid transparent;
+  color: #ffffff;
+}
+
+.config-btn-outline::before {
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.config-btn-outline:hover {
+  background: #0a2664;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(6, 30, 72, 0.4);
+}
+
+.config-btn-outline:active {
+  transform: translateY(0);
+}
+
+.config-btn-outline.active {
+  background: rgba(0, 167, 213, 0.3);
+  border-color: #00a7d5;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+.config-btn-primary.wide {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ---- Switch ---- */
+
+.config-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.config-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.config-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #1c274e;
+  border-radius: 999px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.config-switch-slider::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #cbd5f5;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.config-switch:hover .config-switch-slider {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(0, 167, 213, 0.1);
+}
+
+.config-switch input:checked + .config-switch-slider {
+  background: linear-gradient(135deg, #00a7d5, #228be6);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 12px rgba(0, 167, 213, 0.3);
+}
+
+.config-switch input:checked + .config-switch-slider::before {
+  transform: translateX(24px);
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ---- Roles ---- */
+
+.admin-config-card-body-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.config-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.config-role-row:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.config-role-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: #00a7d5;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.config-role-name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.config-role-hint {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: #9bb4ff;
+}
+
+.config-roles-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* ---- Políticas de contraseña ---- */
+
+.admin-config-card-body-password {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.config-policy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem 1rem;
+}
+
+.config-policy-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.config-policy-label {
+  font-size: 0.85rem;
+}
+
+.config-policy-extra {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.config-policy-exp {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.config-auth-block {
+  flex: 1;
+  min-width: 200px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-auth-block h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ---- Bases de datos ---- */
+
+.admin-config-card-body-db {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.config-db-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.config-db-info {
+  font-size: 0.82rem;
+  color: #cde8ff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.config-db-label {
+  font-weight: 500;
+}
+
+.config-db-value {
+  color: #ffffff;
+}
+
+/* ---- Mantenimiento ---- */
+
+.admin-config-card-body-maint {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.config-maint-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #cde8ff;
+}
+
+.config-maint-list li {
+  margin-bottom: 0.25rem;
+}
+
+/* ---- Modal creación de rol ---- */
+
+.config-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  backdrop-filter: blur(4px);
+  animation: configModalFadeIn 0.3s ease;
+}
+
+@keyframes configModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.config-modal {
+  width: min(520px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: configModalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes configModalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.config-modal-header {
+  padding: 2rem 2.5rem 1rem;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: none;
+}
+
+.config-modal-header h2 {
+  margin: 0;
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+}
+
+.config-modal-close {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  color: #475569;
+  font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.config-modal-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: rotate(90deg);
+}
+
+.config-modal-body {
+  padding: 1rem 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.config-modal-permisos {
+  margin-top: 0.5rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.config-perm-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.config-perm-item:hover {
+  color: #228be6;
+}
+
+.config-perm-item input {
+  width: 18px;
+  height: 18px;
+  accent-color: #228be6;
+  cursor: pointer;
+}
+
+.config-modal-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.config-modal-actions .config-btn-primary,
+.config-modal-actions .config-btn-outline {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+}
+
+/* Scrollbar del modal */
+.config-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.config-modal::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.config-modal::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ---- Toast ---- */
+
+.config-toast {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  padding: 1rem 1.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), toastFadeOut 0.3s ease 2.2s forwards;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 400px;
+  backdrop-filter: blur(8px);
+}
+
+.config-toast::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.config-toast-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.config-toast-success::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.config-toast-info {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.config-toast-info::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px) scale(0.8);
+  }
+}
+
+/* Responsive detalle */
+
+@media (max-width: 640px) {
+  .config-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .config-policy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-config-card-body {
+    padding: 1.1rem 1.1rem 1.1rem;
+  }
+}

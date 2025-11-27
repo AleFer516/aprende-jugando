@@ -1,0 +1,50 @@
+/* Contenedor general del búho */
+.owl-container {
+  position: relative;
+  width: 120px;   /* puedes ajustar tamaño */
+  height: 120px;
+}
+
+/* Imagen base del búho */
+.owl-body {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Ojos: círculos transparentes donde se moverán las pupilas */
+.eye {
+  position: absolute;
+  width: 34px;       /* tamaño del ojo */
+  height: 34px;
+  border-radius: 60%;
+  overflow: hidden;
+}
+
+/* posiciones aproximadas para tu imagen 768x768
+   puedes afinar top/left/right si quieres */
+.eye-left {
+  top: 25%;          /* altura de los ojos */
+  left: 50%;
+}
+
+.eye-right {
+  top: 25%;
+  right: 60%;
+}
+
+/* Pupila con tu imagen owl_pupil */
+.pupil {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-image: url("/images/owl_pupil.png");
+  background-size: cover;
+  background-position: center;
+  transform: translate(-50%, -50%);
+  transition: transform 0.05s linear;
+}

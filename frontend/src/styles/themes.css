@@ -1,0 +1,941 @@
+/* Estilos de temas para el dashboard de admin */
+
+/* Variables CSS para tema claro (por defecto) */
+:root,
+body.theme-light {
+  --admin-bg-primary: #f8fafc;
+  --admin-bg-secondary: #ffffff;
+  --admin-bg-tertiary: #f1f5f9;
+
+  --admin-text-primary: #061e48;
+  --admin-text-secondary: #334155;
+  --admin-text-tertiary: #64748b;
+  --admin-text-muted: #94a3b8;
+
+  --admin-sidebar-bg: #061e48;
+  --admin-sidebar-text: #e2e8f0;
+  --admin-sidebar-hover: #0a2664;
+  --admin-sidebar-active: #228be6;
+
+  --admin-topbar-bg: #ffffff;
+  --admin-topbar-border: #e2e8f0;
+
+  --admin-card-bg: #ffffff;
+  --admin-card-shadow: rgba(0, 0, 0, 0.1);
+
+  --admin-border-color: #e2e8f0;
+  --admin-border-light: #f1f5f9;
+
+  --admin-input-bg: #ffffff;
+  --admin-input-border: #cbd5e1;
+  --admin-input-focus: #228be6;
+
+  --admin-accent: #228be6;
+  --admin-accent-hover: #1c7ed6;
+  --admin-success: #10b981;
+  --admin-warning: #f59e0b;
+  --admin-error: #ef4444;
+}
+
+/* Variables CSS para tema oscuro */
+body.theme-dark {
+  --admin-bg-primary: #0f172a;
+  --admin-bg-secondary: #1e293b;
+  --admin-bg-tertiary: #334155;
+
+  --admin-text-primary: #f1f5f9;
+  --admin-text-secondary: #e2e8f0;
+  --admin-text-tertiary: #cbd5e1;
+  --admin-text-muted: #94a3b8;
+
+  --admin-sidebar-bg: #020617;
+  --admin-sidebar-text: #e2e8f0;
+  --admin-sidebar-hover: #1e293b;
+  --admin-sidebar-active: #228be6;
+
+  --admin-topbar-bg: #1e293b;
+  --admin-topbar-border: #334155;
+
+  --admin-card-bg: #1e293b;
+  --admin-card-shadow: rgba(0, 0, 0, 0.3);
+
+  --admin-border-color: #334155;
+  --admin-border-light: #475569;
+
+  --admin-input-bg: #0f172a;
+  --admin-input-border: #334155;
+  --admin-input-focus: #228be6;
+
+  --admin-accent: #3b82f6;
+  --admin-accent-hover: #2563eb;
+  --admin-success: #22c55e;
+  --admin-warning: #f59e0b;
+  --admin-error: #ef4444;
+}
+
+/* Aplicar variables al layout - solo en modo oscuro */
+body.theme-dark .admin-layout {
+  background: var(--admin-bg-primary);
+  color: var(--admin-text-primary);
+}
+
+/* Sidebar - solo modo oscuro */
+body.theme-dark .admin-sidebar {
+  background: var(--admin-sidebar-bg);
+  color: var(--admin-sidebar-text);
+}
+
+body.theme-dark .admin-sidebar-item:hover {
+  background: var(--admin-sidebar-hover);
+}
+
+body.theme-dark .admin-sidebar-item.active {
+  background: var(--admin-sidebar-active);
+}
+
+/* Topbar - solo modo oscuro */
+body.theme-dark .admin-topbar {
+  background: var(--admin-topbar-bg);
+  border-bottom-color: var(--admin-topbar-border);
+}
+
+body.theme-dark .admin-topbar-bell,
+body.theme-dark .admin-topbar-user {
+  color: var(--admin-text-secondary);
+}
+
+body.theme-dark .admin-topbar-bell:hover,
+body.theme-dark .admin-topbar-user:hover {
+  background: var(--admin-bg-tertiary);
+}
+
+/* Contenido principal - solo modo oscuro */
+body.theme-dark .admin-content {
+  background: var(--admin-bg-primary);
+}
+
+/* Tarjetas - mismo diseño que Dashboard */
+body.theme-dark .admin-card,
+body.theme-dark .admin-usuarios-table-container,
+body.theme-dark .admin-usuarios-filters,
+body.theme-dark .admin-actividad-list {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Títulos - letras blancas como Dashboard */
+body.theme-dark .admin-usuarios-title,
+body.theme-dark .admin-config-title,
+body.theme-dark .admin-actividad-title,
+body.theme-dark .admin-estadisticas-title,
+body.theme-dark .admin-dashboard-title,
+body.theme-dark h1 {
+  color: #ffffff;
+}
+
+/* Dashboard y Estadísticas - Tarjetas estadísticas - mismo diseño que Dashboard */
+body.theme-dark .admin-estadistica-card,
+body.theme-dark .admin-dashboard-stat-card {
+  background: #07133f;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-dark .admin-estadistica-card:hover,
+body.theme-dark .admin-dashboard-stat-card:hover {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+}
+
+body.theme-dark .admin-estadistica-card h2,
+body.theme-dark .admin-dashboard-stat-card h3 {
+  color: #d7e6ff;
+}
+
+body.theme-dark .admin-estadistica-value,
+body.theme-dark .admin-dashboard-stat-value {
+  color: #ffffff;
+}
+
+/* Paneles de estadísticas - mismo diseño que Dashboard */
+body.theme-dark .admin-estadisticas-panel,
+body.theme-dark .admin-actividad-panel {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .admin-estadisticas-panel-header,
+body.theme-dark .admin-actividad-panel-header {
+  background: #061e48;
+  color: #ffffff;
+}
+
+body.theme-dark .admin-panel-total,
+body.theme-dark .admin-roles-label,
+body.theme-dark .legend-label,
+body.theme-dark .admin-misiones-bar-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .admin-roles-total,
+body.theme-dark .admin-misiones-bar-value {
+  color: #ffffff;
+}
+
+body.theme-dark .legend-value,
+body.theme-dark .admin-actividad-xlabels {
+  color: #9bb4ff;
+}
+
+/* Inputs y selects - mismo diseño que Dashboard */
+body.theme-dark .admin-usuarios-search-input,
+body.theme-dark .config-input,
+body.theme-dark .config-select,
+body.theme-dark .config-textarea {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .admin-usuarios-search-input::placeholder {
+  color: #9bb4ff;
+}
+
+body.theme-dark .admin-usuarios-search-input:focus,
+body.theme-dark .config-input:focus,
+body.theme-dark .config-select:focus,
+body.theme-dark .config-textarea:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.2);
+}
+
+/* Tabla - mismo diseño que Dashboard */
+body.theme-dark .admin-usuarios-table thead {
+  background: #061e48;
+}
+
+body.theme-dark .admin-usuarios-table thead th {
+  color: #ffffff;
+}
+
+body.theme-dark .admin-usuarios-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .admin-usuarios-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .admin-usuarios-table td {
+  color: #e5eeff;
+}
+
+/* Página de actividad - usando mismo diseño que Dashboard/Inicio */
+body.theme-dark .admin-actividad-title {
+  color: #ffffff;
+}
+
+body.theme-dark .admin-actividad-toolbar {
+  background: #07133f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .admin-actividad-label {
+  color: #d7e6ff;
+}
+
+body.theme-dark .admin-actividad-select {
+  background: rgba(0, 167, 213, 0.15);
+  color: #ffffff;
+  border-color: rgba(0, 167, 213, 0.2);
+}
+
+body.theme-dark .admin-actividad-select:hover {
+  background: rgba(0, 167, 213, 0.25);
+}
+
+body.theme-dark .admin-actividad-search-input {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .admin-actividad-search-input::placeholder {
+  color: #9bb4ff;
+}
+
+body.theme-dark .admin-actividad-search-input:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.2);
+}
+
+body.theme-dark .admin-actividad-search-icon {
+  color: #9bb4ff;
+}
+
+body.theme-dark .admin-actividad-search-input:focus + .admin-actividad-search-icon {
+  color: #00a7d5;
+}
+
+body.theme-dark .admin-actividad-select-wrapper::after {
+  border-top-color: #ffffff;
+}
+
+body.theme-dark .admin-actividad-list,
+body.theme-dark .admin-actividad-card {
+  background: #07133f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .admin-actividad-item {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-left-color: transparent;
+}
+
+body.theme-dark .admin-actividad-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: #00a7d5;
+}
+
+body.theme-dark .admin-actividad-avatar {
+  background: rgba(0, 167, 213, 0.2);
+}
+
+body.theme-dark .admin-actividad-text,
+body.theme-dark .admin-actividad-descripcion,
+body.theme-dark .admin-actividad-info p {
+  color: #e5eeff;
+}
+
+body.theme-dark .admin-actividad-fecha,
+body.theme-dark .admin-actividad-fecha span {
+  color: #9bb4ff;
+}
+
+body.theme-dark .admin-actividad-empty {
+  color: #c7d8ff;
+}
+
+body.theme-dark .admin-actividad-empty svg {
+  color: #4ade80;
+  opacity: 0.4;
+}
+
+/* Dropdowns */
+body.theme-dark .admin-notifications-dropdown,
+body.theme-dark .admin-user-dropdown {
+  background: var(--admin-card-bg);
+  border-color: var(--admin-border-color);
+  box-shadow: 0 10px 30px var(--admin-card-shadow);
+}
+
+body.theme-dark .notification-item:hover,
+body.theme-dark .admin-user-dropdown-item:hover {
+  background: var(--admin-bg-tertiary);
+}
+
+body.theme-dark .notification-title,
+body.theme-dark .admin-user-dropdown-name {
+  color: var(--admin-text-primary);
+}
+
+body.theme-dark .notification-time,
+body.theme-dark .admin-user-dropdown-email {
+  color: var(--admin-text-muted);
+}
+
+/* Modales */
+body.theme-dark .admin-usuarios-modal,
+body.theme-dark .config-modal {
+  background: var(--admin-card-bg);
+}
+
+body.theme-dark .admin-usuarios-modal-header h2,
+body.theme-dark .config-modal-header h2 {
+  color: var(--admin-text-primary);
+}
+
+body.theme-dark .admin-usuarios-form-group label,
+body.theme-dark .config-label {
+  color: var(--admin-text-secondary);
+}
+
+body.theme-dark .config-modal-permisos {
+  background: var(--admin-bg-tertiary);
+  border-color: var(--admin-border-color);
+}
+
+body.theme-dark .config-perm-item {
+  color: var(--admin-text-secondary);
+}
+
+body.theme-dark .config-perm-item:hover {
+  color: var(--admin-accent);
+}
+
+body.theme-dark .config-modal-close {
+  background: var(--admin-bg-tertiary);
+  color: var(--admin-text-secondary);
+}
+
+body.theme-dark .config-modal-close:hover {
+  background: var(--admin-border-color);
+  color: var(--admin-text-primary);
+}
+
+/* Tarjetas de configuración - mismo diseño que Dashboard */
+body.theme-dark .admin-config-card {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .admin-config-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+body.theme-dark .admin-config-card-header {
+  background: #061e48;
+}
+
+body.theme-dark .config-role-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+body.theme-dark .config-role-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .config-role-name {
+  color: #ffffff;
+}
+
+body.theme-dark .config-role-hint {
+  color: #9bb4ff;
+}
+
+body.theme-dark .config-db-label,
+body.theme-dark .config-maint-list {
+  color: #9bb4ff;
+}
+
+body.theme-dark .config-db-value {
+  color: #ffffff;
+}
+
+/* Inputs dentro de tarjetas en modo oscuro - mismo diseño que Dashboard */
+body.theme-dark .admin-config-card .config-input,
+body.theme-dark .admin-config-card .config-select {
+  background: #020826;
+  border-color: #0f224b;
+  color: #ffffff;
+}
+
+body.theme-dark .admin-config-card .config-label {
+  color: #cde8ff;
+}
+
+body.theme-dark .config-upload-hint {
+  color: #9bb4ff;
+}
+
+/* Filtros y badges - mismo diseño que Dashboard */
+body.theme-dark .admin-usuarios-select {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .admin-usuarios-select:hover {
+  background: rgba(0, 167, 213, 0.25);
+}
+
+body.theme-dark .admin-usuarios-badge.inactivo {
+  background: rgba(255, 255, 255, 0.1);
+  color: #9bb4ff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Textos adicionales panel Usuarios */
+body.theme-dark .admin-usuarios-filters label {
+  color: #d7e6ff;
+}
+
+body.theme-dark .admin-usuarios-actions button {
+  color: #ffffff;
+}
+
+/* Textos adicionales panel Actividad */
+body.theme-dark .admin-actividad-toolbar label,
+body.theme-dark .admin-actividad-filters label {
+  color: #d7e6ff;
+}
+
+/* Página de perfil - mismo diseño que Dashboard */
+body.theme-dark .admin-perfil-title {
+  color: #ffffff;
+}
+
+body.theme-dark .admin-perfil-card {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .admin-perfil-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+body.theme-dark .admin-perfil-card-header {
+  background: #061e48;
+}
+
+body.theme-dark .admin-perfil-form-group label {
+  color: #cde8ff;
+}
+
+body.theme-dark .admin-perfil-form-group input,
+body.theme-dark .admin-perfil-form-group textarea {
+  background: #020826;
+  border-color: #0f224b;
+  color: #ffffff;
+}
+
+body.theme-dark .admin-perfil-form-group input:focus,
+body.theme-dark .admin-perfil-form-group textarea:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.1);
+}
+
+body.theme-dark .admin-perfil-form-group p {
+  color: #e5eeff;
+}
+
+body.theme-dark .admin-perfil-info-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .admin-perfil-info-value {
+  color: #ffffff;
+}
+
+/* Modal de cambiar contraseña en modo oscuro */
+body.theme-dark .admin-perfil-modal {
+  background: #1e293b;
+}
+
+body.theme-dark .admin-perfil-modal-header h2 {
+  color: #ffffff;
+}
+
+body.theme-dark .admin-perfil-modal-close {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-perfil-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+body.theme-dark .admin-perfil-modal-form-group label {
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-perfil-modal-form-group input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #ffffff;
+}
+
+body.theme-dark .admin-perfil-modal-form-group input:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.1);
+}
+
+body.theme-dark .admin-perfil-modal-form-group input::placeholder {
+  color: #64748b;
+}
+
+body.theme-dark .admin-perfil-modal-requisitos {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+body.theme-dark .admin-perfil-modal-requisitos-title {
+  color: #e2e8f0;
+}
+
+body.theme-dark .admin-perfil-modal-requisitos-list li {
+  color: #94a3b8;
+}
+
+body.theme-dark .admin-perfil-modal-footer {
+  border-top-color: #334155;
+}
+
+/* ============================================ */
+/* SOPORTE MODO OSCURO PARA PANEL GM          */
+/* ============================================ */
+
+/* Layout GM - solo modo oscuro */
+body.theme-dark .gm-layout {
+  background: var(--admin-bg-primary);
+  color: var(--admin-text-primary);
+}
+
+/* Sidebar GM - solo modo oscuro */
+body.theme-dark .gm-sidebar {
+  background: var(--admin-sidebar-bg);
+  color: var(--admin-sidebar-text);
+}
+
+body.theme-dark .gm-sidebar-item:hover {
+  background: var(--admin-sidebar-hover);
+}
+
+body.theme-dark .gm-sidebar-item.active {
+  background: var(--admin-sidebar-active);
+}
+
+/* Topbar GM - solo modo oscuro */
+body.theme-dark .gm-topbar {
+  background: var(--admin-topbar-bg);
+  border-bottom-color: var(--admin-topbar-border);
+}
+
+body.theme-dark .gm-topbar-bell,
+body.theme-dark .gm-topbar-user {
+  color: var(--admin-text-secondary);
+}
+
+body.theme-dark .gm-topbar-bell:hover,
+body.theme-dark .gm-topbar-user:hover {
+  background: var(--admin-bg-tertiary);
+}
+
+/* Contenido principal GM - solo modo oscuro */
+body.theme-dark .gm-content {
+  background: var(--admin-bg-primary);
+}
+
+/* Página de inicio GM - mismo diseño que Dashboard */
+body.theme-dark .gm-inicio-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-inicio-subtitle {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-stat-card {
+  background: #07133f;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-dark .gm-stat-card:hover {
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+}
+
+body.theme-dark .gm-stat-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-stat-value {
+  color: #ffffff;
+}
+
+/* Paneles GM - mismo diseño que Dashboard */
+body.theme-dark .gm-panel {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-panel-title {
+  color: #ffffff;
+}
+
+/* Tabla de misiones GM */
+body.theme-dark .gm-missions-table thead {
+  background: #061e48;
+}
+
+body.theme-dark .gm-missions-table thead th {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-missions-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-missions-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-missions-table td {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-student-name {
+  color: #00a7d5;
+}
+
+body.theme-dark .gm-mission-desc {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-mission-date {
+  color: #9bb4ff;
+}
+
+/* Progreso de cursos GM */
+body.theme-dark .gm-progress-name {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-progress-percent {
+  color: #00a7d5;
+}
+
+body.theme-dark .gm-progress-bar-bg {
+  background: rgba(0, 167, 213, 0.15);
+}
+
+/* Indicadores GM */
+body.theme-dark .gm-indicator-item {
+  background: rgba(0, 167, 213, 0.1);
+}
+
+body.theme-dark .gm-indicator-item:hover {
+  background: rgba(0, 167, 213, 0.2);
+}
+
+body.theme-dark .gm-indicator-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-indicator-value {
+  color: #ffffff;
+}
+
+/* Misiones recientes GM */
+body.theme-dark .gm-recent-mission {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-recent-mission-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-recent-mission-desc {
+  color: #9bb4ff;
+}
+
+/* Páginas en construcción GM */
+body.theme-dark .gm-page-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-page-construction {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-page-construction h2 {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-page-construction p {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-page-construction svg {
+  color: #00a7d5;
+}
+
+/* Dropdowns GM */
+body.theme-dark .gm-notifications-dropdown,
+body.theme-dark .gm-user-dropdown {
+  background: var(--admin-card-bg);
+  border-color: var(--admin-border-color);
+  box-shadow: 0 10px 30px var(--admin-card-shadow);
+}
+
+body.theme-dark .gm-user-dropdown-name {
+  color: var(--admin-text-primary);
+}
+
+body.theme-dark .gm-user-dropdown-email {
+  color: var(--admin-text-muted);
+}
+
+body.theme-dark .gm-user-dropdown-item:hover {
+  background: var(--admin-bg-tertiary);
+}
+
+/* Modal GM */
+body.theme-dark .gm-modal {
+  background: var(--admin-card-bg);
+}
+
+body.theme-dark .gm-modal-header h2 {
+  color: var(--admin-text-primary);
+}
+
+body.theme-dark .gm-modal-close {
+  background: var(--admin-bg-tertiary);
+  color: var(--admin-text-secondary);
+}
+
+body.theme-dark .gm-modal-close:hover {
+  background: var(--admin-border-color);
+  color: var(--admin-text-primary);
+}
+
+body.theme-dark .gm-modal-body {
+  color: var(--admin-text-secondary);
+}
+
+/* Botón de acción en misiones GM */
+body.theme-dark .gm-mission-action-btn {
+  background: linear-gradient(135deg, #00a7d5, #00d4ff);
+}
+
+body.theme-dark .gm-mission-action-btn:hover {
+  background: linear-gradient(135deg, #00d4ff, #00a7d5);
+}
+
+/* Indicadores avanzados interactivos GM */
+body.theme-dark .gm-indicator-item {
+  background: rgba(0, 167, 213, 0.08);
+}
+
+body.theme-dark .gm-indicator-item:hover {
+  background: rgba(0, 167, 213, 0.18);
+}
+
+body.theme-dark .gm-indicator-item.active {
+  background: rgba(0, 167, 213, 0.25);
+}
+
+body.theme-dark .gm-indicator-name {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-indicator-description {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-indicator-value-display {
+  background: rgba(0, 212, 255, 0.15);
+}
+
+body.theme-dark .gm-indicator-value-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-indicator-value-text {
+  color: #00d4ff;
+}
+
+/* Página de estudiantes GM */
+body.theme-dark .gm-estudiantes-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-search-input {
+  background: #07133f;
+  border-color: rgba(155, 180, 255, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-search-input::placeholder {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-search-input:focus {
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+body.theme-dark .gm-search-icon {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-estudiantes-table thead {
+  background: #061e48;
+}
+
+body.theme-dark .gm-estudiantes-table thead th {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-estudiantes-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-estudiantes-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .gm-estudiantes-table td {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-estudiante-rut {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-estudiante-nombre {
+  color: #00d4ff;
+}
+
+body.theme-dark .gm-estudiante-curso,
+body.theme-dark .gm-estudiante-nivel {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-estado-badge.activo {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+body.theme-dark .gm-estado-badge.inactivo {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+body.theme-dark .gm-no-results {
+  color: #9bb4ff;
+}
+
+/* Transición suave al cambiar tema */
+.admin-layout,
+.admin-sidebar,
+.admin-topbar,
+.admin-content,
+.admin-card,
+.admin-usuarios-table-container,
+.admin-usuarios-filters,
+.admin-actividad-list,
+.admin-notifications-dropdown,
+.admin-user-dropdown,
+.admin-usuarios-modal,
+.config-modal,
+.admin-perfil-card,
+.admin-perfil-form-group input,
+.admin-perfil-form-group textarea,
+.admin-perfil-modal,
+.admin-perfil-modal-form-group input,
+.admin-perfil-modal-requisitos,
+.gm-layout,
+.gm-sidebar,
+.gm-topbar,
+.gm-content,
+.gm-stat-card,
+.gm-panel,
+.gm-page-construction,
+.gm-notifications-dropdown,
+.gm-user-dropdown,
+.gm-modal,
+.gm-search-input,
+.gm-estudiantes-table {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

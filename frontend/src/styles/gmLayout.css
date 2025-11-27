@@ -1,0 +1,902 @@
+/* Layout general del panel gm */
+
+.gm-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #0b1437;
+  color: #ffffff;
+  font-family: "Inter", "Roboto", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ---------------- Sidebar ---------------- */
+
+.gm-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #07133f 0%, #003d73 40%, #00a7d5 100%);
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: width 0.3s ease, padding 0.3s ease, opacity 0.3s ease,
+    transform 0.25s ease;
+  overflow: hidden;
+  position: relative;
+  z-index: 1000;
+}
+
+/* Sidebar OCULTA: ancho 0, sin padding (en desktop) */
+.gm-sidebar.closed {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+}
+
+/* Parte superior (logo + botón) */
+
+.gm-sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.gm-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gm-sidebar-logo:hover {
+  transform: scale(1.02);
+}
+
+.gm-sidebar-logo:active {
+  transform: scale(0.98);
+}
+
+.gm-logo-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.gm-sidebar-logo:hover .gm-logo-img {
+  transform: rotate(5deg);
+}
+
+.gm-logo-text {
+  line-height: 1.1;
+}
+
+.gm-logo-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.gm-logo-subtitle {
+  font-size: 0.75rem;
+  color: #cde8ff;
+}
+
+/* Botón hamburguesa dentro de la sidebar */
+
+.gm-sidebar-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(0, 0, 0, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.gm-sidebar-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gm-sidebar-toggle:hover::before {
+  opacity: 1;
+}
+
+.gm-sidebar-toggle:hover {
+  background: rgba(0, 0, 0, 0.28);
+  transform: rotate(90deg);
+}
+
+.gm-sidebar-toggle:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+.gm-sidebar-toggle span {
+  width: 18px;
+  height: 2px;
+  border-radius: 99px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+/* Menú */
+
+.gm-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.gm-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  color: #e3f1ff;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gm-sidebar-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #ffffff;
+  transform: scaleY(0);
+  transition: transform 0.25s ease;
+  border-radius: 0 99px 99px 0;
+}
+
+.gm-sidebar-item.active::before {
+  transform: scaleY(1);
+}
+
+.gm-sidebar-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.gm-sidebar-item svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.gm-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+  padding-left: 1rem;
+}
+
+.gm-sidebar-item:hover .gm-sidebar-icon {
+  transform: scale(1.1);
+}
+
+.gm-sidebar-item:active {
+  transform: translateX(4px) scale(0.98);
+}
+
+.gm-sidebar-item.active {
+  background: rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gm-sidebar-item.active .gm-sidebar-icon {
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Botón flotante cuando la sidebar está oculta */
+
+.gm-sidebar-floating-toggle {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 1100;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #003d73, #00a7d5);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.gm-sidebar-floating-toggle:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+.gm-sidebar-floating-toggle:active {
+  transform: scale(1.05) rotate(90deg);
+}
+
+.gm-sidebar-floating-toggle span {
+  width: 18px;
+  height: 2px;
+  border-radius: 99px;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+/* ---------------- Main / Topbar ---------------- */
+
+.gm-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #e9f1fb;
+  transition: margin-left 0.3s ease;
+  min-width: 0;
+  position: relative;
+  z-index: 0;
+}
+
+/* Cuando no hay sidebar, que el contenido ocupe todo sin margen */
+.gm-main.full-width {
+  margin-left: 0;
+}
+
+/* Topbar */
+
+.gm-topbar {
+  height: 64px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  background: linear-gradient(90deg, #061e48 0%, #0072a4 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gm-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Campana y notificaciones */
+
+.gm-notifications-wrapper {
+  position: relative;
+}
+
+.gm-topbar-bell {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.gm-topbar-bell:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.gm-topbar-bell:active {
+  transform: scale(0.95);
+}
+
+.gm-topbar-bell.active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.gm-topbar-bell svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.gm-topbar-bell:hover svg {
+  animation: ring 0.5s ease;
+}
+
+@keyframes ring {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg); }
+  75% { transform: rotate(15deg); }
+}
+
+.notification-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  background: #ff4444;
+  border-radius: 999px;
+  border: 2px solid #061e48;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* Dropdown de notificaciones */
+
+.gm-notifications-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 320px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: dropdownSlide 0.3s ease;
+  z-index: 100;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notifications-header {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #061e48, #0072a4);
+  color: #ffffff;
+}
+
+.notifications-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.notifications-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid #e9f1fb;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #f8fafc;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #228be6, #4e84c1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #ffffff;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0b1437;
+}
+
+.notification-time {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Usuario */
+
+.gm-user-wrapper {
+  position: relative;
+}
+
+.gm-topbar-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.7rem 0.4rem 0.4rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+
+.gm-topbar-user:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.gm-topbar-user.active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.gm-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #228be6, #4e84c1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.gm-topbar-user:hover .gm-avatar {
+  transform: scale(1.05);
+}
+
+.gm-username {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.gm-user-caret {
+  width: 16px;
+  height: 16px;
+  margin-left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.gm-topbar-user.active .gm-user-caret {
+  transform: rotate(180deg);
+}
+
+/* Dropdown de usuario */
+
+.gm-user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 230px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: dropdownSlide 0.3s ease;
+  z-index: 100;
+}
+
+.gm-user-dropdown-header {
+  padding: 0.9rem 1.1rem;
+  background: linear-gradient(135deg, #061e48, #0072a4);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.gm-user-dropdown-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.gm-user-dropdown-name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.gm-user-dropdown-email {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #dbeafe;
+}
+
+.gm-user-dropdown-body {
+  padding: 0.5rem 0;
+  background: #ffffff;
+}
+
+.gm-user-dropdown-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  color: #0b1437;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.gm-user-dropdown-item:hover {
+  background: #f3f4ff;
+  transform: translateX(2px);
+}
+
+.gm-user-item-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #e5edff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gm-user-item-icon svg {
+  width: 14px;
+  height: 14px;
+  color: #1d4ed8;
+}
+
+.gm-user-dropdown-divider {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 0.3rem 0.7rem;
+}
+
+/* Logout en rojo */
+
+.gm-user-logout {
+  color: #b91c1c;
+}
+
+.gm-user-logout .gm-user-item-icon {
+  background: #fee2e2;
+}
+
+.gm-user-logout .gm-user-item-icon svg {
+  color: #b91c1c;
+}
+
+.gm-user-logout:hover {
+  background: #fef2f2;
+}
+
+/* Contenido principal del panel */
+
+.gm-content {
+  flex: 1;
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar personalizado */
+
+.notifications-list::-webkit-scrollbar,
+.gm-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notifications-list::-webkit-scrollbar-track,
+.gm-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notifications-list::-webkit-scrollbar-thumb,
+.gm-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 999px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover,
+.gm-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+
+/* -------- Modal genérico (confirmar cierre de sesión) -------- */
+
+.gm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  backdrop-filter: blur(4px);
+  animation: backdropFadeIn 0.3s ease;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gm-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  width: min(480px, 90vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.gm-modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.gm-modal-header h2 {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #000000;
+  margin: 0;
+}
+
+.gm-modal-close {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  color: #475569;
+  font-size: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  line-height: 1;
+}
+
+.gm-modal-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: rotate(90deg);
+}
+
+.gm-modal-body {
+  color: #334155;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.gm-modal-body p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.gm-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.gm-modal-btn {
+  position: relative;
+  border-radius: 8px;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  flex: 1;
+}
+
+.gm-modal-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.gm-modal-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.gm-modal-btn:hover {
+  transform: translateY(-2px);
+}
+
+.gm-modal-btn:active {
+  transform: translateY(0);
+}
+
+.gm-modal-btn-secondary {
+  background: #061e48;
+  color: #ffffff;
+}
+
+.gm-modal-btn-secondary::before {
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.gm-modal-btn-secondary:hover {
+  background: #0a2664;
+  box-shadow: 0 4px 12px rgba(6, 30, 72, 0.4);
+}
+
+.gm-modal-btn-primary {
+  background: linear-gradient(135deg, #228be6, #1c7ed6);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(34, 139, 230, 0.3);
+}
+
+.gm-modal-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(34, 139, 230, 0.5);
+}
+
+/* Scrollbar del modal */
+.gm-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gm-modal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.gm-modal::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.gm-modal::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+
+/* ------------- RESPONSIVE: sidebar como panel flotante en pantallas pequeñas ------------- */
+
+@media (max-width: 1024px) {
+  .gm-layout {
+    position: relative;
+  }
+
+  /* Sidebar se vuelve panel fijo que entra/sale por la izquierda */
+  .gm-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 260px;
+    padding: 1.5rem 1.25rem;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .gm-sidebar.closed {
+    /* en mobile no colapsamos, solo la movemos fuera de pantalla */
+    width: 260px;
+    padding: 1.5rem 1.25rem;
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+
+  .gm-main,
+  .gm-main.full-width {
+    margin-left: 0; /* el contenido siempre ocupa todo el ancho */
+  }
+
+  .gm-content {
+    padding: 1rem 1rem 1.5rem;
+  }
+}

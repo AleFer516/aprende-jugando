@@ -1,0 +1,909 @@
+/* Estilos para la página de Gestión de Misión del GM */
+
+.gm-gestionar-mision {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeInPage 0.5s ease;
+  min-width: 0;
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================ */
+/* HEADER */
+/* ============================================ */
+
+.gm-gestion-header {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: slideInDown 0.5s ease;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gm-gestion-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.gm-gestion-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #061e48;
+  margin: 0;
+}
+
+.gm-gestion-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gm-badge-dificultad,
+.gm-badge-categoria {
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  transition: all 0.3s ease;
+}
+
+.gm-badge-dificultad.baja {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.1));
+  color: #16a34a;
+  border: 1.5px solid rgba(34, 197, 94, 0.3);
+}
+
+.gm-badge-dificultad.media {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(251, 146, 60, 0.1));
+  color: #ea580c;
+  border: 1.5px solid rgba(251, 146, 60, 0.3);
+}
+
+.gm-badge-dificultad.alta {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.1));
+  color: #dc2626;
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+}
+
+.gm-badge-categoria {
+  background: linear-gradient(135deg, rgba(0, 167, 213, 0.15), rgba(0, 167, 213, 0.1));
+  color: #00a7d5;
+  border: 1.5px solid rgba(0, 167, 213, 0.3);
+}
+
+/* ============================================ */
+/* BOTONES DE ACCIÓN */
+/* ============================================ */
+
+.gm-gestion-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  animation: slideInUp 0.5s ease;
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.gm-gestion-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gm-gestion-btn svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.gm-gestion-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.gm-gestion-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.gm-gestion-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.gm-gestion-btn:active {
+  transform: translateY(0);
+}
+
+.gm-btn-editar {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+}
+
+.gm-btn-asignar {
+  background: linear-gradient(135deg, #00a7d5, #00d4ff);
+  color: #ffffff;
+}
+
+.gm-btn-progreso {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.gm-btn-volver {
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: #ffffff;
+}
+
+/* ============================================ */
+/* CONTENIDO PRINCIPAL */
+/* ============================================ */
+
+.gm-gestion-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 1.5rem;
+  animation: fadeInScale 0.5s ease;
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.gm-gestion-left,
+.gm-gestion-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ============================================ */
+/* TARJETAS */
+/* ============================================ */
+
+.gm-gestion-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.gm-gestion-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.gm-gestion-card-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #061e48;
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gm-gestion-card-text {
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ============================================ */
+/* LISTA DE COMPETENCIAS */
+/* ============================================ */
+
+.gm-gestion-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gm-gestion-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(0, 167, 213, 0.05), rgba(0, 167, 213, 0.02));
+  border-left: 3px solid #00d4ff;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #334155;
+  transition: all 0.3s ease;
+}
+
+.gm-gestion-list-item:hover {
+  background: linear-gradient(135deg, rgba(0, 167, 213, 0.1), rgba(0, 167, 213, 0.05));
+  transform: translateX(4px);
+}
+
+.gm-gestion-list-item svg {
+  width: 20px;
+  height: 20px;
+  color: #00a7d5;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ============================================ */
+/* PISTAS (COLUMNA DERECHA) */
+/* ============================================ */
+
+.gm-card-pistas {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 2px solid #fbbf24;
+}
+
+.gm-card-pistas .gm-gestion-card-title {
+  color: #92400e;
+}
+
+.gm-gestion-pistas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.gm-gestion-pista-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.gm-gestion-pista-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateX(4px);
+}
+
+.gm-pista-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.gm-pista-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.gm-pista-text {
+  font-size: 0.9rem;
+  color: #92400e;
+  margin: 0;
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* ============================================ */
+/* RETROALIMENTACIÓN (COLUMNA DERECHA) */
+/* ============================================ */
+
+.gm-card-retro {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  border: 2px solid #60a5fa;
+}
+
+.gm-card-retro .gm-gestion-card-title {
+  color: #1e3a8a;
+}
+
+.gm-card-retro .gm-gestion-card-text {
+  color: #1e40af;
+}
+
+/* ============================================ */
+/* MODAL ASIGNAR MISIÓN */
+/* ============================================ */
+
+.gm-modal-asignar {
+  max-width: 800px !important;
+  width: 90vw;
+}
+
+.gm-asignar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gm-asignar-descripcion {
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.gm-asignar-descripcion strong {
+  color: #00a7d5;
+  font-weight: 700;
+}
+
+/* Tabla de cursos */
+.gm-asignar-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.gm-asignar-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gm-asignar-table thead {
+  background: linear-gradient(135deg, #061e48, #0a2664);
+}
+
+.gm-asignar-table thead th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gm-asignar-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.gm-asignar-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(0, 167, 213, 0.05), transparent);
+}
+
+.gm-asignar-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gm-asignar-table tbody td {
+  padding: 1.25rem 1.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.gm-asignar-curso-nombre {
+  color: #00a7d5;
+  font-weight: 600;
+}
+
+.gm-asignar-curso-codigo {
+  color: #64748b;
+  font-family: "Courier New", monospace;
+  font-weight: 500;
+}
+
+.gm-asignar-curso-categoria {
+  color: #334155;
+}
+
+/* Botón asignar en tabla */
+.gm-asignar-btn-curso {
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #00a7d5, #00d4ff);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 167, 213, 0.3);
+}
+
+.gm-asignar-btn-curso:hover {
+  background: linear-gradient(135deg, #00d4ff, #00a7d5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.5);
+}
+
+.gm-asignar-btn-curso:active {
+  transform: translateY(0);
+}
+
+/* Mensaje de éxito */
+.gm-asignar-exito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.gm-asignar-exito-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.gm-asignar-exito-icon svg {
+  width: 48px;
+  height: 48px;
+  color: #ffffff;
+}
+
+.gm-asignar-exito-titulo {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #10b981;
+  margin: 0;
+}
+
+.gm-asignar-exito-texto {
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ============================================ */
+/* MODAL EDITAR MISIÓN */
+/* ============================================ */
+
+.gm-modal-editar-mision {
+  width: 95vw !important;
+  max-width: 950px !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 1.5rem !important;
+  box-sizing: border-box;
+}
+
+/* Reutilizar estilos de gmMisiones.css para el formulario de edición */
+.gm-modal-editar-mision .admin-usuarios-form {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gm-modal-editar-mision .admin-usuarios-form-group {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.gm-modal-editar-mision input,
+.gm-modal-editar-mision select,
+.gm-modal-editar-mision textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.gm-modal-editar-mision textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #000000;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.gm-modal-editar-mision textarea:focus {
+  border-color: #228be6;
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+  transform: translateY(-1px);
+}
+
+.gm-modal-editar-mision textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Scrollbar del modal */
+.gm-modal-editar-mision::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gm-modal-editar-mision::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+}
+
+.gm-modal-editar-mision::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  border-radius: 999px;
+}
+
+.gm-modal-editar-mision::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #d97706, #f59e0b);
+}
+
+/* ============================================ */
+/* MODAL VER PROGRESO */
+/* ============================================ */
+
+.gm-modal-progreso {
+  max-width: 900px !important;
+  width: 90vw;
+}
+
+.gm-progreso-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gm-progreso-descripcion {
+  font-size: 1rem;
+  color: #334155;
+  margin: 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.gm-progreso-descripcion strong {
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Tabla de cursos en modal progreso */
+.gm-progreso-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.gm-progreso-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gm-progreso-table thead {
+  background: linear-gradient(135deg, #061e48, #0a2664);
+}
+
+.gm-progreso-table thead th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gm-progreso-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.gm-progreso-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), transparent);
+}
+
+.gm-progreso-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gm-progreso-table tbody td {
+  padding: 1.25rem 1.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.gm-progreso-curso-nombre {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.gm-progreso-curso-codigo {
+  color: #64748b;
+  font-family: "Courier New", monospace;
+  font-weight: 500;
+}
+
+.gm-progreso-curso-categoria {
+  color: #334155;
+}
+
+/* Botón ver progreso en tabla de cursos */
+.gm-progreso-btn-curso {
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.gm-progreso-btn-curso:hover {
+  background: linear-gradient(135deg, #059669, #10b981);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+}
+
+.gm-progreso-btn-curso:active {
+  transform: translateY(0);
+}
+
+/* Vista de estudiantes con progreso */
+.gm-progreso-estudiantes-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gm-progreso-estudiantes-header {
+  background: linear-gradient(135deg, #061e48, #0a2664);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+
+.gm-progreso-estudiantes-titulo {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.gm-progreso-estudiantes-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.gm-progreso-estudiantes-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gm-progreso-estudiantes-table thead {
+  background: linear-gradient(135deg, #061e48, #0a2664);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.gm-progreso-estudiantes-table thead th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gm-progreso-estudiantes-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.gm-progreso-estudiantes-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), transparent);
+}
+
+.gm-progreso-estudiantes-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.gm-progreso-estudiantes-table tbody td {
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.gm-progreso-estudiante-rut {
+  color: #64748b;
+  font-family: "Courier New", monospace;
+  font-weight: 500;
+}
+
+.gm-progreso-estudiante-nombre {
+  color: #061e48;
+  font-weight: 600;
+}
+
+.gm-progreso-estudiante-nivel {
+  color: #334155;
+}
+
+/* Barra de progreso */
+.gm-progreso-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gm-progreso-bar-wrapper {
+  flex: 1;
+  height: 24px;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gm-progreso-bar-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 12px;
+  transition: width 0.6s ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.gm-progreso-bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.gm-progreso-bar-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #10b981;
+  min-width: 45px;
+  text-align: right;
+}
+
+/* ============================================ */
+/* RESPONSIVE */
+/* ============================================ */
+
+@media (max-width: 1200px) {
+  .gm-gestion-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .gm-gestion-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .gm-gestion-title {
+    font-size: 1.5rem;
+  }
+
+  .gm-gestion-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gm-gestion-btn {
+    justify-content: center;
+  }
+
+  .gm-gestion-card {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .gm-gestion-card-title {
+    font-size: 1.1rem;
+  }
+
+  .gm-progreso-estudiantes-titulo {
+    font-size: 1.1rem;
+  }
+
+  .gm-progreso-bar-text {
+    min-width: 40px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .gm-gestion-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gm-badge-dificultad,
+  .gm-badge-categoria {
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+  }
+
+  .gm-progreso-bar-wrapper {
+    height: 20px;
+  }
+}

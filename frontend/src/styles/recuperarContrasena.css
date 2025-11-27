@@ -1,0 +1,53 @@
+/* Estilos específicos para la página de Recuperar Contraseña */
+
+.recuperar-page {
+  font-family: "Inter", "Roboto", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.recuperar-bg {
+  background-image: url("/images/fondo_login.png");
+  background-size: cover;
+  background-position: center;
+}
+
+.recuperar-card {
+  /* por si más adelante quieres algo específico solo para esta tarjeta */
+}
+
+/* Título principal */
+.recuperar-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+}
+
+/* Icono central (por si luego quieres retocar) */
+.recuperar-icon {
+  display: block;
+}
+
+/* Botón principal (Enviar) */
+.btn-recuperar-primary {
+  background-color: #228be6;
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+/* Botón secundario (Volver) */
+.btn-recuperar-secondary {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 500;
+}
+
+/* Link "Inicia sesión" */
+.recuperar-link {
+  color: #228be6;
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 600;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.recuperar-link:hover {
+  color: #4e84c1;
+  transform: scale(1.05);
+}

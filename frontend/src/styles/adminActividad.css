@@ -1,0 +1,315 @@
+/* Página de actividad del admin */
+
+.admin-actividad-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: adminActFadeIn 0.5s ease;
+}
+
+@keyframes adminActFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Título */
+
+.admin-actividad-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: #061e48;
+  margin-bottom: 0.25rem;
+  animation: adminActTitleSlide 0.4s ease;
+}
+
+@keyframes adminActTitleSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Barra de filtros (Fecha + Buscar) */
+
+.admin-actividad-toolbar {
+  background: #f4f7ff;
+  border-radius: 18px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 720px) {
+  .admin-actividad-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.admin-actividad-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-actividad-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #061e48;
+}
+
+/* Select de fecha */
+
+.admin-actividad-select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-actividad-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  outline: none;
+  padding: 0.55rem 2.4rem 0.55rem 1rem;
+  border-radius: 999px;
+  background: #07133f;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.admin-actividad-select:hover {
+  background: #061e48;
+}
+
+.admin-actividad-select:focus {
+  box-shadow: 0 0 0 2px rgba(0, 167, 213, 0.6);
+}
+
+.admin-actividad-select-arrow {
+  position: absolute;
+  right: 0.7rem;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-actividad-select-arrow svg {
+  width: 18px;
+  height: 18px;
+  color: #ffffff;
+}
+
+/* Buscador */
+
+.admin-actividad-search-wrapper {
+  flex: 1;
+  max-width: 340px;
+  position: relative;
+}
+
+@media (max-width: 720px) {
+  .admin-actividad-search-wrapper {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.admin-actividad-search-input {
+  width: 100%;
+  padding: 0.55rem 2.3rem 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #c0d2f5;
+  background: #ffffff;
+  font-size: 0.9rem;
+  color: #061e48;
+  transition: all 0.25s ease;
+}
+
+.admin-actividad-search-input::placeholder {
+  color: #9fb0d6;
+}
+
+.admin-actividad-search-input:focus {
+  outline: none;
+  border-color: #228be6;
+  box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.25);
+}
+
+.admin-actividad-search-icon {
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.admin-actividad-search-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+}
+
+/* Tarjeta de lista de actividades */
+
+.admin-actividad-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
+  padding: 1.2rem 1.75rem;
+  animation: adminActCardIn 0.4s ease;
+}
+
+@keyframes adminActCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-actividad-empty {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* Lista */
+
+.admin-actividad-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-actividad-item {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.8rem 0.5rem;
+  border-bottom: 1px solid #e3ecff;
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  animation: adminActItemSlide 0.45s ease backwards;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-actividad-item:last-child {
+  border-bottom: none;
+}
+
+@keyframes adminActItemSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.admin-actividad-item:hover {
+  background: #f4f7ff;
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border-left-color: #228be6;
+}
+
+/* Avatar / icono */
+
+.admin-actividad-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #228be6, #4e84c1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(34, 139, 230, 0.6);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.admin-actividad-avatar svg {
+  width: 22px;
+  height: 22px;
+}
+
+.admin-actividad-item:hover .admin-actividad-avatar {
+  transform: scale(1.1);
+  box-shadow: 0 8px 22px rgba(34, 139, 230, 0.9);
+}
+
+/* Texto de la actividad */
+
+.admin-actividad-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-actividad-descripcion {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #0f172a;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Fecha */
+
+.admin-actividad-fecha {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+  min-width: 90px;
+  text-align: right;
+}
+
+@media (max-width: 620px) {
+  .admin-actividad-fecha {
+    font-size: 0.8rem;
+    min-width: auto;
+  }
+
+  .admin-actividad-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .admin-actividad-fecha {
+    text-align: left;
+    margin-left: 3.25rem;
+  }
+}
