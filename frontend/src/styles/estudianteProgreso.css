@@ -1,0 +1,662 @@
+/* src/styles/estudianteProgreso.css */
+/* Estilos para la página de progreso del panel de estudiantes */
+
+.estudiante-progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: progresoFadeIn 0.6s ease;
+}
+
+@keyframes progresoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   HEADER
+   =========================== */
+
+.progreso-header {
+  margin-bottom: 0.5rem;
+  animation: headerSlideIn 0.5s ease;
+}
+
+@keyframes headerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.progreso-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #061e48;
+  margin: 0 0 0.5rem 0;
+}
+
+.progreso-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ===========================
+   GRID SUPERIOR (XP + MISIONES)
+   =========================== */
+
+.progreso-top-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  animation: topGridFadeIn 0.6s ease 0.1s backwards;
+}
+
+@keyframes topGridFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   CARD DE XP ACUMULADA / ESTADO DE MISIONES
+   =========================== */
+
+.progreso-xp-card,
+.progreso-misiones-card {
+  background: #07133f; /* azul de las otras tarjetas */
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.progreso-xp-card:hover,
+.progreso-misiones-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.progreso-card-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1.5rem 0;
+}
+
+.progreso-xp-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Círculo de nivel con SVG animado */
+
+.progreso-nivel-circulo-wrapper {
+  flex-shrink: 0;
+}
+
+.progreso-nivel-circulo {
+  position: relative;
+  width: 150px;
+  height: 150px;
+}
+
+.progreso-nivel-circulo-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.progreso-nivel-numero {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.progreso-nivel-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9bb4ff;
+  letter-spacing: 1px;
+  margin-top: 0.25rem;
+}
+
+.progreso-nivel-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 4px 10px rgba(0, 167, 213, 0.3));
+}
+
+.progreso-nivel-bg {
+  fill: none;
+  /* Azul brillante en lugar del gris */
+  stroke: rgba(251, 191, 36, 0.8);  /* amarillo tipo #FBBF24 */
+  stroke-width: 12;
+  /* Un poco de brillo alrededor del aro */
+  filter: drop-shadow(0 0 12px rgba(0, 167, 213, 0.9));
+}
+
+
+.progreso-nivel-progress {
+  fill: none;
+  stroke: url(#gradientXP);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s ease;
+  animation: progressPulse 2s ease-in-out infinite;
+}
+
+@keyframes progressPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(0, 167, 213, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(0, 167, 213, 0.9));
+  }
+}
+
+/* Información de XP */
+
+.progreso-xp-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progreso-titulo-nivel {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #00a7d5;
+  margin: 0;
+}
+
+.progreso-xp-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.progreso-xp-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progreso-xp-bar-bg {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progreso-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a7d5, #0891b2, #06b6d4);
+  border-radius: 999px;
+  transition: width 1s ease;
+  box-shadow: 0 0 12px rgba(0, 167, 213, 0.5);
+}
+
+.progreso-xp-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.progreso-xp-actual {
+  color: #00d4ff;
+}
+
+.progreso-xp-siguiente {
+  color: #e0f2ff;
+}
+
+.progreso-xp-mensaje {
+  font-size: 0.875rem;
+  color: #cbd5ff;
+  margin: 0;
+}
+
+.progreso-xp-faltante {
+  color: #00d4ff;
+  font-weight: 600;
+}
+
+/* ===========================
+   CARD DE ESTADO DE MISIONES (GRÁFICO DE DONA)
+   =========================== */
+
+.progreso-misiones-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Gráfico de dona */
+
+.progreso-dona-wrapper {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+}
+
+.progreso-dona {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progreso-dona-segment {
+  fill: none;
+  stroke-width: 30;
+  transition: all 0.8s ease;
+}
+
+.progreso-dona-segment.completadas {
+  stroke: #00a7d5;
+  filter: drop-shadow(0 0 6px rgba(0, 167, 213, 0.4));
+}
+
+.progreso-dona-segment.en-progreso {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4));
+}
+
+.progreso-dona-segment.pendientes {
+  stroke: #f59e0b;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4));
+}
+
+.progreso-dona-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.progreso-dona-total {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.progreso-dona-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #9bb4ff;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+/* Leyenda del gráfico */
+
+.progreso-misiones-leyenda {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progreso-leyenda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progreso-leyenda-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.progreso-leyenda-color.completadas {
+  background: #00a7d5;
+  box-shadow: 0 2px 6px rgba(0, 167, 213, 0.3);
+}
+
+.progreso-leyenda-color.en-progreso {
+  background: #10b981;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+.progreso-leyenda-color.pendientes {
+  background: #f59e0b;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+.progreso-leyenda-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progreso-leyenda-label {
+  font-size: 0.875rem;
+  color: #cbd5ff;
+  font-weight: 500;
+}
+
+.progreso-leyenda-valor {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* ===========================
+   GRID INFERIOR (MÉTRICAS + ESTADÍSTICAS)
+   =========================== */
+
+.progreso-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+  animation: bottomGridFadeIn 0.6s ease 0.2s backwards;
+}
+
+@keyframes bottomGridFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.progreso-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #061e48;
+  margin: 0 0 1rem 0;
+}
+
+/* Ajuste de color de título dentro de la tarjeta azul de estadísticas */
+.progreso-estadisticas-wrapper .progreso-section-title {
+  color: #ffffff;
+}
+
+/* ===========================
+   MÉTRICAS GENERALES
+   =========================== */
+
+.progreso-metricas-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.progreso-metricas-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progreso-metrica-card {
+  background: #07133f; /* azul de las otras tarjetas */
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.progreso-metrica-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  transform: translateX(4px);
+}
+
+.progreso-metrica-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+.progreso-metrica-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.progreso-metrica-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.progreso-metrica-valor {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.progreso-metrica-label {
+  font-size: 0.85rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+/* ===========================
+   ESTADÍSTICAS DE APRENDIZAJE
+   =========================== */
+
+.progreso-estadisticas-wrapper {
+  background: #07133f; /* azul tarjetas */
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.progreso-estadisticas-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.progreso-estadistica-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.progreso-estadistica-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progreso-estadistica-tema {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.progreso-estadistica-porcentaje {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+.progreso-estadistica-bar-bg {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progreso-estadistica-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s ease;
+  box-shadow: 0 0 8px rgba(0, 167, 213, 0.4);
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1200px) {
+  .progreso-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progreso-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .progreso-xp-content,
+  .progreso-misiones-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .progreso-nivel-circulo {
+    width: 120px;
+    height: 120px;
+  }
+
+  .progreso-dona-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+
+  .progreso-xp-info,
+  .progreso-misiones-leyenda {
+    width: 100%;
+  }
+}
+
+/* ===========================
+   GRADIENTE SVG (se define inline en el componente si es necesario)
+   =========================== */
+
+/* Añadir definiciones de gradientes si los navegadores no soportan gradientes CSS en SVG stroke */
+
+/* ===========================
+   TEMA OSCURO
+   =========================== */
+
+.theme-dark .progreso-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .progreso-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .progreso-section-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .progreso-header h1 {
+  color: #f1f5f9;
+}
+
+.theme-dark .progreso-header p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .progreso-nivel-card {
+  background: #0a0f2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .progreso-nivel-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.theme-dark .progreso-nivel-subtitle {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .progreso-stats-card {
+  background: #0a0f2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .progreso-stats-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.theme-dark .progreso-stats-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .progreso-stat-item strong {
+  color: #f1f5f9;
+}
+
+.theme-dark .progreso-stat-item span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .progreso-grafico-card {
+  background: #0a0f2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .progreso-grafico-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .progreso-xp-texto,
+.theme-dark .progreso-misiones-leyenda-item span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .progreso-bar-bg {
+  background: rgba(255, 255, 255, 0.1);
+}

@@ -435,6 +435,18 @@
   font-weight: 600;
 }
 
+/* Info text */
+.gm-perfil-info-text {
+  margin: 0 0 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #00a7d5;
+  border-radius: 8px;
+  color: #cde8ff;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
 /* Botón cambiar contraseña */
 .gm-perfil-btn-cambiar-password {
   display: flex;

@@ -1,8 +1,10 @@
+// src/pages/Login.jsx
 import { useState } from "react";
 import Header from "../components/Header";
 import "../styles/login.css";
-import OwlLogin from "../components/OwlLogin"
+import OwlLogin from "../components/OwlLogin";
 import { Link, useNavigate } from "react-router-dom";
+import authService from "../services/authService";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -13,13 +15,10 @@ function Login() {
   const [tipoMensaje, setTipoMensaje] = useState("success");
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
-  const [rol, setRol] = useState("admin"); // Temporal: admin o gm
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    
-
     e.preventDefault();
     setMensaje(null);
 
@@ -31,30 +30,44 @@ function Login() {
 
     try {
       setLoading(true);
-      // Simulación de login (por ahora)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      setTipoMensaje("success");
-      setMensaje("Inicio de sesión exitoso. ¡Bienvenido/a!");
-      setPassword("");
+      // Llamada real al backend
+      const response = await authService.login(email, password);
 
-      // Temporal: navegar según el rol seleccionado
-      if (rol === "gm") {
-        navigate("/gm/inicio");
+      if (response.success) {
+        setTipoMensaje("success");
+        setMensaje(`¡Bienvenido/a ${response.usuario.nombre}!`);
+        setPassword("");
+
+        // Navegar según el rol del usuario
+        setTimeout(() => {
+          if (response.usuario.rol === "gm") {
+            navigate("/gm/inicio");
+          } else if (response.usuario.rol === "estudiante") {
+            navigate("/estudiante/inicio");
+          } else if (response.usuario.rol === "admin") {
+            navigate("/admin/dashboard");
+          }
+        }, 800);
       } else {
-        navigate("/admin/dashboard");
+        setTipoMensaje("error");
+        setMensaje(response.message || "Error al iniciar sesión");
       }
-
     } catch (error) {
-      console.error(error);
+      console.error("Error en login:", error);
       setTipoMensaje("error");
-      setMensaje("Error de conexión con el servidor.");
+
+      if (error.response?.data?.message) {
+        setMensaje(error.response.data.message);
+      } else if (error.message === "Network Error") {
+        setMensaje("No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose.");
+      } else {
+        setMensaje("Error de conexión con el servidor.");
+      }
     } finally {
       setLoading(false);
     }
-    
   };
-  
 
   return (
     <div
@@ -143,24 +156,24 @@ function Login() {
         <Header />
 
         {/* Contenido principal */}
-        <main className="
-        flex-1 flex w-full
-        px-10 lg:px-0 xl:px-28
-        items-center
-        justify-start
-        gap-12 xl:gap-10
-        min-h-0
-        lg:ml-[50px]
-        ">
-
+        <main
+          className="
+            flex-1 flex w-full
+            px-10 lg:px-0 xl:px-28
+            items-center
+            justify-start
+            gap-12 xl:gap-10
+            min-h-0
+            lg:ml-[50px]
+          "
+        >
           {/* Lado izquierdo: tarjeta de login */}
           <section className="w-[420px] lg:w-[460px] xl:w-[400px] bg-white rounded-[28px] shadow-2xl px-10 py-10 text-slate-900 flex-shrink-0 my-auto">
             {/* Icono usuario */}
             <div className="flex justify-center mb-5">
-                <div className="flex items-center justify-center owl-animate cursor-pointer">
+              <div className="flex items-center justify-center owl-animate cursor-pointer">
                 <OwlLogin />
-                </div>
-
+              </div>
             </div>
 
             <h1
@@ -222,23 +235,6 @@ function Login() {
                 </div>
               </div>
 
-              {/* Selector de rol (temporal) */}
-              <div className="space-y-1">
-                <label className="text-xs font-medium text-slate-700">
-                  Rol (Temporal - Solo para desarrollo)
-                </label>
-                <div className="border border-slate-200 rounded-lg px-3.5 py-2 bg-slate-50">
-                  <select
-                    className="w-full bg-transparent outline-none text-sm text-slate-800"
-                    value={rol}
-                    onChange={(e) => setRol(e.target.value)}
-                  >
-                    <option value="admin">Administrador</option>
-                    <option value="gm">Game Master (Profesor)</option>
-                  </select>
-                </div>
-              </div>
-
               {/* Recordar / Olvidaste */}
               <div className="flex justify-between items-center text-xs mt-1">
                 <label className="flex items-center gap-2 text-slate-700 cursor-pointer hover:text-slate-900 transition-colors group">
@@ -248,7 +244,9 @@ function Login() {
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
                   />
-                  <span className="group-hover:scale-105 inline-block transition-transform">Recordar</span>
+                  <span className="group-hover:scale-105 inline-block transition-transform">
+                    Recordar
+                  </span>
                 </label>
                 <Link
                   to="/recuperar-contraseña"
@@ -278,7 +276,6 @@ function Login() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                
                 disabled={loading}
                 className="w-full mt-2.5 py-2.5 rounded-lg shadow-md text-white disabled:opacity-70 hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 btn-shimmer"
                 style={{
@@ -315,15 +312,15 @@ function Login() {
               {/* Registrarse */}
               <p className="text-xs text-center text-slate-600 mt-2.5">
                 ¿No tienes cuenta?{" "}
-              <Link
-                to="/registro"
-                className="text-[#228BE6] hover:text-[#4E84C1] font-semibold hover:scale-105 inline-block transition-all link-underline"
-                style={{
-                  fontFamily: '"Poppins", "Montserrat", sans-serif',
-                }}
-              >
-                Registrarse aquí
-              </Link>
+                <Link
+                  to="/registro"
+                  className="text-[#228BE6] hover:text-[#4E84C1] font-semibold hover:scale-105 inline-block transition-all link-underline"
+                  style={{
+                    fontFamily: '"Poppins", "Montserrat", sans-serif',
+                  }}
+                >
+                  Registrarse aquí
+                </Link>
               </p>
 
               {/* Legal */}
@@ -345,43 +342,41 @@ function Login() {
             </div>
           </section>
 
-        {/* Línea degradé (separador) */}
-        <div className="hidden lg:flex justify-center flex-shrink-0">
-        <div className="separator-line" />
-        </div>
+          {/* Línea degradé (separador) */}
+          <div className="hidden lg:flex justify-center flex-shrink-0">
+            <div className="separator-line" />
+          </div>
 
-
-        {/* Lado derecho: texto ¡Bienvenido! */}
-        <section className="flex-1 flex items-center justify-center pb-50 min-w-0">
-        <div
-            className="
-            max-w-md           /* bloque angosto → más líneas de texto */
-            text-center        /* como en la maqueta vertical */
-            lg:ml-[450px]    /* también centrado en escritorio */
-            animate-fade-in-right 
-            "
-        >
-            <h2
-            className="text-5xl lg:text-6xl xl:text-7xl mb-6 font-extrabold text-animate"
-            style={{
-                fontFamily: '"Poppins", "Montserrat", sans-serif',
-                fontWeight: 800,
-                animation: 'float 4s ease-in-out infinite',
-            }}
+          {/* Lado derecho: texto ¡Bienvenido! */}
+          <section className="flex-1 flex items-center justify-center pb-50 min-w-0">
+            <div
+              className="
+                max-w-md
+                text-center
+                lg:ml-[450px]
+                animate-fade-in-right 
+              "
             >
-            ¡Bienvenido!
-            </h2>
+              <h2
+                className="text-5xl lg:text-6xl xl:text-7xl mb-6 font-extrabold text-animate"
+                style={{
+                  fontFamily: '"Poppins", "Montserrat", sans-serif',
+                  fontWeight: 800,
+                  animation: "float 4s ease-in-out infinite",
+                }}
+              >
+                ¡Bienvenido!
+              </h2>
 
-            <p className="text-base lg:text-lg leading-relaxed text-slate-100 hover:text-white hover:scale-105 transition-all duration-500 cursor-default">
-            En un mundo donde la luz del conocimiento guía cada paso, los estudiantes
-            se convierten en exploradores del saber. Aquí, cada desafío es una
-            oportunidad para aprender, cada misión es un camino hacia el
-            descubrimiento, y cada logro ilumina tu progreso personal.
-            </p>
-        </div>
-        </section>
-
-
+              <p className="text-base lg:text-lg leading-relaxed text-slate-100 hover:text-white hover:scale-105 transition-all duration-500 cursor-default">
+                En un mundo donde la luz del conocimiento guía cada paso, los
+                estudiantes se convierten en exploradores del saber. Aquí, cada
+                desafío es una oportunidad para aprender, cada misión es un
+                camino hacia el descubrimiento, y cada logro ilumina tu progreso
+                personal.
+              </p>
+            </div>
+          </section>
         </main>
       </div>
     </div>

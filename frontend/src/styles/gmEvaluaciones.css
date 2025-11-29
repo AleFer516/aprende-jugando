@@ -444,3 +444,99 @@
     display: none; /* Oculta el RUT en pantallas muy pequeñas */
   }
 }
+
+/* Estilos para vista de selección de cursos */
+
+.gm-evaluaciones-cursos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gm-evaluaciones-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0;
+  padding: 0 0.5rem;
+}
+
+.gm-curso-nombre {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.gm-curso-codigo {
+  color: #64748b;
+  font-family: "Courier New", monospace;
+  font-weight: 500;
+}
+
+.gm-curso-categoria {
+  color: #334155;
+}
+
+.gm-curso-total {
+  color: #00a7d5;
+  font-weight: 600;
+}
+
+/* Botón volver a cursos */
+
+.gm-evaluaciones-volver-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gm-evaluaciones-volver-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gm-evaluaciones-volver-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.gm-evaluaciones-volver-btn:hover {
+  background: #f8fafc;
+  border-color: #00a7d5;
+  color: #00a7d5;
+  transform: translateX(-3px);
+}
+
+.gm-evaluaciones-curso-actual {
+  font-size: 1rem;
+  color: #334155;
+}
+
+.gm-evaluaciones-curso-actual strong {
+  color: #061e48;
+  font-weight: 700;
+}
+
+.gm-evaluacion-categoria {
+  color: #334155;
+}
+
+@media (max-width: 768px) {
+  .gm-evaluaciones-volver-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

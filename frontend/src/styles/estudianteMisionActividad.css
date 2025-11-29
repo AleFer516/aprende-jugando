@@ -1,0 +1,666 @@
+/* src/styles/estudianteMisionActividad.css */
+/* Estilos para la actividad/ejercicio de misión */
+
+.mision-actividad-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  animation: actividadFadeIn 0.5s ease;
+}
+
+/* Fondo fijo */
+.mision-actividad-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(0, 167, 213, 0.12), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 114, 164, 0.18), transparent 60%),
+    linear-gradient(180deg, #020617 0%, #0c1838 50%, #0a1929 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Overlay de contenido */
+.mision-actividad-overlay {
+  position: relative;
+  z-index: 1;
+  padding: 1.5rem 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@keyframes actividadFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===========================
+   HEADER
+   =========================== */
+
+.actividad-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  animation: headerSlideDown 0.6s ease;
+}
+
+@keyframes headerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actividad-header-left {
+  flex: 1;
+}
+
+.actividad-titulo {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.75rem 0;
+}
+
+.actividad-progreso-wrapper {
+  max-width: 400px;
+}
+
+.actividad-progreso-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.actividad-progreso-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a7d5, #0891b2);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 10px rgba(0, 167, 213, 0.5);
+}
+
+.actividad-header-right {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.actividad-badge-dificultad,
+.actividad-badge-paso {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.actividad-badge-dificultad {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.actividad-badge-paso {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+}
+
+.btn-volver-actividad {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-volver-actividad svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-volver-actividad:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ===========================
+   CONTENIDO PRINCIPAL
+   =========================== */
+
+.actividad-contenido {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 1.5rem;
+  flex: 1;
+  animation: contenidoFadeIn 0.6s ease 0.2s backwards;
+}
+
+@keyframes contenidoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   PANEL EJERCICIO (IZQUIERDA)
+   =========================== */
+
+.actividad-panel-ejercicio {
+  position: relative;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Fondo de biblioteca */
+.ejercicio-fondo-biblioteca {
+  position: absolute;
+  inset: 0;
+  background-image: url("/images/fondo_mision_biblioteca.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.75;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ejercicio-fondo-biblioteca::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(7, 19, 63, 0.5) 0%,
+    rgba(7, 19, 63, 0.3) 50%,
+    rgba(7, 19, 63, 0.5) 100%
+  );
+}
+
+/* Contenido del ejercicio */
+.ejercicio-contenido {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ejercicio-enunciado {
+  padding: 1.25rem;
+  background: rgba(7, 19, 63, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border-left: 3px solid #00a7d5;
+}
+
+.ejercicio-enunciado p {
+  margin: 0;
+  font-size: 1rem;
+  color: #e5eeff;
+  line-height: 1.6;
+}
+
+.ejercicio-pregunta {
+  padding: 1.5rem;
+  background: rgba(0, 167, 213, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.ejercicio-pregunta p {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* ===========================
+   ESTRELLAS DECORATIVAS
+   =========================== */
+
+.estrellas-decorativas {
+  position: relative;
+  min-height: 150px;
+  margin-bottom: 2rem;
+}
+
+.estrella {
+  position: absolute;
+  color: #00d4ff;
+  font-size: 1.5rem;
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* ===========================
+   OPCIONES DE RESPUESTA
+   =========================== */
+
+.ejercicio-opciones {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.opcion-btn {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  padding: 1.5rem;
+  background: rgba(7, 19, 63, 0.9);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.opcion-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.opcion-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.opcion-btn:hover {
+  background: rgba(7, 19, 63, 1);
+  border-color: rgba(0, 167, 213, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 167, 213, 0.3);
+}
+
+.opcion-btn.selected {
+  background: rgba(0, 167, 213, 0.2);
+  border-color: #00a7d5;
+  box-shadow: 0 0 20px rgba(0, 167, 213, 0.4);
+}
+
+.opcion-btn.correcta {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  animation: correctPulse 0.6s ease;
+}
+
+.opcion-btn.incorrecta {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  animation: incorrectShake 0.5s ease;
+}
+
+@keyframes correctPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes incorrectShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+.opcion-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* ===========================
+   BOTÓN ENVIAR
+   =========================== */
+
+.btn-enviar-respuesta {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 16px rgba(0, 167, 213, 0.4);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  align-self: center;
+  min-width: 250px;
+}
+
+.btn-enviar-respuesta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-enviar-respuesta:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-enviar-respuesta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 167, 213, 0.6);
+}
+
+.btn-enviar-respuesta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===========================
+   PANEL LATERAL (DERECHA)
+   =========================== */
+
+.actividad-panel-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Avatar y nivel */
+
+.lateral-avatar-section {
+  background: rgba(7, 19, 63, 0.6);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lateral-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+  overflow: hidden;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+.lateral-nivel {
+  text-align: center;
+}
+
+.lateral-nivel h3 {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.25rem 0;
+}
+
+.lateral-nivel p {
+  font-size: 0.9rem;
+  color: #9bb4ff;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Consejo */
+
+.lateral-consejo {
+  background: rgba(7, 19, 63, 0.6);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lateral-consejo h3 {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #00a7d5;
+  margin: 0 0 0.75rem 0;
+}
+
+.lateral-consejo p {
+  font-size: 0.9rem;
+  color: #cbd5ff;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Intentos */
+
+.lateral-intentos {
+  background: rgba(7, 19, 63, 0.6);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 120px;
+}
+
+.intento-item,
+.intento-placeholder {
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border-left: 3px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.intento-placeholder {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.intento-item.correcto {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.intento-item.incorrecto {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.intento-label {
+  font-size: 0.85rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+.intento-resultado {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.intento-item.correcto .intento-resultado {
+  color: #10b981;
+}
+
+.intento-item.incorrecto .intento-resultado {
+  color: #ef4444;
+}
+
+.intento-accion {
+  font-size: 0.85rem;
+  color: #cbd5ff;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1200px) {
+  .actividad-contenido {
+    grid-template-columns: 1fr;
+  }
+
+  .actividad-panel-lateral {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .actividad-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .actividad-titulo {
+    font-size: 1.5rem;
+  }
+
+  .ejercicio-opciones {
+    grid-template-columns: 1fr;
+  }
+
+  .mision-actividad-overlay {
+    padding: 1rem;
+  }
+
+  .actividad-panel-ejercicio {
+    padding: 1.5rem;
+  }
+}
+
+/* ===========================
+   TEMA OSCURO
+   =========================== */
+
+.theme-dark .mision-actividad-bg {
+  background:
+    radial-gradient(circle at top left, rgba(0, 167, 213, 0.08), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 114, 164, 0.12), transparent 60%),
+    linear-gradient(180deg, #000000 0%, #0a0f2e 50%, #020617 100%);
+}
+
+.theme-dark .ejercicio-fondo-biblioteca {
+  opacity: 0.6;
+}
+
+.theme-dark .ejercicio-fondo-biblioteca::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 15, 46, 0.6) 0%,
+    rgba(10, 15, 46, 0.4) 50%,
+    rgba(10, 15, 46, 0.6) 100%
+  );
+}
+
+.theme-dark .ejercicio-enunciado {
+  background: rgba(10, 15, 46, 0.85);
+}
+
+.theme-dark .ejercicio-pregunta {
+  background: rgba(0, 167, 213, 0.12);
+}
+
+.theme-dark .lateral-avatar-section,
+.theme-dark .lateral-consejo,
+.theme-dark .lateral-intentos {
+  background: rgba(10, 15, 46, 0.7);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .opcion-btn {
+  background: rgba(10, 15, 46, 0.92);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .opcion-btn:hover {
+  background: rgba(10, 15, 46, 1);
+}

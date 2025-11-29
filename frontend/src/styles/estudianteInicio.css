@@ -1,0 +1,933 @@
+/* src/styles/estudianteInicio.css */
+/* Estilos para la página de inicio del panel de estudiantes */
+
+.estudiante-inicio {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: estudianteDashboardFadeIn 0.6s ease;
+}
+
+@keyframes estudianteDashboardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   HEADER DE BIENVENIDA
+   =========================== */
+
+.estudiante-inicio-header {
+  margin-bottom: 1.5rem;
+}
+
+.estudiante-inicio-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #061e48;
+  margin: 0;
+  animation: estudianteTitleSlideIn 0.5s ease;
+}
+
+@keyframes estudianteTitleSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===========================
+   GRID SUPERIOR (NIVEL + LOGROS)
+   =========================== */
+
+.estudiante-top-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Card de nivel */
+
+.estudiante-nivel-card {
+  background: #07133f;
+  border-radius: 18px;
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: estudianteCardSlideUp 0.5s ease backwards 0.1s;
+}
+
+@keyframes estudianteCardSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.estudiante-nivel-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.estudiante-nivel-card:hover::before {
+  opacity: 1;
+}
+
+.estudiante-nivel-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+.estudiante-nivel-left {
+  flex: 1;
+  padding-right: 2rem;
+}
+
+.estudiante-nivel-label {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #e0f2ff;
+}
+
+.estudiante-nivel-subtitle {
+  font-size: 0.95rem;
+  color: #9bb4ff;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.estudiante-nivel-highlight {
+  color: #00d4ff;
+  font-weight: 700;
+}
+
+.estudiante-continuar-btn {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.75rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 167, 213, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5px;
+}
+
+.estudiante-continuar-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.estudiante-continuar-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.estudiante-continuar-btn:hover {
+  background: linear-gradient(135deg, #0891b2, #00d4ff);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.estudiante-continuar-btn:active {
+  transform: translateY(-1px) scale(1);
+}
+
+.estudiante-nivel-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.estudiante-nivel-circulo-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.estudiante-nivel-circulo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(0, 167, 213, 0.2), rgba(8, 145, 178, 0.3));
+  border: 4px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(0, 167, 213, 0.5), 0 8px 20px rgba(0, 0, 0, 0.2);
+  animation: nivelPulse 3s ease-in-out infinite;
+}
+
+.estudiante-nivel-circulo::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00a7d5, #0891b2, #00d4ff);
+  z-index: -1;
+  animation: nivelRotate 4s linear infinite;
+}
+
+@keyframes nivelPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(0, 167, 213, 0.5), 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(0, 212, 255, 0.8), 0 12px 30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@keyframes nivelRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.estudiante-nivel-numero {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #00a7d5;
+}
+
+.estudiante-nivel-chip {
+  background: rgba(0, 167, 213, 0.2);
+  color: #00a7d5;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.estudiante-nivel-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.estudiante-nivel-titulo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #00a7d5;
+  margin-bottom: 0.5rem;
+}
+
+.estudiante-xp-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.estudiante-xp-label {
+  color: #9bb4ff;
+}
+
+.estudiante-xp-valor {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.estudiante-xp-bar-bg {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.estudiante-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a7d5, #0891b2);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+
+/* Card de logros recientes */
+
+.estudiante-logros-card {
+  background: #07133f;
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: estudianteCardSlideUp 0.5s ease backwards 0.2s;
+}
+
+.estudiante-logros-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.estudiante-logros-card:hover::before {
+  opacity: 1;
+}
+
+.estudiante-logros-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+.estudiante-panel-header {
+  margin-bottom: 1.25rem;
+}
+
+.estudiante-panel-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.estudiante-logros-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.estudiante-logro-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.estudiante-logro-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.estudiante-logro-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #dc2626);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2);
+  animation: logroFloat 3s ease-in-out infinite;
+}
+
+.estudiante-logro-icon::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #fbbf24);
+  z-index: -1;
+  opacity: 0.5;
+  filter: blur(8px);
+}
+
+@keyframes logroFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.estudiante-logro-icon svg {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.estudiante-logro-info {
+  flex: 1;
+}
+
+.estudiante-logro-info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
+}
+
+.estudiante-logro-info p {
+  font-size: 0.875rem;
+  color: #9bb4ff;
+  margin: 0 0 0.5rem 0;
+}
+
+.estudiante-logro-fecha {
+  font-size: 0.75rem;
+  color: #6b7c99;
+}
+
+.estudiante-ver-mas-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  color: #9bb4ff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.estudiante-ver-mas-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* ===========================
+   GRID PRINCIPAL (MISIONES + ACTIVIDAD)
+   =========================== */
+
+.estudiante-inicio-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+}
+
+.estudiante-inicio-left .estudiante-panel {
+  animation-delay: 0.3s;
+}
+
+.estudiante-inicio-right .estudiante-panel {
+  animation-delay: 0.4s;
+}
+
+.estudiante-panel {
+  background: #07133f;
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: estudianteCardSlideUp 0.5s ease backwards;
+}
+
+.estudiante-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.estudiante-panel:hover::before {
+  opacity: 1;
+}
+
+.estudiante-panel:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+
+.estudiante-panel-header-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.estudiante-panel-header-inline h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.estudiante-ver-todas-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: #00a7d5;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.estudiante-ver-todas-btn:hover {
+  color: #00d4ff;
+  transform: translateX(4px);
+}
+
+.estudiante-ver-todas-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Lista de misiones */
+
+.estudiante-misiones-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.estudiante-mision-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.estudiante-mision-card:hover {
+  border-color: #00a7d5;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.2);
+}
+
+.estudiante-mision-main {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.estudiante-mision-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, rgba(0, 167, 213, 0.2), rgba(0, 212, 255, 0.3));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00d4ff;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.estudiante-mision-card:hover .estudiante-mision-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.estudiante-mision-icon svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.estudiante-mision-info {
+  flex: 1;
+}
+
+.estudiante-mision-nombre {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.estudiante-mision-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.estudiante-mision-dificultad {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+}
+
+.dificultad-baja {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.dificultad-media {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.dificultad-alta {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.estudiante-mision-xp {
+  font-size: 0.875rem;
+  color: #9bb4ff;
+  font-weight: 600;
+}
+
+.estudiante-mision-progress {
+  margin-top: 0.75rem;
+}
+
+.estudiante-mision-progress-bg {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.estudiante-mision-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a7d5, #0891b2);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.estudiante-mision-progress-label {
+  font-size: 0.75rem;
+  color: #9bb4ff;
+  font-weight: 600;
+}
+
+.estudiante-mision-acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.estudiante-mision-estado-pill {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+}
+
+.estado-en-progreso {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.estado-pendiente {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.estado-completada {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.estudiante-mision-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-reanudar {
+  background: #00a7d5;
+  color: #ffffff;
+}
+
+.btn-reanudar:hover {
+  background: #0891b2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+.btn-empezar {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-empezar:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-detalles {
+  background: rgba(255, 255, 255, 0.1);
+  color: #9bb4ff;
+}
+
+.btn-detalles:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Actividad reciente */
+
+.estudiante-actividad-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.estudiante-actividad-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.estudiante-actividad-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.estudiante-actividad-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.estudiante-actividad-icon::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(6px);
+  transition: opacity 0.3s ease;
+}
+
+.estudiante-actividad-item:hover .estudiante-actividad-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.estudiante-actividad-item:hover .estudiante-actividad-icon::before {
+  opacity: 1;
+}
+
+.estudiante-actividad-icon svg {
+  width: 24px;
+  height: 24px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.tipo-mision {
+  background: linear-gradient(135deg, #00a7d5, #0891b2, #06b6d4);
+  box-shadow: 0 4px 15px rgba(0, 167, 213, 0.4);
+}
+
+.tipo-mision::before {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+}
+
+.tipo-asignacion {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed, #a855f7);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.tipo-asignacion::before {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.tipo-nivel {
+  background: linear-gradient(135deg, #10b981, #059669, #34d399);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.tipo-nivel::before {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.estudiante-actividad-info {
+  flex: 1;
+}
+
+.estudiante-actividad-info h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
+}
+
+.estudiante-actividad-info p {
+  font-size: 0.875rem;
+  color: #9bb4ff;
+  margin: 0 0 0.5rem 0;
+}
+
+.estudiante-actividad-fecha {
+  font-size: 0.75rem;
+  color: #6b7c99;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1024px) {
+  .estudiante-top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estudiante-inicio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estudiante-nivel-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .estudiante-nivel-left {
+    padding-right: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .estudiante-nivel-right {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .estudiante-inicio-title {
+    font-size: 1.5rem;
+  }
+
+  .estudiante-nivel-card {
+    padding: 1.5rem;
+  }
+
+  .estudiante-panel {
+    padding: 1rem;
+  }
+
+  .estudiante-mision-card {
+    padding: 1rem;
+  }
+}
+
+/* ===========================
+   TEMA OSCURO
+   =========================== */
+
+.theme-dark .estudiante-inicio-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .estudiante-nivel-card {
+  background: #0a0f2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .estudiante-nivel-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+.theme-dark .estudiante-logros-summary-card {
+  background: #0a0f2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .estudiante-logros-summary-card:hover {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+}
+
+.theme-dark .estudiante-panel {
+  background: #0a0f2e;
+}
+
+.theme-dark .estudiante-panel-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .estudiante-panel-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.theme-dark .estudiante-mision-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .estudiante-mision-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 167, 213, 0.4);
+}
+
+.theme-dark .estudiante-mision-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .estudiante-mision-description {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .estudiante-progreso-general-card {
+  background: #0a0f2e;
+}
+
+.theme-dark .estudiante-progreso-item-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .estudiante-progreso-item-value {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.theme-dark .estudiante-progreso-bar-bg {
+  background: rgba(255, 255, 255, 0.1);
+}

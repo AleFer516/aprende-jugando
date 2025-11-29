@@ -906,6 +906,551 @@ body.theme-dark .gm-no-results {
   color: #9bb4ff;
 }
 
+body.theme-dark .gm-estudiantes-table-container {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-estudiantes-count {
+  color: #9bb4ff;
+}
+
+/* Página de evaluaciones GM - mismo diseño que estudiantes */
+body.theme-dark .gm-evaluaciones-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluaciones-subtitle {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluaciones-filters,
+body.theme-dark .gm-evaluaciones-cursos-container,
+body.theme-dark .gm-evaluaciones-table-container {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-filter-group label,
+body.theme-dark .gm-evaluaciones-filters label {
+  color: #d7e6ff;
+}
+
+body.theme-dark .gm-evaluaciones-select,
+body.theme-dark .gm-estudiantes-select {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluaciones-select:hover,
+body.theme-dark .gm-estudiantes-select:hover {
+  background: rgba(0, 167, 213, 0.25);
+  border-color: #00a7d5;
+}
+
+body.theme-dark .gm-evaluaciones-select:focus,
+body.theme-dark .gm-estudiantes-select:focus {
+  background: rgba(0, 167, 213, 0.2);
+  border-color: #00d4ff;
+}
+
+body.theme-dark .gm-evaluaciones-search-input,
+body.theme-dark .gm-estudiantes-search-input {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluaciones-search-input::placeholder,
+body.theme-dark .gm-estudiantes-search-input::placeholder {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluaciones-search-input:hover,
+body.theme-dark .gm-estudiantes-search-input:hover {
+  background: rgba(0, 167, 213, 0.25);
+  border-color: #00a7d5;
+}
+
+body.theme-dark .gm-evaluaciones-search-input:focus,
+body.theme-dark .gm-estudiantes-search-input:focus {
+  background: rgba(0, 167, 213, 0.2);
+  border-color: #00d4ff;
+}
+
+body.theme-dark .gm-evaluaciones-table thead,
+body.theme-dark .gm-estudiantes-table thead {
+  background: #061e48;
+}
+
+body.theme-dark .gm-evaluaciones-table thead th,
+body.theme-dark .gm-estudiantes-table thead th {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluaciones-table tbody tr,
+body.theme-dark .gm-estudiantes-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-evaluaciones-table tbody tr:hover,
+body.theme-dark .gm-estudiantes-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .gm-evaluaciones-table td,
+body.theme-dark .gm-estudiantes-table td {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-evaluacion-rut {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluacion-nombre {
+  color: #00d4ff;
+}
+
+body.theme-dark .gm-curso-nombre,
+body.theme-dark .gm-curso-total {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-curso-codigo,
+body.theme-dark .gm-curso-categoria {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluaciones-count {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluaciones-volver-container {
+  background: #07133f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .gm-evaluaciones-curso-actual {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-evaluaciones-curso-actual strong {
+  color: #00d4ff;
+}
+
+body.theme-dark .gm-evaluaciones-volver-btn {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluaciones-volver-btn:hover {
+  background: rgba(0, 167, 213, 0.25);
+  border-color: #00a7d5;
+  color: #00d4ff;
+}
+
+body.theme-dark .gm-evaluaciones-extra {
+  background: #07133f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .gm-evaluaciones-checkbox span:last-child {
+  color: #e5eeff;
+}
+
+/* Estados de evaluación */
+body.theme-dark .gm-evaluacion-estado-badge.pendiente {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+body.theme-dark .gm-evaluacion-estado-badge.finalizado {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Página de configuración GM */
+body.theme-dark .gm-config-perfil-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-config-perfil-subtitle {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-config-perfil-card {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-config-perfil-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+body.theme-dark .gm-config-perfil-card-header {
+  background: #061e48;
+}
+
+body.theme-dark .config-label {
+  color: #cde8ff;
+}
+
+body.theme-dark .config-input,
+body.theme-dark .config-select {
+  background: #020826;
+  border-color: #0f224b;
+  color: #ffffff;
+}
+
+body.theme-dark .config-input:focus,
+body.theme-dark .config-select:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.1);
+}
+
+body.theme-dark .config-input::placeholder {
+  color: #64748b;
+}
+
+body.theme-dark .config-section-label {
+  color: #cde8ff;
+}
+
+body.theme-dark .config-switch-text {
+  color: #e5eeff;
+}
+
+body.theme-dark .config-errores-password {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+body.theme-dark .config-errores-password li {
+  color: #fca5a5;
+}
+
+/* Página de perfil GM */
+body.theme-dark .gm-perfil-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-perfil-card {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-perfil-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+body.theme-dark .gm-perfil-card-header {
+  background: #061e48;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-dark .gm-perfil-card-header h2 {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-perfil-avatar-section {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-dark .gm-perfil-form-group label {
+  color: #cde8ff;
+}
+
+body.theme-dark .gm-perfil-form-group p {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-perfil-info-text {
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: #00a7d5;
+  color: #cde8ff;
+}
+
+body.theme-dark .gm-perfil-info-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: #00a7d5;
+}
+
+body.theme-dark .gm-perfil-info-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-perfil-info-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-perfil-info-value {
+  color: #ffffff;
+}
+
+/* Página de evaluar misión GM */
+body.theme-dark .gm-evaluar-mision {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-evaluar-header {
+  background: #07133f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .gm-evaluar-info h2 {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluar-info p {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluar-mision-info,
+body.theme-dark .gm-evaluar-respuesta,
+body.theme-dark .gm-evaluar-form,
+body.theme-dark .gm-evaluar-stats,
+body.theme-dark .gm-evaluar-logros,
+body.theme-dark .gm-evaluar-pendientes {
+  background: #07133f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .gm-evaluar-mision-info h3,
+body.theme-dark .gm-evaluar-respuesta h3,
+body.theme-dark .gm-evaluar-form h3,
+body.theme-dark .gm-evaluar-stats h3,
+body.theme-dark .gm-evaluar-logros h3,
+body.theme-dark .gm-evaluar-pendientes h3 {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluar-fecha,
+body.theme-dark .gm-evaluar-stat-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-evaluar-respuesta-content {
+  background: rgba(0, 167, 213, 0.1);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-evaluar-textarea {
+  background: #020826;
+  border-color: #0f224b;
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluar-textarea:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.1);
+}
+
+body.theme-dark .gm-evaluar-textarea::placeholder {
+  color: #64748b;
+}
+
+body.theme-dark .gm-evaluar-ranking,
+body.theme-dark .gm-evaluar-nivel,
+body.theme-dark .gm-evaluar-xp {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-evaluar-logro-text,
+body.theme-dark .gm-evaluar-pendiente-titulo {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-evaluar-pendiente-categoria {
+  color: #9bb4ff;
+}
+
+/* Página de misiones GM */
+body.theme-dark .gm-misiones-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-misiones-subtitle {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-misiones-filters,
+body.theme-dark .gm-misiones-table-container,
+body.theme-dark .gm-misiones-cursos-container {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-misiones-filters label {
+  color: #d7e6ff;
+}
+
+body.theme-dark .gm-misiones-select {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-misiones-select:hover {
+  background: rgba(0, 167, 213, 0.25);
+  border-color: #00a7d5;
+}
+
+body.theme-dark .gm-misiones-select:focus {
+  background: rgba(0, 167, 213, 0.2);
+  border-color: #00d4ff;
+}
+
+body.theme-dark .gm-misiones-search-input {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-misiones-search-input::placeholder {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-misiones-search-input:hover {
+  background: rgba(0, 167, 213, 0.25);
+  border-color: #00a7d5;
+}
+
+body.theme-dark .gm-misiones-search-input:focus {
+  background: rgba(0, 167, 213, 0.2);
+  border-color: #00d4ff;
+}
+
+body.theme-dark .gm-misiones-table thead {
+  background: #061e48;
+}
+
+body.theme-dark .gm-misiones-table thead th {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-misiones-table tbody tr {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-dark .gm-misiones-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.theme-dark .gm-misiones-table td {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-mision-nombre,
+body.theme-dark .gm-curso-nombre-mision {
+  color: #00d4ff;
+}
+
+body.theme-dark .gm-mision-descripcion,
+body.theme-dark .gm-mision-categoria {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-misiones-volver-container {
+  background: #07133f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .gm-misiones-curso-actual {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-misiones-curso-actual strong {
+  color: #00d4ff;
+}
+
+body.theme-dark .gm-misiones-volver-btn {
+  background: rgba(0, 167, 213, 0.15);
+  border-color: rgba(0, 167, 213, 0.2);
+  color: #ffffff;
+}
+
+body.theme-dark .gm-misiones-volver-btn:hover {
+  background: rgba(0, 167, 213, 0.25);
+  border-color: #00a7d5;
+  color: #00d4ff;
+}
+
+/* Página de gestionar misión GM */
+body.theme-dark .gm-gestionar-mision-title {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-gestionar-header,
+body.theme-dark .gm-gestionar-info,
+body.theme-dark .gm-gestionar-estudiantes-asignados,
+body.theme-dark .gm-gestionar-estudiantes-disponibles {
+  background: #07133f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+body.theme-dark .gm-gestionar-info h2,
+body.theme-dark .gm-gestionar-estudiantes-asignados h3,
+body.theme-dark .gm-gestionar-estudiantes-disponibles h3 {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-gestionar-info p,
+body.theme-dark .gm-gestionar-descripcion {
+  color: #e5eeff;
+}
+
+body.theme-dark .gm-gestionar-label {
+  color: #9bb4ff;
+}
+
+body.theme-dark .gm-gestionar-search-input {
+  background: #020826;
+  border-color: #0f224b;
+  color: #ffffff;
+}
+
+body.theme-dark .gm-gestionar-search-input:focus {
+  border-color: #00a7d5;
+  background: rgba(0, 167, 213, 0.1);
+}
+
+body.theme-dark .gm-gestionar-search-input::placeholder {
+  color: #64748b;
+}
+
+body.theme-dark .gm-gestionar-estudiante-item {
+  background: rgba(0, 167, 213, 0.1);
+  border-color: rgba(0, 167, 213, 0.2);
+}
+
+body.theme-dark .gm-gestionar-estudiante-item:hover {
+  background: rgba(0, 167, 213, 0.2);
+  border-color: #00a7d5;
+}
+
+body.theme-dark .gm-gestionar-estudiante-nombre {
+  color: #ffffff;
+}
+
+body.theme-dark .gm-gestionar-estudiante-curso {
+  color: #9bb4ff;
+}
+
+/* Estados de estudiantes en filtros */
+body.theme-dark .gm-estudiantes-filters {
+  background: #07133f;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.theme-dark .gm-estudiantes-filters label {
+  color: #d7e6ff;
+}
+
 /* Transición suave al cambiar tema */
 .admin-layout,
 .admin-sidebar,
@@ -936,6 +1481,51 @@ body.theme-dark .gm-no-results {
 .gm-user-dropdown,
 .gm-modal,
 .gm-search-input,
-.gm-estudiantes-table {
+.gm-estudiantes-table,
+.gm-evaluaciones-table,
+.gm-evaluaciones-filters,
+.gm-evaluaciones-table-container,
+.gm-evaluaciones-cursos-container,
+.gm-evaluaciones-select,
+.gm-evaluaciones-search-input,
+.gm-evaluaciones-volver-container,
+.gm-evaluaciones-extra,
+.gm-config-perfil-card,
+.config-input,
+.config-select,
+.gm-evaluar-header,
+.gm-evaluar-mision-info,
+.gm-evaluar-respuesta,
+.gm-evaluar-form,
+.gm-evaluar-textarea,
+.gm-evaluar-stats,
+.gm-evaluar-logros,
+.gm-evaluar-pendientes,
+.gm-misiones-table,
+.gm-misiones-filters,
+.gm-misiones-table-container,
+.gm-misiones-select,
+.gm-misiones-search-input,
+.gm-misiones-volver-container,
+.gm-gestionar-header,
+.gm-gestionar-info,
+.gm-gestionar-estudiantes-asignados,
+.gm-gestionar-estudiantes-disponibles,
+.gm-gestionar-search-input,
+.gm-gestionar-estudiante-item,
+.gm-estudiantes-filters,
+.gm-estudiantes-select,
+.gm-estudiantes-search-input,
+.gm-estudiantes-table-container,
+.gm-perfil-title,
+.gm-perfil-card,
+.gm-perfil-card-header,
+.gm-perfil-avatar-section,
+.gm-perfil-form-group label,
+.gm-perfil-form-group p,
+.gm-perfil-info-text,
+.gm-perfil-info-item,
+.gm-perfil-info-label,
+.gm-perfil-info-value {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }

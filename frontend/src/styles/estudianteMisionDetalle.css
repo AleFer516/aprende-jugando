@@ -1,0 +1,445 @@
+/* src/styles/estudianteMisionDetalle.css */
+/* Estilos para la página de detalles de misión del estudiante */
+
+.mision-detalle-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  animation: misionDetalleFadeIn 0.5s ease;
+}
+
+/* Fondo fijo que ocupa toda la pantalla */
+.mision-detalle-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(0, 167, 213, 0.15), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 114, 164, 0.2), transparent 60%),
+    url("/images/fondo.png") center/cover no-repeat;
+  opacity: 0.92;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Overlay de contenido */
+.mision-detalle-overlay {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+}
+
+@keyframes misionDetalleFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===========================
+   HEADER
+   =========================== */
+
+.mision-detalle-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  animation: headerSlideDown 0.6s ease;
+}
+
+@keyframes headerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mision-detalle-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.mision-detalle-badges {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.badge-dificultad,
+.badge-categoria {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.badge-dificultad.badge-baja {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.badge-dificultad.badge-media {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+}
+
+.badge-dificultad.badge-alta {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+}
+
+.badge-categoria {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+}
+
+/* ===========================
+   CONTENIDO PRINCIPAL
+   =========================== */
+
+.mision-detalle-contenido {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: contenidoFadeIn 0.6s ease 0.2s backwards;
+}
+
+@keyframes contenidoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   SECCIONES
+   =========================== */
+
+.mision-detalle-seccion {
+  background: rgba(7, 19, 63, 0.95);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.mision-detalle-seccion:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.seccion-titulo {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #00a7d5;
+  margin: 0 0 1.25rem 0;
+}
+
+.seccion-texto {
+  font-size: 1rem;
+  color: #e5eeff;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===========================
+   COMPETENCIAS
+   =========================== */
+
+.competencias-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.competencia-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 167, 213, 0.1);
+  border-left: 3px solid #00a7d5;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.competencia-item:hover {
+  background: rgba(0, 167, 213, 0.15);
+  transform: translateX(4px);
+}
+
+.competencia-item svg {
+  width: 20px;
+  height: 20px;
+  color: #00a7d5;
+  flex-shrink: 0;
+}
+
+/* ===========================
+   GRID (PISTAS Y RETROALIMENTACIÓN)
+   =========================== */
+
+.mision-detalle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.mision-detalle-card {
+  background: rgba(7, 19, 63, 0.95);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+}
+
+.mision-detalle-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.card-titulo {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #00a7d5;
+  margin: 0 0 1.25rem 0;
+}
+
+.card-texto {
+  font-size: 0.95rem;
+  color: #e5eeff;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===========================
+   PISTAS
+   =========================== */
+
+.pistas-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.pista-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  color: #cbd5ff;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.pista-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(4px);
+}
+
+.pista-item svg {
+  width: 18px;
+  height: 18px;
+  color: #00a7d5;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ===========================
+   FOOTER CON BOTONES
+   =========================== */
+
+.mision-detalle-footer {
+  max-width: 1200px;
+  margin: 2rem auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  animation: footerSlideUp 0.6s ease 0.3s backwards;
+}
+
+@keyframes footerSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-iniciar,
+.btn-volver {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  padding: 1rem 3rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-iniciar {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+}
+
+.btn-iniciar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-iniciar:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-iniciar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 167, 213, 0.5);
+}
+
+.btn-volver {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.btn-volver:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1024px) {
+  .mision-detalle-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mision-detalle-title {
+    font-size: 2rem;
+  }
+
+  .mision-detalle-overlay {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .mision-detalle-title {
+    font-size: 1.75rem;
+  }
+
+  .mision-detalle-footer {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn-iniciar,
+  .btn-volver {
+    width: 100%;
+    padding: 0.875rem 2rem;
+  }
+
+  .mision-detalle-seccion,
+  .mision-detalle-card {
+    padding: 1.5rem;
+  }
+
+  .mision-detalle-overlay {
+    padding: 1rem;
+  }
+}
+
+/* ===========================
+   TEMA OSCURO
+   =========================== */
+
+.theme-dark .mision-detalle-bg {
+  opacity: 0.88;
+  background:
+    radial-gradient(circle at top left, rgba(0, 167, 213, 0.1), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 114, 164, 0.15), transparent 60%),
+    url("/images/fondo.png") center/cover no-repeat;
+}
+
+.theme-dark .mision-detalle-seccion,
+.theme-dark .mision-detalle-card {
+  background: rgba(10, 15, 46, 0.95);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .mision-detalle-seccion:hover,
+.theme-dark .mision-detalle-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+.theme-dark .competencia-item {
+  background: rgba(0, 167, 213, 0.08);
+}
+
+.theme-dark .competencia-item:hover {
+  background: rgba(0, 167, 213, 0.12);
+}
+
+.theme-dark .pista-item {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.theme-dark .pista-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}

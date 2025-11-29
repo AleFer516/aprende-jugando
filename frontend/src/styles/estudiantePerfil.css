@@ -1,0 +1,476 @@
+/* src/styles/estudiantePerfil.css */
+/* Estilos para la página de perfil del estudiante */
+
+.estudiante-perfil {
+  padding: 0;
+  animation: estudiantePerfilFadeIn 0.5s ease;
+}
+
+@keyframes estudiantePerfilFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.estudiante-perfil-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.estudiante-perfil-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #061e48;
+  margin: 0;
+}
+
+.estudiante-perfil-btn-editar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.estudiante-perfil-btn-editar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.estudiante-perfil-btn-editar:hover::before {
+  transform: translateX(100%);
+}
+
+.estudiante-perfil-btn-editar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 167, 213, 0.5);
+}
+
+.estudiante-perfil-btn-editar svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Contenido principal */
+.estudiante-perfil-contenido {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Tarjetas */
+.estudiante-perfil-card {
+  background: #07133f;
+  color: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: estudianteCardSlideIn 0.5s ease backwards;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.estudiante-perfil-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.estudiante-perfil-card:hover::before {
+  opacity: 1;
+}
+
+.estudiante-perfil-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes estudianteCardSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.estudiante-perfil-card-header {
+  padding: 1.5rem 2rem;
+  background: #061e48;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.estudiante-perfil-card-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.estudiante-perfil-card-header svg {
+  width: 24px;
+  height: 24px;
+  color: #00a7d5;
+}
+
+.estudiante-perfil-card-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Avatar */
+.estudiante-perfil-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.estudiante-perfil-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 167, 213, 0.4);
+  transition: all 0.3s ease;
+}
+
+.estudiante-perfil-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(0, 167, 213, 0.6);
+}
+
+.estudiante-perfil-avatar svg {
+  width: 60px;
+  height: 60px;
+  color: #ffffff;
+}
+
+.estudiante-perfil-nivel-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #ffffff;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+/* Formulario */
+.estudiante-perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.estudiante-perfil-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.estudiante-perfil-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.estudiante-perfil-form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #cde8ff;
+}
+
+.estudiante-perfil-form-group p {
+  margin: 0;
+  padding: 0.75rem 0;
+  color: #e5eeff;
+  font-size: 0.95rem;
+}
+
+.estudiante-perfil-rol-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+  padding: 0.65rem 1.5rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+  width: fit-content;
+  min-width: 180px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Estadísticas */
+.estudiante-perfil-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.estudiante-perfil-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 3px solid #00a7d5;
+  transition: all 0.3s ease;
+}
+
+.estudiante-perfil-stat-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.2);
+}
+
+.estudiante-perfil-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.estudiante-perfil-stat-icon svg {
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
+}
+
+.estudiante-perfil-stat-icon-primary {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+.estudiante-perfil-stat-icon-success {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.estudiante-perfil-stat-item:hover .estudiante-perfil-stat-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.estudiante-perfil-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.estudiante-perfil-stat-label {
+  font-size: 0.85rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+.estudiante-perfil-stat-value {
+  font-size: 1.75rem;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Actividad */
+.estudiante-perfil-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.estudiante-perfil-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #00a7d5;
+  transition: all 0.3s ease;
+}
+
+.estudiante-perfil-info-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.estudiante-perfil-info-label {
+  font-size: 0.9rem;
+  color: #9bb4ff;
+  font-weight: 500;
+}
+
+.estudiante-perfil-info-value {
+  font-size: 0.95rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Info text */
+.estudiante-perfil-info-text {
+  margin: 0 0 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #00a7d5;
+  border-radius: 8px;
+  color: #cde8ff;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Botón cambiar contraseña */
+.estudiante-perfil-btn-cambiar-password {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: #061e48;
+  color: #ffffff;
+  border: 1px solid rgba(0, 167, 213, 0.3);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.estudiante-perfil-btn-cambiar-password::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.estudiante-perfil-btn-cambiar-password:hover::before {
+  transform: translateX(100%);
+}
+
+.estudiante-perfil-btn-cambiar-password:hover {
+  background: #0a2664;
+  border-color: #00a7d5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+.estudiante-perfil-btn-cambiar-password svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .estudiante-perfil-contenido {
+    grid-template-columns: 1fr;
+  }
+
+  .estudiante-perfil-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .estudiante-perfil-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .estudiante-perfil-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estudiante-perfil-card-body {
+    padding: 1.5rem;
+  }
+}
+
+/* ===========================
+   TEMA OSCURO
+   =========================== */
+
+.theme-dark .estudiante-perfil-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .estudiante-perfil-card {
+  background: #0a0f2e;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+}
+
+.theme-dark .estudiante-perfil-card:hover {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
+}
+
+.theme-dark .estudiante-perfil-card-header {
+  background: #060d24;
+}

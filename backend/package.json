@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "setup": "node setup-database.js",
+    "reset": "node reset-database.js"
   },
   "keywords": [],
   "author": "",

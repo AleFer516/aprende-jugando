@@ -1,0 +1,466 @@
+/* Estilos para la página de Configuración de Perfil del GM */
+/* Basado en adminConfiguracion.css para mantener consistencia */
+
+.gm-config-perfil {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Título y subtítulo */
+
+.gm-config-perfil-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #061e48;
+  margin: 0 0 0.5rem 0;
+}
+
+.gm-config-perfil-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin: 0 0 2rem 0;
+}
+
+/* Grid de 3 columnas */
+
+.gm-config-perfil-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .gm-config-perfil-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+
+.gm-config-perfil-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gm-config-perfil-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.gm-config-perfil-card-header {
+  background: linear-gradient(135deg, #061e48, #0a2e5c);
+  padding: 1.25rem 1.5rem;
+}
+
+.gm-config-perfil-card-header h2 {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: white;
+  margin: 0;
+}
+
+.gm-config-perfil-card-body {
+  padding: 1.5rem;
+}
+
+/* Avatar Section */
+
+.config-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.config-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+  border: 4px solid #00a7d5;
+}
+
+.config-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.config-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: white;
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+/* Formularios */
+
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.config-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.config-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.config-input {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #334155;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.config-input:focus {
+  outline: none;
+  border-color: #00a7d5;
+  box-shadow: 0 0 0 3px rgba(0, 167, 213, 0.1);
+}
+
+.config-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Secciones */
+
+.config-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.config-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.config-section-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+/* Radio buttons */
+
+.config-radio-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.config-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.config-radio-option input[type="radio"] {
+  display: none;
+}
+
+.config-radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.config-radio-option input[type="radio"]:checked + .config-radio-custom {
+  border-color: #00a7d5;
+  background: #00a7d5;
+}
+
+.config-radio-option input[type="radio"]:checked + .config-radio-custom::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* Switch toggle */
+
+.config-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.config-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+}
+
+.config-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.config-switch-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 34px;
+}
+
+.config-switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+}
+
+.config-switch input:checked + .config-switch-slider {
+  background-color: #00a7d5;
+}
+
+.config-switch input:checked + .config-switch-slider:before {
+  transform: translateX(22px);
+}
+
+.config-switch-text {
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+/* Select */
+
+.config-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #334155;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.config-select:focus {
+  outline: none;
+  border-color: #00a7d5;
+  box-shadow: 0 0 0 3px rgba(0, 167, 213, 0.1);
+}
+
+/* Botones */
+
+.config-btn-primary {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+.config-btn-primary:hover {
+  background: linear-gradient(135deg, #0891b2, #0e7490);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 167, 213, 0.4);
+}
+
+.config-btn-primary:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.config-btn-outline {
+  padding: 0.65rem 1.25rem;
+  border: 2px solid #00a7d5;
+  border-radius: 12px;
+  background: white;
+  color: #00a7d5;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.config-btn-outline:hover {
+  background: #00a7d5;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+/* Errores de validación de contraseña */
+
+.config-errores-password {
+  padding: 1rem;
+  background: #fef2f2;
+  border: 2px solid #fecaca;
+  border-radius: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.config-errores-password ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.config-errores-password li {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.config-errores-password li:last-child {
+  margin-bottom: 0;
+}
+
+/* Toast notifications */
+
+.config-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease, slideOut 0.3s ease 2.2s;
+  z-index: 1000;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.config-toast-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.config-toast-info {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.config-toast-error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .estudiante-config {
+    padding: 1rem;
+  }
+
+  .estudiante-config-title {
+    font-size: 1.5rem;
+  }
+
+  .estudiante-config-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .config-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .config-avatar-placeholder {
+    font-size: 2.5rem;
+  }
+
+  .config-radio-group {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .config-toast {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+}

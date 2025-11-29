@@ -1,0 +1,725 @@
+/* src/styles/estudiantePersonaje.css */
+/* Estilos para la página de personaje del panel de estudiantes */
+
+.estudiante-personaje-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 100vh;
+  animation: personajeFadeIn 0.6s ease;
+}
+
+/* 🔹 Fondo fijo con la imagen */
+.personaje-bg {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(0, 167, 213, 0.12), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(0, 114, 164, 0.18), transparent 60%),
+    url("/images/fondo_personaje.png") center/cover no-repeat;
+  opacity: 0.95;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 🔹 Overlay de contenido */
+.personaje-overlay {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes personajeFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===========================
+   HEADER
+   =========================== */
+
+.personaje-header {
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 1;
+  text-align: left;
+  padding: 0.5rem 2rem 0;
+}
+
+.personaje-title {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.personaje-subtitle {
+  font-size: 1rem;
+  color: #e0e7ff;
+  margin: 0;
+  max-width: 600px;
+  line-height: 1.5;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.personaje-subtitle-strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* ===========================
+   LAYOUT PRINCIPAL
+   =========================== */
+
+.personaje-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 3rem;
+  padding: 0 2rem 2rem;
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  align-items: start;
+  margin-top: -2rem;
+}
+
+/* ===========================
+   SECCIÓN DE PERSONAJE (IZQUIERDA)
+   =========================== */
+
+.personaje-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.personaje-hero-card {
+  width: 100%;
+  max-width: 450px;
+  background: transparent;
+  border-radius: 30px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: visible;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.personaje-hero-card:hover {
+  border-color: rgba(0, 212, 255, 0.4);
+  transform: scale(1.02);
+}
+
+.personaje-hero-bg {
+  display: none;
+}
+
+/* 🔹 Contenedor de capas del personaje */
+
+.personaje-hero-layers {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 3 / 4;
+  z-index: 2;
+}
+
+/* Cada capa (o imagen única) */
+
+.personaje-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Si usas una sola imagen por apariencia */
+
+.personaje-layer-unica {
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.7));
+}
+
+/* Botón con el nombre */
+
+.personaje-nombre-btn {
+  padding: 0.9rem 3.5rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(7, 19, 63, 0.7);
+  backdrop-filter: blur(10px);
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: default;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.personaje-nombre-btn:hover {
+  border-color: rgba(0, 212, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(0, 167, 213, 0.5);
+  transform: translateY(-2px);
+  background: rgba(7, 19, 63, 0.9);
+}
+
+/* ===========================
+   SECCIÓN DE APARIENCIAS (DERECHA)
+   =========================== */
+
+.personaje-right {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.personaje-panel {
+  width: 100%;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: none;
+  position: relative;
+  overflow: visible;
+}
+
+.personaje-panel::before {
+  display: none;
+}
+
+.personaje-panel:hover::before {
+  display: none;
+}
+
+.personaje-panel:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+/* Header del panel */
+
+.personaje-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5rem;
+  border-bottom: none;
+  margin-bottom: 0.5rem;
+}
+
+.personaje-panel-header-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.personaje-panel-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.personaje-dropdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(7, 19, 63, 0.6);
+  backdrop-filter: blur(8px);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.personaje-dropdown svg {
+  width: 16px;
+  height: 16px;
+}
+
+.personaje-dropdown:hover {
+  border-color: rgba(0, 212, 255, 0.5);
+  background: rgba(7, 19, 63, 0.8);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.3);
+}
+
+/* Selector de categoría (Apariencia / Atuendo) */
+.personaje-categoria-selector {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: rgba(7, 19, 63, 0.6);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.personaje-categoria-btn {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.personaje-categoria-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.personaje-categoria-btn.activo {
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 167, 213, 0.4);
+}
+
+/* ===========================
+   GRID DE AVATARES
+   =========================== */
+
+.personaje-avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  justify-content: center;
+  justify-items: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.personaje-avatar-card {
+  position: relative;
+  border-radius: 8px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  backdrop-filter: blur(5px);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  aspect-ratio: 1 / 1;
+  min-height: 140px;
+}
+
+.personaje-avatar-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 167, 213, 0.2), transparent 80%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.personaje-avatar-card:hover::before {
+  opacity: 1;
+}
+
+.personaje-avatar-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 167, 213, 0.4);
+  border-color: rgba(0, 212, 255, 0.5);
+  z-index: 10;
+}
+
+/* Estado desbloqueado */
+
+.avatar-desbloqueado {
+  background: transparent;
+  backdrop-filter: blur(8px);
+}
+
+/* Estado bloqueado */
+
+.avatar-bloqueado {
+  background: transparent;
+  backdrop-filter: blur(5px);
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.avatar-bloqueado:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Seleccionado */
+
+.avatar-seleccionado {
+  border-color: #00d4ff;
+  background: rgba(0, 167, 213, 0.2);
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.5),
+    0 16px 40px rgba(0, 212, 255, 0.6);
+  animation: avatarPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.5), 0 16px 40px rgba(0, 212, 255, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.8), 0 20px 50px rgba(0, 212, 255, 0.8);
+  }
+}
+
+/* Contenido interno del avatar */
+
+.personaje-avatar-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Imagen de apariencia en el icono */
+
+.personaje-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Placeholder de rostro (puedes remplazar por imágenes reales) */
+
+.personaje-avatar-face {
+  width: 100%;
+  height: 100%;
+  max-width: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.personaje-avatar-head {
+  width: 55%;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.personaje-avatar-body {
+  width: 70%;
+  height: 28%;
+  margin-top: -0.25rem;
+  border-radius: 999px 999px 8px 8px;
+  background: linear-gradient(135deg, #0ea5e9, #0369a1);
+}
+
+/* Overlay de bloqueo */
+
+.personaje-avatar-lock {
+  position: absolute;
+  inset: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(5px);
+  color: #e5e7eb;
+  text-align: center;
+}
+
+.lock-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 2px dashed rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.lock-icon svg {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.personaje-avatar-requisito {
+  font-size: 0.7rem;
+  line-height: 1.3;
+  color: #e5e7eb;
+  max-width: 95%;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ===========================
+   FOOTER DEL PANEL
+   =========================== */
+
+.personaje-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  padding-top: 1rem;
+  border-top: none;
+  margin-top: 0.5rem;
+}
+
+.personaje-footer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+}
+
+.personaje-mensaje {
+  font-size: 0.95rem;
+  color: #c7d2fe;
+  flex: 1;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.personaje-mensaje-center {
+  font-size: 0.95rem;
+  color: #c7d2fe;
+  font-weight: 500;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.personaje-guardar-btn {
+  padding: 0.85rem 2.5rem;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 167, 213, 0.4);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.personaje-guardar-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.personaje-guardar-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.personaje-guardar-btn:hover {
+  background: linear-gradient(135deg, #0891b2, #00d4ff);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 212, 255, 0.6);
+}
+
+.personaje-guardar-btn:active {
+  transform: translateY(0);
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1200px) {
+  .personaje-layout {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+
+  .personaje-left {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .personaje-header {
+    padding: 1.5rem 1.5rem 0;
+  }
+
+  .personaje-title {
+    font-size: 1.75rem;
+  }
+
+  .personaje-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .personaje-layout {
+    gap: 2rem;
+    padding: 1.5rem;
+  }
+
+  .personaje-hero-card {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+
+  .personaje-hero-layers {
+    max-width: 320px;
+  }
+
+  .personaje-nombre-btn {
+    padding: 0.8rem 3rem;
+    font-size: 1.1rem;
+  }
+
+  .personaje-panel-title {
+    font-size: 1.3rem;
+  }
+
+  .personaje-avatar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .personaje-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .personaje-mensaje {
+    text-align: center;
+  }
+
+  .personaje-guardar-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .personaje-avatar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .personaje-avatar-card {
+    min-height: 110px;
+  }
+
+  .personaje-panel-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+}
+
+/* ===========================
+   TEMA OSCURO
+   =========================== */
+
+.theme-dark .personaje-header h1 {
+  color: #f1f5f9;
+}
+
+.theme-dark .personaje-header p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .personaje-panel {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .personaje-panel-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .personaje-avatar-card {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .personaje-avatar-card:hover {
+  background: transparent;
+  border-color: rgba(0, 167, 213, 0.4);
+}
+
+.theme-dark .personaje-avatar-card.selected {
+  background: transparent;
+  border-color: #00a7d5;
+}
+
+.theme-dark .personaje-avatar-nombre {
+  color: #f1f5f9;
+}
+
+.theme-dark .personaje-color-option {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .personaje-color-option.selected {
+  border-color: #00a7d5;
+}
+
+.theme-dark .personaje-preview-section h3 {
+  color: #f1f5f9;
+}
+
+.theme-dark .personaje-preview-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .personaje-preview-info strong {
+  color: #f1f5f9;
+}
+
+.theme-dark .personaje-preview-info span {
+  color: rgba(255, 255, 255, 0.7);
+}
