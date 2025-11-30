@@ -1,63 +1,56 @@
-/* Página de actividad del admin */
+/* ================================================
+   Panel de Actividad del Admin
+   Estilos consistentes con adminUsuarios.css
+   ================================================ */
 
+/* Contenedor principal */
 .admin-actividad-page {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  animation: adminActFadeIn 0.5s ease;
+  animation: fadeInPage 0.5s ease;
+  min-width: 0;
 }
 
-@keyframes adminActFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fadeInPage {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Título */
-
 .admin-actividad-title {
   font-family: "Poppins", "Montserrat", sans-serif;
   font-weight: 700;
   font-size: 1.6rem;
   color: #061e48;
-  margin-bottom: 0.25rem;
-  animation: adminActTitleSlide 0.4s ease;
+  margin: 0 0 0.5rem 0;
+  animation: slideInLeft 0.5s ease;
 }
 
-@keyframes adminActTitleSlide {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
-/* Barra de filtros (Fecha + Buscar) */
+/* ================================================
+   Barra de herramientas (filtros y búsqueda)
+   ================================================ */
 
 .admin-actividad-toolbar {
-  background: #f4f7ff;
-  border-radius: 18px;
-  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1.5rem;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+  flex-wrap: wrap;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: slideInDown 0.5s ease 0.1s backwards;
 }
 
-@media (max-width: 720px) {
-  .admin-actividad-toolbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .admin-actividad-toolbar-left {
@@ -72,192 +65,191 @@
   color: #061e48;
 }
 
-/* Select de fecha */
-
+/* Select personalizado */
 .admin-actividad-select-wrapper {
   position: relative;
-  display: inline-flex;
-  align-items: center;
+}
+
+.admin-actividad-select-wrapper::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #ffffff;
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+.admin-actividad-select-wrapper:hover::after {
+  transform: translateY(-50%) translateY(-2px);
 }
 
 .admin-actividad-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  border: none;
-  outline: none;
-  padding: 0.55rem 2.4rem 0.55rem 1rem;
-  border-radius: 999px;
-  background: #07133f;
+  padding: 0.5rem 2.5rem 0.5rem 1rem;
+  background: #061e48;
   color: #ffffff;
+  border: none;
+  border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  appearance: none;
+  min-width: 140px;
+  transition: all 0.3s ease;
 }
 
 .admin-actividad-select:hover {
-  background: #061e48;
+  background: #0a2664;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(6, 30, 72, 0.3);
 }
 
 .admin-actividad-select:focus {
-  box-shadow: 0 0 0 2px rgba(0, 167, 213, 0.6);
+  outline: 2px solid #228be6;
+  outline-offset: 2px;
 }
 
+/* Icono de flecha del select (oculto porque usamos ::after) */
 .admin-actividad-select-arrow {
-  position: absolute;
-  right: 0.7rem;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: none;
 }
 
-.admin-actividad-select-arrow svg {
-  width: 18px;
-  height: 18px;
-  color: #ffffff;
-}
-
-/* Buscador */
-
+/* Búsqueda */
 .admin-actividad-search-wrapper {
-  flex: 1;
-  max-width: 340px;
   position: relative;
-}
-
-@media (max-width: 720px) {
-  .admin-actividad-search-wrapper {
-    width: 100%;
-    max-width: none;
-  }
+  margin-left: auto;
 }
 
 .admin-actividad-search-input {
-  width: 100%;
-  padding: 0.55rem 2.3rem 0.55rem 1rem;
+  padding: 0.55rem 1rem 0.55rem 2.75rem;
+  border: 2px solid #e0e7ff;
   border-radius: 999px;
-  border: 1.5px solid #c0d2f5;
-  background: #ffffff;
   font-size: 0.9rem;
   color: #061e48;
-  transition: all 0.25s ease;
-}
-
-.admin-actividad-search-input::placeholder {
-  color: #9fb0d6;
+  min-width: 280px;
+  transition: all 0.3s ease;
 }
 
 .admin-actividad-search-input:focus {
   outline: none;
   border-color: #228be6;
-  box-shadow: 0 0 0 2px rgba(34, 139, 230, 0.25);
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1);
+  transform: translateY(-1px);
+}
+
+.admin-actividad-search-input::placeholder {
+  color: #94a3b8;
 }
 
 .admin-actividad-search-icon {
   position: absolute;
-  right: 0.8rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.admin-actividad-search-icon svg {
   width: 18px;
   height: 18px;
   color: #64748b;
+  pointer-events: none;
+  transition: color 0.3s ease;
 }
 
-/* Tarjeta de lista de actividades */
+.admin-actividad-search-input:focus ~ .admin-actividad-search-icon {
+  color: #228be6;
+}
+
+/* ================================================
+   Tarjeta de actividades (tabla)
+   ================================================ */
 
 .admin-actividad-card {
   background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
-  padding: 1.2rem 1.75rem;
-  animation: adminActCardIn 0.4s ease;
+  border-radius: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  animation: scaleIn 0.5s ease 0.2s backwards;
 }
 
-@keyframes adminActCardIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.admin-actividad-empty {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  color: #64748b;
+/* Scrollbar personalizada */
+.admin-actividad-card::-webkit-scrollbar {
+  height: 8px;
 }
 
-/* Lista */
+.admin-actividad-card::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
 
+.admin-actividad-card::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.admin-actividad-card::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Lista de actividades (estilo tabla) */
 .admin-actividad-list {
   list-style: none;
-  margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  margin: 0;
+  min-width: 700px;
 }
 
 .admin-actividad-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 60px 1fr 200px;
   align-items: center;
   gap: 1.25rem;
-  padding: 0.8rem 0.5rem;
-  border-bottom: 1px solid #e3ecff;
-  border-left: 3px solid transparent;
-  border-radius: 8px;
-  animation: adminActItemSlide 0.45s ease backwards;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+  animation: rowFadeIn 0.4s ease backwards;
+}
+
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-actividad-item:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  transform: translateX(4px);
 }
 
 .admin-actividad-item:last-child {
   border-bottom: none;
 }
 
-@keyframes adminActItemSlide {
-  from {
-    opacity: 0;
-    transform: translateX(-18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.admin-actividad-item:hover {
-  background: #f4f7ff;
-  transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-  border-left-color: #228be6;
-}
-
-/* Avatar / icono */
-
+/* Avatar/Icono */
 .admin-actividad-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #228be6, #4e84c1);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(34, 139, 230, 0.6);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.admin-actividad-item:hover .admin-actividad-avatar {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 .admin-actividad-avatar svg {
@@ -265,51 +257,167 @@
   height: 22px;
 }
 
-.admin-actividad-item:hover .admin-actividad-avatar {
-  transform: scale(1.1);
-  box-shadow: 0 8px 22px rgba(34, 139, 230, 0.9);
-}
-
-/* Texto de la actividad */
-
+/* Información de la actividad */
 .admin-actividad-info {
   flex: 1;
   min-width: 0;
 }
 
 .admin-actividad-descripcion {
-  margin: 0;
   font-size: 0.95rem;
-  color: #0f172a;
+  font-weight: 600;
+  color: #061e48;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.4;
+}
+
+/* Usuario (texto secundario) */
+.admin-actividad-info p:last-child {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
   font-weight: 500;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
 /* Fecha */
-
 .admin-actividad-fecha {
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 500;
-  min-width: 90px;
+  flex-shrink: 0;
   text-align: right;
 }
 
-@media (max-width: 620px) {
-  .admin-actividad-fecha {
-    font-size: 0.8rem;
-    min-width: auto;
+.admin-actividad-fecha span {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e0e7ff 100%);
+  color: #061e48;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.admin-actividad-item:hover .admin-actividad-fecha span {
+  background: linear-gradient(135deg, #228be6 0%, #1c7ed6 100%);
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(34, 139, 230, 0.3);
+}
+
+/* ================================================
+   Estados especiales
+   ================================================ */
+
+/* Estado vacío */
+.admin-actividad-empty {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Estado de carga */
+.admin-actividad-loading {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* ================================================
+   Responsive
+   ================================================ */
+
+@media (max-width: 1024px) {
+  .admin-actividad-list {
+    min-width: 600px;
   }
 
   .admin-actividad-item {
-    flex-wrap: wrap;
-    align-items: flex-start;
+    grid-template-columns: 50px 1fr 180px;
+    gap: 1rem;
+  }
+
+  .admin-actividad-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .admin-actividad-avatar svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-actividad-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .admin-actividad-toolbar-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-actividad-select,
+  .admin-actividad-search-input {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .admin-actividad-search-wrapper {
+    margin-left: 0;
+  }
+
+  .admin-actividad-list {
+    min-width: 500px;
+  }
+
+  .admin-actividad-item {
+    grid-template-columns: 45px 1fr;
+    gap: 0.875rem;
+    padding: 1rem;
   }
 
   .admin-actividad-fecha {
+    grid-column: 2 / 3;
     text-align: left;
-    margin-left: 3.25rem;
+    margin-top: 0.5rem;
+  }
+
+  .admin-actividad-fecha span {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-actividad-title {
+    font-size: 1.4rem;
+  }
+
+  .admin-actividad-card {
+    border-radius: 12px;
+  }
+
+  .admin-actividad-list {
+    min-width: 400px;
+  }
+
+  .admin-actividad-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .admin-actividad-avatar svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .admin-actividad-descripcion {
+    font-size: 0.9rem;
   }
 }

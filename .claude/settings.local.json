@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run dev:*)"
+      "Bash(do echo \"Procesando: $file\")",
+      "Bash(timeout 5 node:*)",
+      "Bash(do sed -i \"s/verificarRol(''gm'', ''admin'')/verificarRol([''gm'', ''admin''])/g\" \"$file\")",
+      "Bash(npm run dev:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": []

@@ -3,12 +3,12 @@ const db = require('../db');
 // Obtener configuración del GM
 const obtenerConfiguracion = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Obtener o crear configuración del GM
     let [configuracion] = await db.query(
-      'SELECT * FROM usuarios WHERE id = ?',
-      [gmId]
+      'SELECT * FROM usuarios WHERE rut = ?',
+      [gmRut]
     );
 
     if (configuracion.length === 0) {
@@ -55,7 +55,7 @@ const obtenerConfiguracion = async (req, res) => {
 // Actualizar configuración del GM
 const actualizarConfiguracion = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { notificaciones, privacidad, preferencias } = req.body;
 
     // Por ahora solo guardamos en memoria o en campos JSON
@@ -83,7 +83,7 @@ const actualizarConfiguracion = async (req, res) => {
 // Cambiar contraseña del GM
 const cambiarContrasena = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { contrasenaActual, contrasenaNueva } = req.body;
 
     if (!contrasenaActual || !contrasenaNueva) {
@@ -95,8 +95,8 @@ const cambiarContrasena = async (req, res) => {
 
     // Obtener contraseña actual del usuario
     const [usuarios] = await db.query(
-      'SELECT password FROM usuarios WHERE id = ?',
-      [gmId]
+      'SELECT password FROM usuarios WHERE rut = ?',
+      [gmRut]
     );
 
     if (usuarios.length === 0) {
@@ -123,8 +123,8 @@ const cambiarContrasena = async (req, res) => {
 
     // Actualizar contraseña
     await db.query(
-      'UPDATE usuarios SET password = ? WHERE id = ?',
-      [passwordHash, gmId]
+      'UPDATE usuarios SET password = ? WHERE rut = ?',
+      [passwordHash, gmRut]
     );
 
     res.json({

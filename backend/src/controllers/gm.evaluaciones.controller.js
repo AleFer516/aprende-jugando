@@ -3,14 +3,14 @@ const db = require('../db');
 // Obtener todas las evaluaciones pendientes del GM
 const obtenerEvaluacionesPendientes = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [evaluaciones] = await db.query(
       `SELECT
         ev.id,
         ev.estado,
         ev.created_at,
-        u.id as estudiante_id,
+        u.rut as estudiante_rut,
         u.nombre as estudiante_nombre,
         u.email as estudiante_email,
         u.nivel as estudiante_nivel,
@@ -21,12 +21,12 @@ const obtenerEvaluacionesPendientes = async (req, res) => {
         em.fecha_completado,
         em.xp_ganado
       FROM evaluaciones ev
-      INNER JOIN usuarios u ON ev.estudiante_id = u.id
+      INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
       INNER JOIN misiones m ON ev.mision_id = m.id
-      LEFT JOIN estudiante_misiones em ON ev.estudiante_id = em.estudiante_id AND ev.mision_id = em.mision_id
-      WHERE ev.gm_id = ? AND ev.estado = 'pendiente'
+      LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
+      WHERE ev.gm_rut = ? AND ev.estado = 'pendiente'
       ORDER BY ev.created_at DESC`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -46,7 +46,7 @@ const obtenerEvaluacionesPendientes = async (req, res) => {
 // Obtener todas las evaluaciones (pendientes y evaluadas)
 const obtenerTodasEvaluaciones = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { estado } = req.query;
 
     let query = `
@@ -57,7 +57,7 @@ const obtenerTodasEvaluaciones = async (req, res) => {
         ev.estado,
         ev.created_at,
         ev.updated_at,
-        u.id as estudiante_id,
+        u.rut as estudiante_rut,
         u.nombre as estudiante_nombre,
         u.email as estudiante_email,
         u.nivel as estudiante_nivel,
@@ -68,12 +68,12 @@ const obtenerTodasEvaluaciones = async (req, res) => {
         em.fecha_completado,
         em.xp_ganado
       FROM evaluaciones ev
-      INNER JOIN usuarios u ON ev.estudiante_id = u.id
+      INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
       INNER JOIN misiones m ON ev.mision_id = m.id
-      LEFT JOIN estudiante_misiones em ON ev.estudiante_id = em.estudiante_id AND ev.mision_id = em.mision_id
-      WHERE ev.gm_id = ?`;
+      LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
+      WHERE ev.gm_rut = ?`;
 
-    const params = [gmId];
+    const params = [gmRut];
 
     if (estado) {
       query += ' AND ev.estado = ?';
@@ -102,13 +102,13 @@ const obtenerTodasEvaluaciones = async (req, res) => {
 const obtenerEvaluacionPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Obtener datos de la evaluación
     const [evaluaciones] = await db.query(
       `SELECT
         ev.*,
-        u.id as estudiante_id,
+        u.rut as estudiante_rut,
         u.nombre as estudiante_nombre,
         u.email as estudiante_email,
         u.nivel as estudiante_nivel,
@@ -124,11 +124,11 @@ const obtenerEvaluacionPorId = async (req, res) => {
         em.fecha_completado,
         em.xp_ganado
       FROM evaluaciones ev
-      INNER JOIN usuarios u ON ev.estudiante_id = u.id
+      INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
       INNER JOIN misiones m ON ev.mision_id = m.id
-      LEFT JOIN estudiante_misiones em ON ev.estudiante_id = em.estudiante_id AND ev.mision_id = em.mision_id
-      WHERE ev.id = ? AND ev.gm_id = ?`,
-      [id, gmId]
+      LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
+      WHERE ev.id = ? AND ev.gm_rut = ?`,
+      [id, gmRut]
     );
 
     if (evaluaciones.length === 0) {
@@ -185,7 +185,7 @@ const evaluarMision = async (req, res) => {
     await connection.beginTransaction();
 
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { calificacion, retroalimentacion } = req.body;
 
     // Validaciones
@@ -208,7 +208,7 @@ const evaluarMision = async (req, res) => {
     // Verificar que la evaluación existe y pertenece al GM
     const [evaluaciones] = await connection.query(
       'SELECT estudiante_id, mision_id FROM evaluaciones WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      [id, gmRut]
     );
 
     if (evaluaciones.length === 0) {
@@ -224,7 +224,7 @@ const evaluarMision = async (req, res) => {
       `UPDATE evaluaciones
       SET calificacion = ?, retroalimentacion = ?, estado = 'evaluada'
       WHERE id = ? AND gm_id = ?`,
-      [calificacion, retroalimentacion, id, gmId]
+      [calificacion, retroalimentacion, id, gmRut]
     );
 
     await connection.commit();
@@ -249,7 +249,7 @@ const evaluarMision = async (req, res) => {
 // Obtener estadísticas de evaluaciones del GM
 const obtenerEstadisticas = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [estadisticas] = await db.query(
       `SELECT
@@ -259,7 +259,7 @@ const obtenerEstadisticas = async (req, res) => {
         AVG(CASE WHEN estado = 'evaluada' THEN calificacion END) as promedio_calificaciones
       FROM evaluaciones
       WHERE gm_id = ?`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({

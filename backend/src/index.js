@@ -22,12 +22,20 @@ const estudianteLogrosRoutes = require('./routes/estudiante.logros.routes');
 const estudiantePersonajeRoutes = require('./routes/estudiante.personaje.routes');
 const estudiantePerfilRoutes = require('./routes/estudiante.perfil.routes');
 
+// Rutas del Admin
+const adminDashboardRoutes = require('./routes/admin.dashboard.routes');
+const adminUsuariosRoutes = require('./routes/admin.usuarios.routes');
+const adminConfiguracionRoutes = require('./routes/admin.configuracion.routes');
+const adminPerfilRoutes = require('./routes/admin.perfil.routes');
+const adminEstadisticasRoutes = require('./routes/admin.estadisticas.routes');
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
@@ -49,6 +57,13 @@ app.use('/api/estudiante/logros', estudianteLogrosRoutes);
 app.use('/api/estudiante/personaje', estudiantePersonajeRoutes);
 app.use('/api/estudiante/perfil', estudiantePerfilRoutes);
 
+// Rutas del Admin
+app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/admin/usuarios', adminUsuariosRoutes);
+app.use('/api/admin/configuracion', adminConfiguracionRoutes);
+app.use('/api/admin/perfil', adminPerfilRoutes);
+app.use('/api/admin/estadisticas', adminEstadisticasRoutes);
+
 // Ruta raíz
 app.get('/', (req, res) => {
   res.json({
@@ -57,6 +72,12 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       auth: '/api/auth',
+      admin: {
+        dashboard: '/api/admin/dashboard',
+        usuarios: '/api/admin/usuarios',
+        configuracion: '/api/admin/configuracion',
+        perfil: '/api/admin/perfil'
+      },
       gm: {
         dashboard: '/api/gm/dashboard',
         misiones: '/api/gm/misiones',

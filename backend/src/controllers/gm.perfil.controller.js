@@ -3,12 +3,12 @@ const db = require('../db');
 // Obtener perfil del GM
 const obtenerPerfil = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Obtener información básica del GM
     const [usuarios] = await db.query(
-      'SELECT id, nombre, email, avatar, created_at FROM usuarios WHERE id = ?',
-      [gmId]
+      'SELECT rut, nombre, email, avatar, created_at FROM usuarios WHERE id = ?',
+      [gmRut]
     );
 
     if (usuarios.length === 0) {
@@ -25,15 +25,15 @@ const obtenerPerfil = async (req, res) => {
       `SELECT
         COUNT(DISTINCT c.id) as total_cursos,
         COUNT(DISTINCT m.id) as total_misiones,
-        COUNT(DISTINCT ce.estudiante_id) as total_estudiantes,
+        COUNT(DISTINCT ce.estudiante_rut) as total_estudiantes,
         COUNT(DISTINCT CASE WHEN ev.estado = 'evaluada' THEN ev.id END) as total_evaluaciones
       FROM usuarios u
-      LEFT JOIN cursos c ON u.id = c.gm_id
-      LEFT JOIN misiones m ON u.id = m.gm_id
+      LEFT JOIN cursos c ON u.rut = c.gm_rut
+      LEFT JOIN misiones m ON u.rut = m.gm_rut
       LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
-      LEFT JOIN evaluaciones ev ON u.id = ev.gm_id
-      WHERE u.id = ?`,
-      [gmId]
+      LEFT JOIN evaluaciones ev ON u.rut = ev.gm_rut
+      WHERE u.rut = ?`,
+      [gmRut]
     );
 
     // Obtener cursos del GM
@@ -41,15 +41,15 @@ const obtenerPerfil = async (req, res) => {
       `SELECT
         c.id,
         c.nombre,
-        COUNT(DISTINCT ce.estudiante_id) as estudiantes,
+        COUNT(DISTINCT ce.estudiante_rut) as estudiantes,
         COUNT(DISTINCT m.id) as misiones
       FROM cursos c
       LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
       LEFT JOIN misiones m ON c.id = m.curso_id
-      WHERE c.gm_id = ?
+      WHERE c.gm_rut = ?
       GROUP BY c.id, c.nombre
       ORDER BY c.created_at DESC`,
-      [gmId]
+      [gmRut]
     );
 
     // Obtener actividad reciente
@@ -59,7 +59,7 @@ const obtenerPerfil = async (req, res) => {
         m.nombre as descripcion,
         m.created_at as fecha
       FROM misiones m
-      WHERE m.gm_id = ?
+      WHERE m.gm_rut = ?
       ORDER BY m.created_at DESC
       LIMIT 5)
       UNION ALL
@@ -68,14 +68,14 @@ const obtenerPerfil = async (req, res) => {
         CONCAT('Evaluó a ', u.nombre, ' en ', m.nombre) as descripcion,
         ev.updated_at as fecha
       FROM evaluaciones ev
-      INNER JOIN usuarios u ON ev.estudiante_id = u.id
+      INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
       INNER JOIN misiones m ON ev.mision_id = m.id
-      WHERE ev.gm_id = ? AND ev.estado = 'evaluada'
+      WHERE ev.gm_rut = ? AND ev.estado = 'evaluada'
       ORDER BY ev.updated_at DESC
       LIMIT 5)
       ORDER BY fecha DESC
       LIMIT 10`,
-      [gmId, gmId]
+      [gmRut, gmRut]
     );
 
     res.json({
@@ -100,7 +100,7 @@ const obtenerPerfil = async (req, res) => {
 // Actualizar perfil del GM
 const actualizarPerfil = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { nombre, email, avatar } = req.body;
 
     // Validaciones
@@ -114,7 +114,7 @@ const actualizarPerfil = async (req, res) => {
     // Verificar si el email ya existe (excepto el del usuario actual)
     const [usuariosExistentes] = await db.query(
       'SELECT id FROM usuarios WHERE email = ? AND id != ?',
-      [email, gmId]
+      [email, gmRut]
     );
 
     if (usuariosExistentes.length > 0) {
@@ -127,7 +127,7 @@ const actualizarPerfil = async (req, res) => {
     // Actualizar perfil
     await db.query(
       'UPDATE usuarios SET nombre = ?, email = ?, avatar = ? WHERE id = ?',
-      [nombre, email, avatar || null, gmId]
+      [nombre, email, avatar || null, gmRut]
     );
 
     res.json({
@@ -147,14 +147,14 @@ const actualizarPerfil = async (req, res) => {
 // Obtener estadísticas detalladas del GM
 const obtenerEstadisticasDetalladas = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Estadísticas por curso
     const [estadisticasCursos] = await db.query(
       `SELECT
         c.id,
         c.nombre as curso,
-        COUNT(DISTINCT ce.estudiante_id) as estudiantes,
+        COUNT(DISTINCT ce.estudiante_rut) as estudiantes,
         COUNT(DISTINCT m.id) as misiones,
         COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.id END) as misiones_completadas,
         COALESCE(AVG(CASE WHEN ev.estado = 'evaluada' THEN ev.calificacion END), 0) as promedio_calificaciones
@@ -162,10 +162,10 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
       LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
       LEFT JOIN misiones m ON c.id = m.curso_id
       LEFT JOIN estudiante_misiones em ON m.id = em.mision_id
-      LEFT JOIN evaluaciones ev ON m.id = ev.mision_id AND ev.gm_id = ?
-      WHERE c.gm_id = ?
+      LEFT JOIN evaluaciones ev ON m.id = ev.mision_id AND ev.gm_rut = ?
+      WHERE c.gm_rut = ?
       GROUP BY c.id, c.nombre`,
-      [gmId, gmId]
+      [gmRut, gmRut]
     );
 
     // Distribución de misiones por dificultad
@@ -174,9 +174,9 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
         dificultad,
         COUNT(*) as cantidad
       FROM misiones
-      WHERE gm_id = ?
+      WHERE gm_rut = ?
       GROUP BY dificultad`,
-      [gmId]
+      [gmRut]
     );
 
     // Actividad mensual (últimos 6 meses)
@@ -185,10 +185,10 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
         DATE_FORMAT(created_at, '%Y-%m') as mes,
         COUNT(*) as misiones_creadas
       FROM misiones
-      WHERE gm_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      WHERE gm_rut = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
       GROUP BY DATE_FORMAT(created_at, '%Y-%m')
       ORDER BY mes`,
-      [gmId]
+      [gmRut]
     );
 
     // Tasa de completitud
@@ -199,8 +199,8 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
         (COUNT(CASE WHEN estado = 'Completada' THEN 1 END) / COUNT(*) * 100) as tasa_completitud
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE m.gm_id = ?`,
-      [gmId]
+      WHERE m.gm_rut = ?`,
+      [gmRut]
     );
 
     res.json({

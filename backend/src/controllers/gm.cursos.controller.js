@@ -1,9 +1,10 @@
 const db = require('../db');
+const { registrarActividad } = require('../utils/actividadLogger');
 
 // Obtener todos los cursos del GM
 const obtenerCursos = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [cursos] = await db.query(
       `SELECT
@@ -12,15 +13,15 @@ const obtenerCursos = async (req, res) => {
         c.descripcion,
         c.created_at,
         c.updated_at,
-        COUNT(DISTINCT ce.estudiante_id) as total_estudiantes,
+        COUNT(DISTINCT ce.estudiante_rut) as total_estudiantes,
         COUNT(DISTINCT m.id) as total_misiones
       FROM cursos c
       LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
       LEFT JOIN misiones m ON c.id = m.curso_id
-      WHERE c.gm_id = ?
+      WHERE c.gm_rut = ?
       GROUP BY c.id
       ORDER BY c.created_at DESC`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -41,12 +42,12 @@ const obtenerCursos = async (req, res) => {
 const obtenerCursoPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Obtener datos del curso
     const [cursos] = await db.query(
-      'SELECT * FROM cursos WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT * FROM cursos WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (cursos.length === 0) {
@@ -61,14 +62,14 @@ const obtenerCursoPorId = async (req, res) => {
     // Obtener estudiantes del curso
     const [estudiantes] = await db.query(
       `SELECT
-        u.id,
+        u.rut,
         u.nombre,
         u.email,
         u.nivel,
         u.experiencia,
         ce.fecha_inscripcion
       FROM curso_estudiantes ce
-      INNER JOIN usuarios u ON ce.estudiante_id = u.id
+      INNER JOIN usuarios u ON ce.estudiante_rut = u.rut
       WHERE ce.curso_id = ?
       ORDER BY u.nombre`,
       [id]
@@ -82,8 +83,8 @@ const obtenerCursoPorId = async (req, res) => {
         m.dificultad,
         m.estado,
         m.xp_recompensa,
-        COUNT(DISTINCT em.estudiante_id) as estudiantes_asignados,
-        COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.estudiante_id END) as estudiantes_completados
+        COUNT(DISTINCT em.estudiante_rut) as estudiantes_asignados,
+        COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.estudiante_rut END) as estudiantes_completados
       FROM misiones m
       LEFT JOIN estudiante_misiones em ON m.id = em.mision_id
       WHERE m.curso_id = ?
@@ -113,7 +114,7 @@ const obtenerCursoPorId = async (req, res) => {
 // Crear un nuevo curso
 const crearCurso = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { nombre, descripcion } = req.body;
 
     if (!nombre) {
@@ -124,8 +125,16 @@ const crearCurso = async (req, res) => {
     }
 
     const [result] = await db.query(
-      'INSERT INTO cursos (nombre, descripcion, gm_id) VALUES (?, ?, ?)',
-      [nombre, descripcion, gmId]
+      'INSERT INTO cursos (nombre, descripcion, gm_rut) VALUES (?, ?, ?)',
+      [nombre, descripcion, gmRut]
+    );
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Game Master';
+    await registrarActividad(
+      `Nuevo curso creado: ${nombre}`,
+      usuario,
+      'sistema'
     );
 
     res.status(201).json({
@@ -147,13 +156,13 @@ const crearCurso = async (req, res) => {
 const actualizarCurso = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const { nombre, descripcion } = req.body;
 
     // Verificar que el curso pertenece al GM
     const [cursos] = await db.query(
-      'SELECT id FROM cursos WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT id FROM cursos WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (cursos.length === 0) {
@@ -164,8 +173,8 @@ const actualizarCurso = async (req, res) => {
     }
 
     await db.query(
-      'UPDATE cursos SET nombre = ?, descripcion = ? WHERE id = ? AND gm_id = ?',
-      [nombre, descripcion, id, gmId]
+      'UPDATE cursos SET nombre = ?, descripcion = ? WHERE id = ? AND gm_rut = ?',
+      [nombre, descripcion, id, gmRut]
     );
 
     res.json({
@@ -186,12 +195,12 @@ const actualizarCurso = async (req, res) => {
 const eliminarCurso = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Verificar que el curso pertenece al GM
     const [cursos] = await db.query(
-      'SELECT id FROM cursos WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT id FROM cursos WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (cursos.length === 0) {
@@ -201,7 +210,7 @@ const eliminarCurso = async (req, res) => {
       });
     }
 
-    await db.query('DELETE FROM cursos WHERE id = ? AND gm_id = ?', [id, gmId]);
+    await db.query('DELETE FROM cursos WHERE id = ? AND gm_rut = ?', [id, gmRut]);
 
     res.json({
       success: true,
@@ -225,13 +234,13 @@ const agregarEstudiante = async (req, res) => {
     await connection.beginTransaction();
 
     const { id } = req.params;
-    const gmId = req.usuario.id;
-    const { estudiante_id } = req.body;
+    const gmRut = req.usuario.rut;
+    const { estudiante_rut } = req.body;
 
     // Verificar que el curso pertenece al GM
     const [cursos] = await connection.query(
-      'SELECT id FROM cursos WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT id FROM cursos WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (cursos.length === 0) {
@@ -244,8 +253,8 @@ const agregarEstudiante = async (req, res) => {
 
     // Verificar que el estudiante existe
     const [estudiantes] = await connection.query(
-      'SELECT id FROM usuarios WHERE id = ? AND rol = "estudiante"',
-      [estudiante_id]
+      'SELECT rut FROM usuarios WHERE rut = ? AND rol = "estudiante"',
+      [estudiante_rut]
     );
 
     if (estudiantes.length === 0) {
@@ -258,17 +267,17 @@ const agregarEstudiante = async (req, res) => {
 
     // Agregar estudiante al curso
     await connection.query(
-      'INSERT INTO curso_estudiantes (curso_id, estudiante_id) VALUES (?, ?)',
-      [id, estudiante_id]
+      'INSERT INTO curso_estudiantes (curso_id, estudiante_rut) VALUES (?, ?)',
+      [id, estudiante_rut]
     );
 
     // Asignar todas las misiones activas del curso al estudiante
     await connection.query(
-      `INSERT INTO estudiante_misiones (estudiante_id, mision_id, estado)
+      `INSERT INTO estudiante_misiones (estudiante_rut, mision_id, estado)
       SELECT ?, m.id, 'Pendiente'
       FROM misiones m
       WHERE m.curso_id = ? AND m.estado = 'activa'`,
-      [estudiante_id, id]
+      [estudiante_rut, id]
     );
 
     await connection.commit();
@@ -301,13 +310,13 @@ const agregarEstudiante = async (req, res) => {
 // Eliminar un estudiante de un curso
 const eliminarEstudiante = async (req, res) => {
   try {
-    const { id, estudianteId } = req.params;
-    const gmId = req.usuario.id;
+    const { id, estudianteRut } = req.params;
+    const gmRut = req.usuario.rut;
 
     // Verificar que el curso pertenece al GM
     const [cursos] = await db.query(
-      'SELECT id FROM cursos WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT id FROM cursos WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (cursos.length === 0) {
@@ -318,8 +327,8 @@ const eliminarEstudiante = async (req, res) => {
     }
 
     await db.query(
-      'DELETE FROM curso_estudiantes WHERE curso_id = ? AND estudiante_id = ?',
-      [id, estudianteId]
+      'DELETE FROM curso_estudiantes WHERE curso_id = ? AND estudiante_rut = ?',
+      [id, estudianteRut]
     );
 
     res.json({

@@ -727,6 +727,39 @@
   gap: 1.25rem;
 }
 
+/* Labels dentro del modal deben ser oscuros (el modal tiene fondo blanco) */
+.config-modal .config-label {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Inputs, selects y textareas dentro del modal - sobreescribir estilos de tarjetas oscuras */
+.config-modal .config-input,
+.config-modal .config-textarea,
+.config-modal .config-select {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+.config-modal .config-input:focus,
+.config-modal .config-textarea:focus,
+.config-modal .config-select:focus {
+  border-color: #228be6 !important;
+  box-shadow: 0 0 0 3px rgba(34, 139, 230, 0.1) !important;
+}
+
+.config-modal .config-input::placeholder,
+.config-modal .config-textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+.config-modal .config-select {
+  appearance: auto;
+  padding: 0.75rem 1rem;
+}
+
 .config-modal-permisos {
   margin-top: 0.5rem;
   border-radius: 12px;
@@ -736,6 +769,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.config-modal-permisos .config-label {
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
 }
 
 .config-perm-item {

@@ -3,43 +3,23 @@
 
 import { useState, useEffect } from "react";
 import "../../styles/adminDashboard.css";
+import adminService from "../../services/adminService";
 
 function AdminDashboard() {
-  // Actividades de ejemplo con más detalle
-  const actividades = [
-    {
-      id: 1,
-      fecha: "15/07/2025",
-      titulo: "Auditoría completada para la misión 'Álgebra básica'.",
-      usuario: "Admin General",
-      hora: "15:32",
-      tipo: "auditoria"
-    },
-    {
-      id: 2,
-      fecha: "31/08/2025",
-      titulo: "Respaldo de base de datos creado.",
-      usuario: "Sistema automático",
-      hora: "02:14",
-      tipo: "sistema"
-    },
-    {
-      id: 3,
-      fecha: "28/09/2025",
-      titulo: "Se han configurado parámetros del sistema.",
-      usuario: "Jeremías Cansino",
-      hora: "10:48",
-      tipo: "configuracion"
-    },
-    {
-      id: 4,
-      fecha: "28/08/2025",
-      titulo: "Se ha registrado un nuevo usuario 'Jeremías Cansino'.",
-      usuario: "Admin General",
-      hora: "09:05",
-      tipo: "usuario"
-    },
-  ];
+  // Estados para datos del backend
+  const [estadisticas, setEstadisticas] = useState({
+    usuarios: 0,
+    instituciones: 0,
+    misionesTotales: 0,
+    misionesCompletadas: 0,
+    estudiantesActivos: 0
+  });
+  const [actividades, setActividades] = useState([]);
+  const [estadoSistema, setEstadoSistema] = useState({
+    baseDatos: 'Cargando...',
+    respaldos: 'Cargando...'
+  });
+  const [cargando, setCargando] = useState(true);
 
   // ID de la actividad actualmente expandida
   const [actividadExpandida, setActividadExpandida] = useState(null);
@@ -49,6 +29,39 @@ function AdminDashboard() {
   const [numerosAnimados, setNumerosAnimados] = useState(false);
   // Estado para tarjeta expandida de estadísticas
   const [estadisticasExpanded, setEstadisticasExpanded] = useState(false);
+
+  // Cargar datos del backend
+  useEffect(() => {
+    cargarDatosDashboard();
+  }, []);
+
+  const cargarDatosDashboard = async () => {
+    try {
+      setCargando(true);
+
+      // Cargar estadísticas
+      const resEstadisticas = await adminService.getEstadisticasDashboard();
+      if (resEstadisticas.success) {
+        setEstadisticas(resEstadisticas.data);
+      }
+
+      // Cargar actividades
+      const resActividades = await adminService.getRegistroActividad(10);
+      if (resActividades.success) {
+        setActividades(resActividades.data);
+      }
+
+      // Cargar estado del sistema
+      const resEstado = await adminService.getEstadoSistema();
+      if (resEstado.success) {
+        setEstadoSistema(resEstado.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar datos del dashboard:', error);
+    } finally {
+      setCargando(false);
+    }
+  };
 
   const handleClickActividad = (id) => {
     setActividadExpandida((prev) => (prev === id ? null : id));
@@ -113,7 +126,9 @@ function AdminDashboard() {
             </svg>
           </div>
           <h2>Usuarios</h2>
-          <p className="admin-stat-number">320</p>
+          <p className="admin-stat-number">
+            {cargando ? '...' : estadisticas.usuarios}
+          </p>
         </article>
 
         <article className="admin-stat-card">
@@ -123,7 +138,9 @@ function AdminDashboard() {
             </svg>
           </div>
           <h2>Instituciones</h2>
-          <p className="admin-stat-number">120</p>
+          <p className="admin-stat-number">
+            {cargando ? '...' : estadisticas.instituciones}
+          </p>
         </article>
 
         <article className="admin-stat-card">
@@ -134,7 +151,9 @@ function AdminDashboard() {
             </svg>
           </div>
           <h2>Misiones totales</h2>
-          <p className="admin-stat-number">120</p>
+          <p className="admin-stat-number">
+            {cargando ? '...' : estadisticas.misionesTotales}
+          </p>
         </article>
 
         {/* Tarjeta Ver estadísticas → abre modal */}
@@ -214,15 +233,15 @@ function AdminDashboard() {
             <div className="admin-system-content">
               <div className="admin-system-row">
                 <span>Base de datos</span>
-                <span className="admin-system-status admin-system-status--active">
-                  <span className="status-dot"></span>
-                  Operativa
+                <span className={`admin-system-status ${estadoSistema.baseDatos === 'Operativa' ? 'admin-system-status--active' : ''}`}>
+                  {estadoSistema.baseDatos === 'Operativa' && <span className="status-dot"></span>}
+                  {estadoSistema.baseDatos}
                 </span>
               </div>
               <div className="admin-system-row">
                 <span>Respaldos</span>
                 <span className="admin-system-status">
-                  Actualizado hace 2 días
+                  {estadoSistema.respaldos}
                 </span>
               </div>
               <button className="admin-system-button">
@@ -279,19 +298,25 @@ function AdminDashboard() {
                   <span className="admin-modal-metric-label">
                     Misiones completadas
                   </span>
-                  <span className="admin-modal-metric-value">95%</span>
+                  <span className="admin-modal-metric-value">
+                    {estadisticas.misionesCompletadas}%
+                  </span>
                 </div>
                 <div className={`admin-modal-metric ${numerosAnimados ? 'animated' : ''}`} style={{ animationDelay: '0.1s' }}>
                   <span className="admin-modal-metric-label">
                     Estudiantes activos
                   </span>
-                  <span className="admin-modal-metric-value">860</span>
+                  <span className="admin-modal-metric-value">
+                    {estadisticas.estudiantesActivos}
+                  </span>
                 </div>
                 <div className={`admin-modal-metric ${numerosAnimados ? 'animated' : ''}`} style={{ animationDelay: '0.2s' }}>
                   <span className="admin-modal-metric-label">
                     Instituciones
                   </span>
-                  <span className="admin-modal-metric-value">120</span>
+                  <span className="admin-modal-metric-value">
+                    {estadisticas.instituciones}
+                  </span>
                 </div>
               </div>
 

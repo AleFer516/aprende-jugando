@@ -11,7 +11,7 @@ const { verificarToken, verificarRol } = require('../middlewares/auth.middleware
 
 // Todas las rutas requieren autenticación y rol GM
 router.use(verificarToken);
-router.use(verificarRol('gm', 'admin'));
+router.use(verificarRol(['gm', 'admin']));
 
 // Obtener todas las misiones del GM
 router.get('/', obtenerMisiones);

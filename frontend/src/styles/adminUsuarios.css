@@ -362,6 +362,47 @@
   transform: translateY(0);
 }
 
+/* Botón eliminar */
+.admin-usuarios-btn-eliminar {
+  padding: 0.45rem;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-usuarios-btn-eliminar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.admin-usuarios-btn-eliminar:hover::before {
+  transform: translateX(100%);
+}
+
+.admin-usuarios-btn-eliminar:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.admin-usuarios-btn-eliminar:active {
+  transform: translateY(0);
+}
+
 /* Estado vacío */
 
 .admin-usuarios-empty {

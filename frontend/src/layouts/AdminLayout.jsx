@@ -5,11 +5,15 @@
 import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
+import useSystemConfig from "../hooks/useSystemConfig";
 import "../styles/adminLayout.css";
 import "../styles/adminUsuarios.css";
 import "../styles/themes.css";
 
 function AdminLayout() {
+  // Configuración del sistema (incluye logo y nombre)
+  const { nombreSistema, logoUrl } = useSystemConfig();
+
   // Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -110,12 +114,12 @@ function AdminLayout() {
             }}
           >
             <img
-              src="/images/logo_sin_fondo.png"
-              alt="Luminia Logo"
+              src={logoUrl ? `http://localhost:4000${logoUrl}` : "/images/logo_sin_fondo.png"}
+              alt={`${nombreSistema} Logo`}
               className="admin-logo-img"
             />
             <div className="admin-logo-text">
-              <p className="admin-logo-title">Luminia</p>
+              <p className="admin-logo-title">{nombreSistema}</p>
               <p className="admin-logo-subtitle">Aprende Jugando</p>
             </div>
           </div>

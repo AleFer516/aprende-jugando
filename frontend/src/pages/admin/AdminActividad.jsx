@@ -1,50 +1,79 @@
 // src/pages/admin/AdminActividad.jsx
 // Página "Actividad" del panel admin.
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import "../../styles/adminActividad.css";
+import adminService from "../../services/adminService";
 
 function AdminActividad() {
   const [filtroFecha, setFiltroFecha] = useState("todas");
   const [busqueda, setBusqueda] = useState("");
+  const [actividades, setActividades] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Actividades de ejemplo
-  const actividades = [
-    {
-      id: 1,
-      descripcion: "Alejandro creó un nuevo usuario",
-      fecha: "31/08/2025",
-      tipo: "usuario",
-    },
-    {
-      id: 2,
-      descripcion: "Camila subió al nivel 6",
-      fecha: "15/07/2025",
-      tipo: "progreso",
-    },
-    {
-      id: 3,
-      descripcion: "María editó su perfil",
-      fecha: "10/09/2025",
-      tipo: "perfil",
-    },
-    {
-      id: 4,
-      descripcion: "Se creó la misión 'Álgebra básica'",
-      fecha: "02/09/2025",
-      tipo: "mision",
-    },
-  ];
+  useEffect(() => {
+    cargarActividades();
+  }, []);
 
-  // Filtro básico (solo por texto, el filtro de fecha es decorativo por ahora)
+  const cargarActividades = async () => {
+    try {
+      setCargando(true);
+      setError(null);
+      const response = await adminService.getRegistroActividad(100); // Obtener las últimas 100 actividades
+
+      if (response.success) {
+        // Usar los datos directamente del backend sin mapeo adicional
+        setActividades(response.data);
+      } else {
+        setError(response.message || 'Error al cargar actividades');
+      }
+    } catch (error) {
+      console.error('Error al cargar actividades:', error);
+      setError(error.response?.data?.message || 'Error al cargar actividades');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Filtro por texto y fecha
   const actividadesFiltradas = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
-    return actividades.filter((act) => {
-      const coincideTexto =
-        !texto || act.descripcion.toLowerCase().includes(texto);
+    const ahora = new Date();
 
-      // Podrías reemplazar esto por lógica real de fecha más adelante
-      const coincideFecha = filtroFecha === "todas";
+    return actividades.filter((act) => {
+      // Filtro por texto
+      const coincideTexto = !texto ||
+        act.titulo?.toLowerCase().includes(texto) ||
+        act.usuario?.toLowerCase().includes(texto);
+
+      // Filtro por fecha
+      let coincideFecha = true;
+      if (filtroFecha !== "todas" && act.fecha) {
+        const fechaAct = new Date(act.fecha);
+
+        switch (filtroFecha) {
+          case "hoy": {
+            const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+            coincideFecha = fechaAct >= hoy;
+            break;
+          }
+          case "semana": {
+            const inicioSemana = new Date(ahora);
+            inicioSemana.setDate(ahora.getDate() - ahora.getDay());
+            inicioSemana.setHours(0, 0, 0, 0);
+            coincideFecha = fechaAct >= inicioSemana;
+            break;
+          }
+          case "mes": {
+            const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+            coincideFecha = fechaAct >= inicioMes;
+            break;
+          }
+          default:
+            coincideFecha = true;
+        }
+      }
 
       return coincideTexto && coincideFecha;
     });
@@ -56,29 +85,25 @@ function AdminActividad() {
         return (
           <svg viewBox="0 0 20 20" fill="currentColor">
             <path d="M10 10a3 3 0 100-6 3 3 0 000 6z" />
-            <path
-              fillRule="evenodd"
-              d="M4 16a6 6 0 1112 0H4z"
-              clipRule="evenodd"
-            />
+            <path fillRule="evenodd" d="M4 16a6 6 0 1112 0H4z" clipRule="evenodd" />
           </svg>
         );
-      case "progreso":
+      case "sistema":
         return (
           <svg viewBox="0 0 20 20" fill="currentColor">
-            <path d="M3 3a1 1 0 000 2h1v11a1 1 0 102 0V5h2v7a1 1 0 102 0V5h2v4a1 1 0 102 0V5h1a1 1 0 100-2H3z" />
+            <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
           </svg>
         );
-      case "perfil":
+      case "configuracion":
         return (
           <svg viewBox="0 0 20 20" fill="currentColor">
-            <path d="M10 2a4 4 0 00-2 7.516V11H6a2 2 0 00-2 2v3a1 1 0 102 0v-3h2v3a1 1 0 102 0v-3h2v3a1 1 0 102 0v-3a2 2 0 00-2-2h-2V9.516A4 4 0 0010 2z" />
+            <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
           </svg>
         );
-      case "mision":
+      case "auditoria":
         return (
           <svg viewBox="0 0 20 20" fill="currentColor">
-            <path d="M4 3a2 2 0 012-2h6a2 2 0 012 2v1h1a1 1 0 01.8 1.6l-7 9a1 1 0 01-1.6 0l-3-4A1 1 0 015.2 9.4L8 12.5 13.25 5H14V3a1 1 0 00-1-1H6a1 1 0 00-1 1v2H4V3z" />
+            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
         );
       default:
@@ -88,6 +113,16 @@ function AdminActividad() {
           </svg>
         );
     }
+  };
+
+  // Formatear fecha y hora para mostrar
+  const formatearFechaHora = (fecha, hora) => {
+    const fechaObj = new Date(fecha);
+    const dia = fechaObj.getDate().toString().padStart(2, '0');
+    const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+    const año = fechaObj.getFullYear();
+    const horaFormateada = hora ? hora.substring(0, 5) : '';
+    return `${dia}/${mes}/${año} ${horaFormateada}`;
   };
 
   return (
@@ -144,7 +179,29 @@ function AdminActividad() {
 
       {/* Lista de actividades */}
       <section className="admin-actividad-card">
-        {actividadesFiltradas.length === 0 ? (
+        {cargando ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+            <p>Cargando actividades...</p>
+          </div>
+        ) : error ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#ef4444' }}>
+            <p>Error: {error}</p>
+            <button
+              onClick={cargarActividades}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                background: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer'
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : actividadesFiltradas.length === 0 ? (
           <p className="admin-actividad-empty">
             No se encontraron actividades para los filtros seleccionados.
           </p>
@@ -162,12 +219,17 @@ function AdminActividad() {
 
                 <div className="admin-actividad-info">
                   <p className="admin-actividad-descripcion">
-                    {act.descripcion}
+                    {act.titulo}
                   </p>
+                  {act.usuario && (
+                    <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '4px' }}>
+                      Por: {act.usuario}
+                    </p>
+                  )}
                 </div>
 
                 <div className="admin-actividad-fecha">
-                  <span>{act.fecha}</span>
+                  <span>{formatearFechaHora(act.fecha, act.hora)}</span>
                 </div>
               </li>
             ))}

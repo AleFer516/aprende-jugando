@@ -3,20 +3,20 @@ const db = require('../db');
 // Obtener estadísticas generales del dashboard
 const obtenerEstadisticasDashboard = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Obtener estadísticas principales
     const [estadisticasPrincipales] = await db.query(
       `SELECT
-        COUNT(DISTINCT ce.estudiante_id) as estudiantesActivos,
+        COUNT(DISTINCT ce.estudiante_rut) as estudiantesActivos,
         COUNT(DISTINCT m.id) as misionesAsignadas,
         COUNT(DISTINCT CASE WHEN ev.estado = 'pendiente' THEN ev.id END) as misionesPorRevisar
       FROM cursos c
       LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
       LEFT JOIN misiones m ON c.id = m.curso_id
-      LEFT JOIN evaluaciones ev ON m.id = ev.mision_id AND ev.gm_id = ?
-      WHERE c.gm_id = ?`,
-      [gmId, gmId]
+      LEFT JOIN evaluaciones ev ON m.id = ev.mision_id AND ev.gm_rut = ?
+      WHERE c.gm_rut = ?`,
+      [gmRut, gmRut]
     );
 
     // Calcular horas acumuladas (basado en tiempo de respuesta de estudiantes)
@@ -26,8 +26,8 @@ const obtenerEstadisticasDashboard = async (req, res) => {
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
       INNER JOIN misiones m ON a.mision_id = m.id
-      WHERE m.gm_id = ?`,
-      [gmId]
+      WHERE m.gm_rut = ?`,
+      [gmRut]
     );
 
     const estadisticas = {
@@ -52,7 +52,7 @@ const obtenerEstadisticasDashboard = async (req, res) => {
 // Obtener misiones por revisar
 const obtenerMisionesPorRevisar = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [misiones] = await db.query(
       `SELECT
@@ -62,13 +62,13 @@ const obtenerMisionesPorRevisar = async (req, res) => {
         m.nombre as mision,
         em.fecha_completado as fechaEntrega
       FROM evaluaciones ev
-      INNER JOIN usuarios u ON ev.estudiante_id = u.id
+      INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
       INNER JOIN misiones m ON ev.mision_id = m.id
-      LEFT JOIN estudiante_misiones em ON ev.estudiante_id = em.estudiante_id AND ev.mision_id = em.mision_id
-      WHERE ev.gm_id = ? AND ev.estado = 'pendiente'
+      LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
+      WHERE ev.gm_rut = ? AND ev.estado = 'pendiente'
       ORDER BY em.fecha_completado DESC
       LIMIT 10`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -88,7 +88,7 @@ const obtenerMisionesPorRevisar = async (req, res) => {
 // Obtener estado de avance por curso
 const obtenerAvanceCursos = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [cursos] = await db.query(
       `SELECT
@@ -98,10 +98,10 @@ const obtenerAvanceCursos = async (req, res) => {
       FROM cursos c
       LEFT JOIN misiones m ON c.id = m.curso_id
       LEFT JOIN estudiante_misiones em ON m.id = em.mision_id
-      WHERE c.gm_id = ?
+      WHERE c.gm_rut = ?
       GROUP BY c.id, c.nombre
       ORDER BY c.nombre`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -121,7 +121,7 @@ const obtenerAvanceCursos = async (req, res) => {
 // Obtener misiones recientes
 const obtenerMisionesRecientes = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [misiones] = await db.query(
       `SELECT
@@ -135,10 +135,10 @@ const obtenerMisionesRecientes = async (req, res) => {
           ELSE 'Hace más de una semana'
         END as fecha
       FROM misiones m
-      WHERE m.gm_id = ?
+      WHERE m.gm_rut = ?
       ORDER BY m.created_at DESC
       LIMIT 5`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -158,7 +158,7 @@ const obtenerMisionesRecientes = async (req, res) => {
 // Obtener indicadores avanzados
 const obtenerIndicadoresAvanzados = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Progreso promedio por misión
     const [progresoPromedio] = await db.query(
@@ -166,8 +166,8 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
         COALESCE(AVG(em.progreso), 0) as promedio
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE m.gm_id = ?`,
-      [gmId]
+      WHERE m.gm_rut = ?`,
+      [gmRut]
     );
 
     // Horas semanales estudiadas (últimos 7 días)
@@ -177,8 +177,8 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
       INNER JOIN misiones m ON a.mision_id = m.id
-      WHERE m.gm_id = ? AND er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
-      [gmId]
+      WHERE m.gm_rut = ? AND er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
+      [gmRut]
     );
 
     // Categoría con mayor tasa de error
@@ -191,11 +191,11 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
       INNER JOIN misiones m ON a.mision_id = m.id
-      WHERE m.gm_id = ? AND m.categoria IS NOT NULL
+      WHERE m.gm_rut = ? AND m.categoria IS NOT NULL
       GROUP BY m.categoria
       ORDER BY tasa_error DESC
       LIMIT 1`,
-      [gmId]
+      [gmRut]
     );
 
     // Calcular competitividad (basado en la dispersión de calificaciones)
@@ -204,8 +204,8 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
         STDDEV(em.progreso) as desviacion
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE m.gm_id = ? AND em.estado = 'Completada'`,
-      [gmId]
+      WHERE m.gm_rut = ? AND em.estado = 'Completada'`,
+      [gmRut]
     );
 
     const desviacion = competitividad[0].desviacion || 0;
@@ -257,7 +257,7 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
 // Obtener resumen completo del dashboard
 const obtenerResumenDashboard = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Ejecutar todas las consultas en paralelo
     const [
@@ -270,15 +270,15 @@ const obtenerResumenDashboard = async (req, res) => {
       // Estadísticas principales
       db.query(
         `SELECT
-          COUNT(DISTINCT ce.estudiante_id) as estudiantesActivos,
+          COUNT(DISTINCT ce.estudiante_rut) as estudiantesActivos,
           COUNT(DISTINCT m.id) as misionesAsignadas,
           COUNT(DISTINCT CASE WHEN ev.estado = 'pendiente' THEN ev.id END) as misionesPorRevisar
         FROM cursos c
         LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
         LEFT JOIN misiones m ON c.id = m.curso_id
-        LEFT JOIN evaluaciones ev ON m.id = ev.mision_id AND ev.gm_id = ?
-        WHERE c.gm_id = ?`,
-        [gmId, gmId]
+        LEFT JOIN evaluaciones ev ON m.id = ev.mision_id AND ev.gm_rut = ?
+        WHERE c.gm_rut = ?`,
+        [gmRut, gmRut]
       ),
       // Misiones por revisar
       db.query(
@@ -289,13 +289,13 @@ const obtenerResumenDashboard = async (req, res) => {
           m.nombre as mision,
           em.fecha_completado as fechaEntrega
         FROM evaluaciones ev
-        INNER JOIN usuarios u ON ev.estudiante_id = u.id
+        INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
         INNER JOIN misiones m ON ev.mision_id = m.id
-        LEFT JOIN estudiante_misiones em ON ev.estudiante_id = em.estudiante_id AND ev.mision_id = em.mision_id
-        WHERE ev.gm_id = ? AND ev.estado = 'pendiente'
+        LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
+        WHERE ev.gm_rut = ? AND ev.estado = 'pendiente'
         ORDER BY em.fecha_completado DESC
         LIMIT 10`,
-        [gmId]
+        [gmRut]
       ),
       // Avance de cursos
       db.query(
@@ -306,10 +306,10 @@ const obtenerResumenDashboard = async (req, res) => {
         FROM cursos c
         LEFT JOIN misiones m ON c.id = m.curso_id
         LEFT JOIN estudiante_misiones em ON m.id = em.mision_id
-        WHERE c.gm_id = ?
+        WHERE c.gm_rut = ?
         GROUP BY c.id, c.nombre
         ORDER BY c.nombre`,
-        [gmId]
+        [gmRut]
       ),
       // Misiones recientes
       db.query(
@@ -323,10 +323,10 @@ const obtenerResumenDashboard = async (req, res) => {
             ELSE 'Hace más de una semana'
           END as fecha
         FROM misiones m
-        WHERE m.gm_id = ?
+        WHERE m.gm_rut = ?
         ORDER BY m.created_at DESC
         LIMIT 5`,
-        [gmId]
+        [gmRut]
       ),
       // Indicadores (solo progreso promedio y horas semanales)
       db.query(
@@ -337,8 +337,8 @@ const obtenerResumenDashboard = async (req, res) => {
         INNER JOIN misiones m ON em.mision_id = m.id
         LEFT JOIN actividades a ON m.id = a.mision_id
         LEFT JOIN estudiante_respuestas er ON a.id = er.actividad_id
-        WHERE m.gm_id = ?`,
-        [gmId]
+        WHERE m.gm_rut = ?`,
+        [gmRut]
       )
     ]);
 

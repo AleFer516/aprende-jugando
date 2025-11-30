@@ -1,27 +1,53 @@
 // src/pages/admin/AdminEstadisticas.jsx
 // Página de estadísticas globales del panel admin.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../../styles/adminEstadisticas.css";
+import adminService from "../../services/adminService";
 
 function AdminEstadisticas() {
-  const statsTop = [
-    { id: 1, label: "Total usuarios", value: 500, icon: "users" },
-    { id: 2, label: "Total de estudiantes", value: 320, icon: "student" },
-    { id: 3, label: "Total de GM", value: 180, icon: "gm" },
-    { id: 4, label: "Total de misiones", value: 70, icon: "missions" },
-    { id: 5, label: "Instituciones registradas", value: 19, icon: "institutions" },
-  ];
-
-  const categoriasMisiones = [
-    { id: 1, label: "Mat.", value: 5, fullName: "Matemáticas" },
-    { id: 2, label: "Ciencias.", value: 9, fullName: "Ciencias" },
-    { id: 3, label: "Esp.", value: 7, fullName: "Español" },
-    { id: 4, label: "Progra.", value: 10, fullName: "Programación" },
-  ];
-
+  const [estadisticas, setEstadisticas] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [cardHover, setCardHover] = useState(null);
   const [barHover, setBarHover] = useState(null);
+
+  useEffect(() => {
+    cargarEstadisticas();
+  }, []);
+
+  const cargarEstadisticas = async () => {
+    try {
+      setCargando(true);
+      setError(null);
+      const response = await adminService.getEstadisticasGlobales();
+
+      if (response.success) {
+        setEstadisticas(response.data);
+      } else {
+        setError(response.message || 'Error al cargar estadísticas');
+      }
+    } catch (error) {
+      console.error('Error al cargar estadísticas:', error);
+      setError(error.response?.data?.message || 'Error al cargar estadísticas');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  // Datos por defecto mientras carga
+  const statsTop = estadisticas ? [
+    { id: 1, label: "Total usuarios", value: estadisticas.totalUsuarios, icon: "users" },
+    { id: 2, label: "Total de estudiantes", value: estadisticas.totalEstudiantes, icon: "student" },
+    { id: 3, label: "Total de GM", value: estadisticas.totalGMs, icon: "gm" },
+    { id: 4, label: "Total de misiones", value: estadisticas.totalMisiones, icon: "missions" },
+    { id: 5, label: "Instituciones registradas", value: estadisticas.totalInstituciones, icon: "institutions" },
+  ] : [];
+
+  const categoriasMisiones = estadisticas?.misionesPorCategoria || [];
+
+  const totalMisionesCategorias = categoriasMisiones.reduce((sum, cat) => sum + cat.total, 0);
+  const maxValorCategoria = Math.max(...categoriasMisiones.map(cat => cat.total), 1);
 
   const getIcon = (type) => {
     switch (type) {
@@ -61,6 +87,46 @@ function AdminEstadisticas() {
     }
   };
 
+  if (cargando) {
+    return (
+      <div className="admin-estadisticas">
+        <h1 className="admin-estadisticas-title">Estadísticas</h1>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6b7280' }}>
+          <p>Cargando estadísticas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="admin-estadisticas">
+        <h1 className="admin-estadisticas-title">Estadísticas</h1>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#ef4444' }}>
+          <p>Error: {error}</p>
+          <button
+            onClick={cargarEstadisticas}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              background: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!estadisticas) {
+    return null;
+  }
+
   return (
     <div className="admin-estadisticas">
       {/* Título principal */}
@@ -99,7 +165,7 @@ function AdminEstadisticas() {
               <div className="admin-roles-chart-circle">
                 <div className="admin-roles-chart-inner">
                   <div className="admin-roles-chart-center">
-                    <span className="admin-roles-total">500</span>
+                    <span className="admin-roles-total">{estadisticas.totalUsuarios}</span>
                     <span className="admin-roles-label">Total</span>
                   </div>
                 </div>
@@ -111,52 +177,64 @@ function AdminEstadisticas() {
                 <span className="legend-dot legend-dot-gm" />
                 <div>
                   <p className="legend-label">GM</p>
-                  <p className="legend-value">180 usuarios (36%)</p>
+                  <p className="legend-value">
+                    {estadisticas.distribucionRoles.gm} usuarios (
+                    {estadisticas.distribucionRoles.porcentajeGM}%)
+                  </p>
                 </div>
               </div>
               <div className="admin-roles-legend-item">
                 <span className="legend-dot legend-dot-estudiantes" />
                 <div>
                   <p className="legend-label">Estudiantes</p>
-                  <p className="legend-value">320 usuarios (64%)</p>
+                  <p className="legend-value">
+                    {estadisticas.distribucionRoles.estudiante} usuarios (
+                    {estadisticas.distribucionRoles.porcentajeEstudiante}%)
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </article>
 
-        {/* Misiones completadas por categoría */}
+        {/* Misiones por categoría */}
         <article className="admin-estadisticas-panel admin-misiones-panel">
           <header className="admin-estadisticas-panel-header">
-            <span>Misiones completadas por categoría</span>
-            <span className="admin-panel-total">Total: 31</span>
+            <span>Misiones por categoría</span>
+            <span className="admin-panel-total">Total: {totalMisionesCategorias}</span>
           </header>
 
           <div className="admin-misiones-chart">
-            {categoriasMisiones.map((cat, index) => (
-              <div
-                key={cat.id}
-                className="admin-misiones-bar-wrapper"
-                onMouseEnter={() => setBarHover(cat.id)}
-                onMouseLeave={() => setBarHover(null)}
-              >
-                <div
-                  className={`admin-misiones-bar ${barHover === cat.id ? "hovered" : ""}`}
-                  style={{
-                    height: `${(cat.value / 10) * 100}%`,
-                    animationDelay: `${index * 0.08 + 0.1}s`,
-                  }}
-                >
-                  {barHover === cat.id && (
-                    <span className="admin-misiones-tooltip">
-                      {cat.fullName}: {cat.value}
-                    </span>
-                  )}
-                </div>
-                <span className="admin-misiones-bar-label">{cat.label}</span>
-                <span className="admin-misiones-bar-value">{cat.value}</span>
+            {categoriasMisiones.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                No hay misiones registradas
               </div>
-            ))}
+            ) : (
+              categoriasMisiones.map((cat, index) => (
+                <div
+                  key={index}
+                  className="admin-misiones-bar-wrapper"
+                  onMouseEnter={() => setBarHover(index)}
+                  onMouseLeave={() => setBarHover(null)}
+                >
+                  <div
+                    className={`admin-misiones-bar ${barHover === index ? "hovered" : ""}`}
+                    style={{
+                      height: `${(cat.total / maxValorCategoria) * 100}%`,
+                      animationDelay: `${index * 0.08 + 0.1}s`,
+                    }}
+                  >
+                    {barHover === index && (
+                      <span className="admin-misiones-tooltip">
+                        {cat.categoria}: {cat.total}
+                      </span>
+                    )}
+                  </div>
+                  <span className="admin-misiones-bar-label">{cat.categoria}</span>
+                  <span className="admin-misiones-bar-value">{cat.total}</span>
+                </div>
+              ))
+            )}
           </div>
         </article>
       </section>
@@ -218,41 +296,65 @@ function AdminEstadisticas() {
           </div>
         </article>
 
-        {/* Actividad por mes */}
+        {/* Actividad mensual */}
         <article className="admin-estadisticas-panel admin-actividad-panel">
           <header className="admin-estadisticas-panel-header">
-            <span>Actividad por mes</span>
-            <span className="admin-panel-badge">Últimos 4 meses</span>
+            <span>Actividad mensual</span>
+            <span className="admin-panel-badge">Últimos 6 meses</span>
           </header>
 
           <div className="admin-actividad-chart">
-            <svg
-              viewBox="0 0 100 50"
-              preserveAspectRatio="none"
-              className="admin-line-chart-svg"
-            >
-              <defs>
-                <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" style={{ stopColor: "#22c55e", stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: "#10b981", stopOpacity: 1 }} />
-                </linearGradient>
-              </defs>
-              <polyline
-                className="admin-line-chart-path admin-line-chart-path-2"
-                points="0,38 33,30 66,18 100,17"
-                style={{ stroke: "url(#lineGradient2)" }}
-              />
-              <circle className="admin-chart-dot admin-chart-dot-green" cx="0" cy="38" r="2" />
-              <circle className="admin-chart-dot admin-chart-dot-green" cx="33" cy="30" r="2" />
-              <circle className="admin-chart-dot admin-chart-dot-green" cx="66" cy="18" r="2" />
-              <circle className="admin-chart-dot admin-chart-dot-green" cx="100" cy="17" r="2" />
-            </svg>
-            <div className="admin-actividad-xlabels">
-              <span>Sep</span>
-              <span>Oct</span>
-              <span>Nov</span>
-              <span>Dic</span>
-            </div>
+            {estadisticas.actividadMensual.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                No hay datos de actividad
+              </div>
+            ) : (
+              <>
+                <svg
+                  viewBox="0 0 100 50"
+                  preserveAspectRatio="none"
+                  className="admin-line-chart-svg"
+                >
+                  <defs>
+                    <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" style={{ stopColor: "#22c55e", stopOpacity: 1 }} />
+                      <stop offset="100%" style={{ stopColor: "#10b981", stopOpacity: 1 }} />
+                    </linearGradient>
+                  </defs>
+                  <polyline
+                    className="admin-line-chart-path admin-line-chart-path-2"
+                    points={estadisticas.actividadMensual
+                      .map((mes, i) => {
+                        const x = (i / (estadisticas.actividadMensual.length - 1)) * 100;
+                        const maxActividad = Math.max(...estadisticas.actividadMensual.map(m => m.total), 1);
+                        const y = 45 - ((mes.total / maxActividad) * 35);
+                        return `${x},${y}`;
+                      })
+                      .join(' ')}
+                    style={{ stroke: "url(#lineGradient2)" }}
+                  />
+                  {estadisticas.actividadMensual.map((mes, i) => {
+                    const x = (i / (estadisticas.actividadMensual.length - 1)) * 100;
+                    const maxActividad = Math.max(...estadisticas.actividadMensual.map(m => m.total), 1);
+                    const y = 45 - ((mes.total / maxActividad) * 35);
+                    return (
+                      <circle
+                        key={i}
+                        className="admin-chart-dot admin-chart-dot-green"
+                        cx={x}
+                        cy={y}
+                        r="2"
+                      />
+                    );
+                  })}
+                </svg>
+                <div className="admin-actividad-xlabels">
+                  {estadisticas.actividadMensual.map((mes, i) => (
+                    <span key={i}>{mes.mes}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </article>
       </section>

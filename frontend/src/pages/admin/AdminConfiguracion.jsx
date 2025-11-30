@@ -1,9 +1,10 @@
 // src/pages/admin/AdminConfiguracion.jsx
 // Página de configuración del panel admin.
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "../../context/ThemeContext";
 import "../../styles/adminConfiguracion.css";
+import adminService from "../../services/adminService";
 
 function AdminConfiguracion() {
   const { theme, setTheme } = useTheme();
@@ -12,13 +13,10 @@ function AdminConfiguracion() {
     nombreSistema: "Luminia",
     tiempoInactividad: "15",
     zonaHoraria: "GMT-3 Santiago",
+    logoUrl: null,
   });
 
-  const [rolesActivos, setRolesActivos] = useState({
-    estudiante: true,
-    gm: true,
-    admin: true,
-  });
+  const [roles, setRoles] = useState([]);
 
   const [passwordPolicy, setPasswordPolicy] = useState({
     minChars: true,
@@ -63,6 +61,65 @@ function AdminConfiguracion() {
     setTimeout(() => setMensajeToast(null), 2500);
   };
 
+  const cargarRoles = useCallback(async () => {
+    try {
+      const response = await adminService.getRoles();
+      if (response.success) {
+        setRoles(response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar roles:', error);
+      mostrarToast('Error al cargar roles', 'error');
+    }
+  }, []);
+
+  // Cargar configuración y roles al montar el componente
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        // Cargar configuración
+        const responseConfig = await adminService.getConfiguracion();
+        if (responseConfig.success) {
+          const config = responseConfig.data;
+
+          setGeneralConfig({
+            nombreSistema: config.nombreSistema || "Luminia",
+            tiempoInactividad: config.tiempoInactividad?.toString() || "15",
+            zonaHoraria: config.zonaHoraria || "GMT-3 Santiago",
+            logoUrl: config.logoUrl || null,
+          });
+
+          setPasswordPolicy(config.politicasPassword || {
+            minChars: true,
+            mayusculas: true,
+            numeros: true,
+            simbolos: true,
+            expiracion: "90",
+          });
+
+          setAuthConfig(config.autenticacion || {
+            twoFactor: true,
+            maxIntentos: "5",
+          });
+
+          setBackupConfig({
+            respaldoAutomatico: config.respaldoAutomatico || true,
+            ultimaEjecucion: config.ultimoRespaldo || "Nunca",
+            tamanoActual: config.tamanoBackup || "0 MB",
+          });
+        }
+
+        // Cargar roles
+        await cargarRoles();
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        mostrarToast('Error al cargar la configuración', 'error');
+      }
+    };
+
+    cargarDatos();
+  }, [cargarRoles]);
+
   const handleChangeGeneral = (campo, valor) => {
     setGeneralConfig((prev) => ({ ...prev, [campo]: valor }));
 
@@ -75,8 +132,37 @@ function AdminConfiguracion() {
     }
   };
 
-  const toggleRol = (rol) => {
-    setRolesActivos((prev) => ({ ...prev, [rol]: !prev[rol] }));
+  const toggleRol = async (nombre, activo) => {
+    try {
+      const response = await adminService.toggleRol(nombre, !activo);
+      if (response.success) {
+        mostrarToast(response.message);
+        await cargarRoles();
+      }
+    } catch (error) {
+      console.error('Error al actualizar rol:', error);
+      mostrarToast(error.response?.data?.message || 'Error al actualizar rol', 'error');
+    }
+  };
+
+  const eliminarRol = async (id, nombre) => {
+    // Confirmar eliminación
+    const confirmar = window.confirm(
+      `¿Estás seguro de que deseas eliminar el rol "${nombre}"?\n\nEsta acción no se puede deshacer.`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      const response = await adminService.eliminarRol(id);
+      if (response.success) {
+        mostrarToast('Rol eliminado exitosamente');
+        await cargarRoles();
+      }
+    } catch (error) {
+      console.error('Error al eliminar rol:', error);
+      mostrarToast(error.response?.data?.message || 'Error al eliminar rol', 'error');
+    }
   };
 
   const togglePasswordPolicy = (campo) => {
@@ -156,7 +242,7 @@ function AdminConfiguracion() {
     }));
   };
 
-  const handleCrearRol = (e) => {
+  const handleCrearRol = async (e) => {
     e.preventDefault();
 
     if (!nuevoRol.nombre.trim()) {
@@ -164,21 +250,72 @@ function AdminConfiguracion() {
       return;
     }
 
-    // Aquí en un futuro podrías enviar al backend.
-    mostrarToast(`Rol "${nuevoRol.nombre}" creado correctamente.`);
+    try {
+      const response = await adminService.crearRol(nuevoRol);
+      if (response.success) {
+        mostrarToast(response.message);
 
-    // Reseteamos el formulario y cerramos modal
-    setNuevoRol({
-      nombre: "",
-      descripcion: "",
-      tipo: "Personalizado",
-      permisos: {
-        gestionarUsuarios: false,
-        gestionarMisiones: true,
-        verReportes: true,
-      },
-    });
-    setIsRoleModalOpen(false);
+        // Reseteamos el formulario y cerramos modal
+        setNuevoRol({
+          nombre: "",
+          descripcion: "",
+          tipo: "Personalizado",
+          permisos: {
+            gestionarUsuarios: false,
+            gestionarMisiones: true,
+            verReportes: true,
+          },
+        });
+        setIsRoleModalOpen(false);
+
+        // Recargar roles
+        await cargarRoles();
+      }
+    } catch (error) {
+      console.error('Error al crear rol:', error);
+      mostrarToast(error.response?.data?.message || 'Error al crear rol', 'error');
+    }
+  };
+
+  const handleSubirLogo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      mostrarToast('Solo se permiten imágenes (JPEG, PNG, GIF, SVG)', 'error');
+      return;
+    }
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      mostrarToast('El archivo no debe superar los 5MB', 'error');
+      return;
+    }
+
+    try {
+      mostrarToast('Subiendo logo...', 'info');
+      const response = await adminService.subirLogoSistema(file);
+
+      if (response.success) {
+        // Actualizar el logo en el estado
+        setGeneralConfig(prev => ({
+          ...prev,
+          logoUrl: response.logoUrl
+        }));
+
+        mostrarToast('Logo actualizado exitosamente');
+
+        // Recargar la página después de 1 segundo para que se vea el cambio en el layout
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error al subir logo:', error);
+      mostrarToast(error.response?.data?.message || 'Error al subir logo', 'error');
+    }
   };
 
   return (
@@ -209,24 +346,26 @@ function AdminConfiguracion() {
                 />
               </div>
 
-              {/* Logo (simulado) */}
+              {/* Logo */}
               <div className="config-field">
                 <label className="config-label">Logo</label>
                 <div className="config-upload">
+                  <input
+                    type="file"
+                    id="logo-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/svg+xml"
+                    onChange={handleSubirLogo}
+                    style={{ display: 'none' }}
+                  />
                   <button
                     type="button"
                     className="config-btn-outline"
-                    onClick={() =>
-                      mostrarToast(
-                        "Subida de logo aún no implementada.",
-                        "info"
-                      )
-                    }
+                    onClick={() => document.getElementById('logo-upload').click()}
                   >
                     Subir
                   </button>
                   <span className="config-upload-hint">
-                    PNG / SVG · máx. 2 MB
+                    {generalConfig.logoUrl ? 'Logo actual configurado' : 'PNG / SVG / JPG · máx. 5 MB'}
                   </span>
                 </div>
               </div>
@@ -320,56 +459,60 @@ function AdminConfiguracion() {
           </header>
 
           <div className="admin-config-card-body admin-config-card-body-roles">
-            <div className="config-role-row">
-              <div>
-                <p className="config-role-name">Rol estudiante</p>
-                <p className="config-role-hint">
-                  Acceso a misiones y progreso personal.
-                </p>
+            {roles.map((rol) => (
+              <div key={rol.id} className="config-role-row">
+                <div style={{ flex: 1 }}>
+                  <p className="config-role-name">
+                    Rol {rol.nombre}
+                    {rol.tipo !== 'Sistema' && (
+                      <span style={{ fontSize: '0.75rem', marginLeft: '0.5rem', color: '#9bb4ff' }}>
+                        ({rol.tipo})
+                      </span>
+                    )}
+                  </p>
+                  <p className="config-role-hint">
+                    {rol.descripcion}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <label className="config-switch">
+                    <input
+                      type="checkbox"
+                      checked={rol.activo}
+                      onChange={() => toggleRol(rol.nombre, rol.activo)}
+                      disabled={rol.tipo === 'Sistema'}
+                    />
+                    <span className="config-switch-slider" />
+                  </label>
+                  {rol.tipo !== 'Sistema' && (
+                    <button
+                      type="button"
+                      className="config-btn-delete"
+                      onClick={() => eliminarRol(rol.id, rol.nombre)}
+                      title="Eliminar rol"
+                      style={{
+                        padding: '0.5rem',
+                        background: '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.background = '#dc2626'}
+                      onMouseOut={(e) => e.currentTarget.style.background = '#ef4444'}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
-              <label className="config-switch">
-                <input
-                  type="checkbox"
-                  checked={rolesActivos.estudiante}
-                  onChange={() => toggleRol("estudiante")}
-                />
-                <span className="config-switch-slider" />
-              </label>
-            </div>
-
-            <div className="config-role-row">
-              <div>
-                <p className="config-role-name">Rol GM</p>
-                <p className="config-role-hint">
-                  Gestiona misiones y grupos de estudiantes.
-                </p>
-              </div>
-              <label className="config-switch">
-                <input
-                  type="checkbox"
-                  checked={rolesActivos.gm}
-                  onChange={() => toggleRol("gm")}
-                />
-                <span className="config-switch-slider" />
-              </label>
-            </div>
-
-            <div className="config-role-row">
-              <div>
-                <p className="config-role-name">Rol Administrador</p>
-                <p className="config-role-hint">
-                  Control total del sistema y seguridad.
-                </p>
-              </div>
-              <label className="config-switch">
-                <input
-                  type="checkbox"
-                  checked={rolesActivos.admin}
-                  onChange={() => toggleRol("admin")}
-                />
-                <span className="config-switch-slider" />
-              </label>
-            </div>
+            ))}
 
             <div className="config-roles-actions">
               <button

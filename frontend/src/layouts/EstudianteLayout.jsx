@@ -5,10 +5,13 @@
 import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
+import useSystemConfig from "../hooks/useSystemConfig";
 import "../styles/estudianteLayout.css";
 import "../styles/themes.css";
 
 function EstudianteLayout() {
+  // Configuración del sistema (incluye logo y nombre)
+  const { nombreSistema, logoUrl } = useSystemConfig();
   // Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -107,12 +110,12 @@ function EstudianteLayout() {
               }}
             >
               <img
-                src="/images/logo_sin_fondo.png"
-                alt="Luminia Logo"
+                src={logoUrl ? `http://localhost:4000${logoUrl}` : "/images/logo_sin_fondo.png"}
+                alt={`${nombreSistema} Logo`}
                 className="estudiante-logo-img"
               />
               <div className="estudiante-logo-text">
-                <p className="estudiante-logo-title">Luminia</p>
+                <p className="estudiante-logo-title">{nombreSistema}</p>
                 <p className="estudiante-logo-subtitle">Aprende Jugando</p>
               </div>
             </div>

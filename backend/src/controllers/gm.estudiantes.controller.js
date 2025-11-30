@@ -3,11 +3,11 @@ const db = require('../db');
 // Obtener todos los estudiantes de los cursos del GM
 const obtenerEstudiantes = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [estudiantes] = await db.query(
       `SELECT DISTINCT
-        u.id,
+        u.rut,
         u.nombre,
         u.email,
         u.nivel,
@@ -20,13 +20,12 @@ const obtenerEstudiantes = async (req, res) => {
         COUNT(DISTINCT CASE WHEN em.estado = 'En progreso' THEN em.mision_id END) as misiones_en_progreso,
         AVG(CASE WHEN em.estado = 'Completada' THEN em.progreso END) as promedio_progreso
       FROM usuarios u
-      INNER JOIN curso_estudiantes ce ON u.id = ce.estudiante_id
+      INNER JOIN curso_estudiantes ce ON u.rut = ce.estudiante_rut
       INNER JOIN cursos c ON ce.curso_id = c.id
-      LEFT JOIN estudiante_misiones em ON u.id = em.estudiante_id
-      WHERE c.gm_id = ? AND u.rol = 'estudiante'
-      GROUP BY u.id
+      LEFT JOIN estudiante_misiones em ON u.rut = em.estudiante_rut
+      GROUP BY u.rut
       ORDER BY u.nombre`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -47,12 +46,12 @@ const obtenerEstudiantes = async (req, res) => {
 const obtenerEstudiantePorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Verificar que el estudiante pertenece a un curso del GM
     const [estudiantes] = await db.query(
       `SELECT DISTINCT
-        u.id,
+        u.rut,
         u.nombre,
         u.email,
         u.nivel,
@@ -60,10 +59,10 @@ const obtenerEstudiantePorId = async (req, res) => {
         u.avatar,
         u.created_at
       FROM usuarios u
-      INNER JOIN curso_estudiantes ce ON u.id = ce.estudiante_id
+      INNER JOIN curso_estudiantes ce ON u.rut = ce.estudiante_rut
       INNER JOIN cursos c ON ce.curso_id = c.id
-      WHERE u.id = ? AND c.gm_id = ? AND u.rol = 'estudiante'`,
-      [id, gmId]
+      WHERE u.rut = ? AND c.gm_rut = ? AND u.rol = 'estudiante'`,
+      [id, gmRut]
     );
 
     if (estudiantes.length === 0) {
@@ -83,8 +82,8 @@ const obtenerEstudiantePorId = async (req, res) => {
         c.descripcion
       FROM cursos c
       INNER JOIN curso_estudiantes ce ON c.id = ce.curso_id
-      WHERE ce.estudiante_id = ? AND c.gm_id = ?`,
-      [id, gmId]
+      WHERE ce.estudiante_rut = ? AND c.gm_rut = ?`,
+      [id, gmRut]
     );
 
     // Obtener progreso en misiones
@@ -101,9 +100,9 @@ const obtenerEstudiantePorId = async (req, res) => {
         em.fecha_completado
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND m.gm_id = ?
+      WHERE em.estudiante_rut = ? AND m.gm_rut = ?
       ORDER BY em.created_at DESC`,
-      [id, gmId]
+      [id, gmRut]
     );
 
     // Obtener logros del estudiante
@@ -116,7 +115,7 @@ const obtenerEstudiantePorId = async (req, res) => {
         el.fecha_desbloqueo
       FROM estudiante_logros el
       INNER JOIN logros l ON el.logro_id = l.id
-      WHERE el.estudiante_id = ?
+      WHERE el.estudiante_rut = ?
       ORDER BY el.fecha_desbloqueo DESC`,
       [id]
     );
@@ -132,8 +131,8 @@ const obtenerEstudiantePorId = async (req, res) => {
         AVG(CASE WHEN estado = 'Completada' THEN progreso END) as promedio_progreso
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND m.gm_id = ?`,
-      [id, gmId]
+      WHERE em.estudiante_rut = ? AND m.gm_rut = ?`,
+      [id, gmRut]
     );
 
     res.json({
@@ -160,12 +159,12 @@ const obtenerEstudiantePorId = async (req, res) => {
 const obtenerProgresoMision = async (req, res) => {
   try {
     const { estudianteId, misionId } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Verificar que la misión pertenece al GM
     const [misiones] = await db.query(
-      'SELECT id FROM misiones WHERE id = ? AND gm_id = ?',
-      [misionId, gmId]
+      'SELECT id FROM misiones WHERE id = ? AND gm_rut = ?',
+      [misionId, gmRut]
     );
 
     if (misiones.length === 0) {
@@ -185,8 +184,8 @@ const obtenerProgresoMision = async (req, res) => {
         u.nombre as estudiante_nombre
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      INNER JOIN usuarios u ON em.estudiante_id = u.id
-      WHERE em.estudiante_id = ? AND em.mision_id = ?`,
+      INNER JOIN usuarios u ON em.estudiante_rut = u.rut
+      WHERE em.estudiante_rut = ? AND em.mision_id = ?`,
       [estudianteId, misionId]
     );
 
@@ -206,7 +205,7 @@ const obtenerProgresoMision = async (req, res) => {
         a.respuesta_correcta
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
-      WHERE er.estudiante_id = ? AND a.mision_id = ?
+      WHERE er.estudiante_rut = ? AND a.mision_id = ?
       ORDER BY a.orden, er.created_at`,
       [estudianteId, misionId]
     );
@@ -231,21 +230,21 @@ const obtenerProgresoMision = async (req, res) => {
 // Obtener estadísticas generales de todos los estudiantes
 const obtenerEstadisticasGenerales = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [estadisticas] = await db.query(
       `SELECT
-        COUNT(DISTINCT u.id) as total_estudiantes,
+        COUNT(DISTINCT u.rut) as total_estudiantes,
         COUNT(DISTINCT em.mision_id) as total_misiones_asignadas,
         COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.id END) as total_completadas,
         AVG(u.nivel) as promedio_nivel,
         AVG(u.experiencia) as promedio_experiencia
       FROM usuarios u
-      INNER JOIN curso_estudiantes ce ON u.id = ce.estudiante_id
+      INNER JOIN curso_estudiantes ce ON u.rut = ce.estudiante_rut
       INNER JOIN cursos c ON ce.curso_id = c.id
-      LEFT JOIN estudiante_misiones em ON u.id = em.estudiante_id
-      WHERE c.gm_id = ? AND u.rol = 'estudiante'`,
-      [gmId]
+      LEFT JOIN estudiante_misiones em ON u.rut = em.estudiante_rut
+      WHERE c.gm_rut = ? AND u.rol = 'estudiante'`,
+      [gmRut]
     );
 
     res.json({

@@ -1,9 +1,10 @@
 const db = require('../db');
+const { registrarActividad } = require('../utils/actividadLogger');
 
 // Obtener todas las misiones del GM
 const obtenerMisiones = async (req, res) => {
   try {
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     const [misiones] = await db.query(
       `SELECT
@@ -17,15 +18,15 @@ const obtenerMisiones = async (req, res) => {
         m.fecha_inicio,
         m.fecha_fin,
         c.nombre as curso_nombre,
-        COUNT(DISTINCT em.estudiante_id) as total_estudiantes,
-        COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.estudiante_id END) as estudiantes_completados
+        COUNT(DISTINCT em.estudiante_rut) as total_estudiantes,
+        COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.estudiante_rut END) as estudiantes_completados
       FROM misiones m
       LEFT JOIN cursos c ON m.curso_id = c.id
       LEFT JOIN estudiante_misiones em ON m.id = em.mision_id
-      WHERE m.gm_id = ?
+      WHERE m.gm_rut = ?
       GROUP BY m.id
       ORDER BY m.created_at DESC`,
-      [gmId]
+      [gmRut]
     );
 
     res.json({
@@ -46,7 +47,7 @@ const obtenerMisiones = async (req, res) => {
 const obtenerMisionPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Obtener datos de la misión
     const [misiones] = await db.query(
@@ -55,8 +56,8 @@ const obtenerMisionPorId = async (req, res) => {
         c.nombre as curso_nombre
       FROM misiones m
       LEFT JOIN cursos c ON m.curso_id = c.id
-      WHERE m.id = ? AND m.gm_id = ?`,
-      [id, gmId]
+      WHERE m.id = ? AND m.gm_rut = ?`,
+      [id, gmRut]
     );
 
     if (misiones.length === 0) {
@@ -102,10 +103,11 @@ const obtenerMisionPorId = async (req, res) => {
     // Obtener estadísticas de estudiantes
     const [estadisticas] = await db.query(
       `SELECT
-        COUNT(DISTINCT em.estudiante_id) as total_estudiantes,
-        COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.estudiante_id END) as completados,
-        COUNT(DISTINCT CASE WHEN em.estado = 'En progreso' THEN em.estudiante_id END) as en_progreso,
-        COUNT(DISTINCT CASE WHEN em.estado = 'Pendiente' THEN em.estudiante_id END) as pendientes,
+        COUNT(DISTINCT em.estudiante_rut) as total_estudiantes,
+        COUNT(DISTINCT em.estudiante_rut) as total_estudiantes,
+        COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.estudiante_rut END) as completados,
+        COUNT(DISTINCT CASE WHEN em.estado = 'En progreso' THEN em.estudiante_rut END) as en_progreso,
+        COUNT(DISTINCT CASE WHEN em.estado = 'Pendiente' THEN em.estudiante_rut END) as pendientes,
         AVG(CASE WHEN em.estado = 'Completada' THEN em.progreso END) as promedio_progreso
       FROM estudiante_misiones em
       WHERE em.mision_id = ?`,
@@ -139,7 +141,7 @@ const crearMision = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const {
       nombre,
       descripcion,
@@ -167,9 +169,9 @@ const crearMision = async (req, res) => {
     // Insertar misión
     const [result] = await connection.query(
       `INSERT INTO misiones
-        (nombre, descripcion, objetivo, dificultad, categoria, xp_recompensa, curso_id, gm_id, fecha_inicio, fecha_fin)
+        (nombre, descripcion, objetivo, dificultad, categoria, xp_recompensa, curso_id, gm_rut, fecha_inicio, fecha_fin)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, descripcion, objetivo, dificultad || 'Media', categoria, xp_recompensa || 100, curso_id, gmId, fecha_inicio, fecha_fin]
+      [nombre, descripcion, objetivo, dificultad || 'Media', categoria, xp_recompensa || 100, curso_id, gmRut, fecha_inicio, fecha_fin]
     );
 
     const misionId = result.insertId;
@@ -231,14 +233,22 @@ const crearMision = async (req, res) => {
 
     // Asignar misión a todos los estudiantes del curso
     await connection.query(
-      `INSERT INTO estudiante_misiones (estudiante_id, mision_id, estado)
-      SELECT ce.estudiante_id, ?, 'Pendiente'
+      `INSERT INTO estudiante_misiones (estudiante_rut, mision_id, estado)
+      SELECT ce.estudiante_rut, ?, 'Pendiente'
       FROM curso_estudiantes ce
       WHERE ce.curso_id = ?`,
       [misionId, curso_id]
     );
 
     await connection.commit();
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Game Master';
+    await registrarActividad(
+      `Nueva misión creada: ${nombre}`,
+      usuario,
+      'sistema'
+    );
 
     res.status(201).json({
       success: true,
@@ -266,7 +276,7 @@ const actualizarMision = async (req, res) => {
     await connection.beginTransaction();
 
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
     const {
       nombre,
       descripcion,
@@ -281,8 +291,8 @@ const actualizarMision = async (req, res) => {
 
     // Verificar que la misión pertenece al GM
     const [misiones] = await connection.query(
-      'SELECT id FROM misiones WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT id FROM misiones WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (misiones.length === 0) {
@@ -298,11 +308,19 @@ const actualizarMision = async (req, res) => {
       `UPDATE misiones
       SET nombre = ?, descripcion = ?, objetivo = ?, dificultad = ?, categoria = ?,
           xp_recompensa = ?, estado = ?, fecha_inicio = ?, fecha_fin = ?
-      WHERE id = ? AND gm_id = ?`,
-      [nombre, descripcion, objetivo, dificultad, categoria, xp_recompensa, estado, fecha_inicio, fecha_fin, id, gmId]
+      WHERE id = ? AND gm_rut = ?`,
+      [nombre, descripcion, objetivo, dificultad, categoria, xp_recompensa, estado, fecha_inicio, fecha_fin, id, gmRut]
     );
 
     await connection.commit();
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Game Master';
+    await registrarActividad(
+      `Misión actualizada: ${nombre}`,
+      usuario,
+      'sistema'
+    );
 
     res.json({
       success: true,
@@ -325,12 +343,12 @@ const actualizarMision = async (req, res) => {
 const eliminarMision = async (req, res) => {
   try {
     const { id } = req.params;
-    const gmId = req.usuario.id;
+    const gmRut = req.usuario.rut;
 
     // Verificar que la misión pertenece al GM
     const [misiones] = await db.query(
-      'SELECT id FROM misiones WHERE id = ? AND gm_id = ?',
-      [id, gmId]
+      'SELECT nombre FROM misiones WHERE id = ? AND gm_rut = ?',
+      [id, gmRut]
     );
 
     if (misiones.length === 0) {
@@ -340,8 +358,18 @@ const eliminarMision = async (req, res) => {
       });
     }
 
+    const nombreMision = misiones[0].nombre;
+
     // Eliminar misión (las tablas relacionadas se eliminan por CASCADE)
-    await db.query('DELETE FROM misiones WHERE id = ? AND gm_id = ?', [id, gmId]);
+    await db.query('DELETE FROM misiones WHERE id = ? AND gm_rut = ?', [id, gmRut]);
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Game Master';
+    await registrarActividad(
+      `Misión eliminada: ${nombreMision}`,
+      usuario,
+      'sistema'
+    );
 
     res.json({
       success: true,

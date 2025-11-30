@@ -14,8 +14,8 @@ const verificarToken = async (req, res, next) => {
 
     // Obtener información del usuario desde la base de datos
     const [usuarios] = await db.query(
-      'SELECT id, nombre, email, rol, nivel, experiencia FROM usuarios WHERE id = ?',
-      [decoded.id]
+      'SELECT rut, nombre, email, rol, nivel, experiencia FROM usuarios WHERE rut = ?',
+      [decoded.rut]
     );
 
     if (usuarios.length === 0) {
@@ -36,7 +36,7 @@ const verificarToken = async (req, res, next) => {
 };
 
 // Middleware para verificar rol de usuario
-const verificarRol = (...rolesPermitidos) => {
+const verificarRol = (rolesPermitidos) => {
   return (req, res, next) => {
     if (!req.usuario) {
       return res.status(401).json({ message: 'Usuario no autenticado' });

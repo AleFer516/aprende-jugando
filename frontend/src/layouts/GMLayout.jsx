@@ -5,11 +5,14 @@
 import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
+import useSystemConfig from "../hooks/useSystemConfig";
 import "../styles/gmLayout.css";
 import "../styles/adminUsuarios.css";
 import "../styles/themes.css";
 
 function GMLayout() {
+  // Configuración del sistema (incluye logo y nombre)
+  const { nombreSistema, logoUrl } = useSystemConfig();
   // Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -108,12 +111,12 @@ function GMLayout() {
             }}
           >
             <img
-              src="/images/logo_sin_fondo.png"
-              alt="Luminia Logo"
+              src={logoUrl ? `http://localhost:4000${logoUrl}` : "/images/logo_sin_fondo.png"}
+              alt={`${nombreSistema} Logo`}
               className="gm-logo-img"
             />
             <div className="gm-logo-text">
-              <p className="gm-logo-title">Luminia</p>
+              <p className="gm-logo-title">{nombreSistema}</p>
               <p className="gm-logo-subtitle">Aprende Jugando</p>
             </div>
           </div>
