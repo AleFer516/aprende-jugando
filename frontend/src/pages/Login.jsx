@@ -1,5 +1,5 @@
 // src/pages/Login.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import "../styles/login.css";
 import OwlLogin from "../components/OwlLogin";
@@ -15,8 +15,20 @@ function Login() {
   const [tipoMensaje, setTipoMensaje] = useState("success");
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const navigate = useNavigate();
+
+  // Cargar email recordado al montar el componente
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRemember(true);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +47,13 @@ function Login() {
       const response = await authService.login(email, password);
 
       if (response.success) {
+        // Guardar o eliminar email recordado según checkbox
+        if (remember) {
+          localStorage.setItem('rememberedEmail', email);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
+
         setTipoMensaje("success");
         setMensaje(`¡Bienvenido/a ${response.usuario.nombre}!`);
         setPassword("");
@@ -217,21 +236,38 @@ function Login() {
                   Contraseña
                 </label>
                 <div
-                  className={`border rounded-lg px-3.5 py-2 transition-all duration-300 ${
+                  className={`border rounded-lg px-3.5 py-2 transition-all duration-300 flex items-center gap-2 ${
                     passwordFocused
                       ? "border-[#228BE6] bg-blue-50 shadow-md scale-[1.02] input-glow-focus"
                       : "border-slate-200 bg-slate-50"
                   }`}
                 >
                   <input
-                    type="password"
-                    className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400"
+                    type={showPassword ? "text" : "password"}
+                    className="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400"
                     placeholder="Contraseña"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onFocus={() => setPasswordFocused(true)}
                     onBlur={() => setPasswordFocused(false)}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -249,7 +285,7 @@ function Login() {
                   </span>
                 </label>
                 <Link
-                  to="/recuperar-contraseña"
+                  to="/olvido-contrasena"
                   className="text-[#228BE6] hover:text-[#4E84C1] font-medium hover:scale-105 transition-all link-underline"
                   style={{
                     fontFamily: '"Poppins", "Montserrat", sans-serif',
@@ -327,6 +363,7 @@ function Login() {
               <div className="mt-4 text-[11px] text-slate-500 flex items-center justify-center gap-2">
                 <button
                   type="button"
+                  onClick={() => setShowPrivacyModal(true)}
                   className="hover:text-slate-700 hover:scale-105 transition-all link-underline"
                 >
                   Política de Privacidad
@@ -334,6 +371,7 @@ function Login() {
                 <span>|</span>
                 <button
                   type="button"
+                  onClick={() => setShowTermsModal(true)}
                   className="hover:text-slate-700 hover:scale-105 transition-all link-underline"
                 >
                   Términos de Uso
@@ -379,6 +417,293 @@ function Login() {
           </section>
         </main>
       </div>
+
+      {/* Modal de Política de Privacidad */}
+      {showPrivacyModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPrivacyModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 shadow-2xl animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-slate-900" style={{ fontFamily: '"Poppins", "Montserrat", sans-serif' }}>
+                Política de Privacidad
+              </h2>
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="text-slate-700 space-y-4 text-sm leading-relaxed">
+              <p className="text-slate-500 italic">Última actualización: {new Date().toLocaleDateString('es-CL')}</p>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">1. Información que Recopilamos</h3>
+                <p>
+                  En <strong>Aprende Jugando</strong>, recopilamos la siguiente información personal cuando te registras:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Nombre completo</li>
+                  <li>RUT (Rol Único Tributario)</li>
+                  <li>Correo electrónico</li>
+                  <li>Institución educativa</li>
+                  <li>Fecha de nacimiento</li>
+                  <li>Contraseña encriptada</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">2. Uso de la Información</h3>
+                <p>Utilizamos tu información personal para:</p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Crear y gestionar tu cuenta de usuario</li>
+                  <li>Proporcionar acceso a contenidos educativos gamificados</li>
+                  <li>Realizar seguimiento de tu progreso académico</li>
+                  <li>Enviar notificaciones sobre misiones y logros</li>
+                  <li>Mejorar la experiencia de aprendizaje</li>
+                  <li>Comunicarnos contigo sobre actualizaciones del sistema</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">3. Protección de Datos</h3>
+                <p>
+                  Nos comprometemos a proteger tu información personal mediante:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Encriptación de contraseñas con algoritmo bcrypt</li>
+                  <li>Uso de conexiones seguras (HTTPS)</li>
+                  <li>Acceso restringido solo a personal autorizado</li>
+                  <li>Cumplimiento de la Ley N° 19.628 sobre Protección de Datos de Carácter Personal de Chile</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">4. Compartir Información</h3>
+                <p>
+                  No vendemos, alquilamos ni compartimos tu información personal con terceros, excepto:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Cuando sea requerido por ley o autoridad competente</li>
+                  <li>Con tu institución educativa (solo información académica relevante)</li>
+                  <li>Para proteger los derechos y seguridad de nuestros usuarios</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">5. Tus Derechos</h3>
+                <p>Tienes derecho a:</p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Acceder a tu información personal almacenada</li>
+                  <li>Solicitar corrección de datos incorrectos</li>
+                  <li>Solicitar eliminación de tu cuenta y datos asociados</li>
+                  <li>Retirar tu consentimiento en cualquier momento</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">6. Cookies y Tecnologías Similares</h3>
+                <p>
+                  Utilizamos cookies y almacenamiento local del navegador para mantener tu sesión activa
+                  y mejorar tu experiencia de usuario. Puedes desactivar las cookies en tu navegador,
+                  pero esto puede afectar la funcionalidad de la plataforma.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">7. Contacto</h3>
+                <p>
+                  Si tienes preguntas sobre esta política de privacidad o deseas ejercer tus derechos,
+                  contáctanos a través de tu institución educativa o los canales de soporte de la plataforma.
+                </p>
+              </section>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="px-6 py-2 bg-[#228BE6] text-white rounded-lg hover:bg-[#1c6fb8] transition-colors font-semibold"
+                style={{ fontFamily: '"Poppins", "Montserrat", sans-serif' }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Términos de Uso */}
+      {showTermsModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowTermsModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto p-8 shadow-2xl animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-slate-900" style={{ fontFamily: '"Poppins", "Montserrat", sans-serif' }}>
+                Términos de Uso
+              </h2>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="text-slate-700 space-y-4 text-sm leading-relaxed">
+              <p className="text-slate-500 italic">Última actualización: {new Date().toLocaleDateString('es-CL')}</p>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">1. Aceptación de Términos</h3>
+                <p>
+                  Al acceder y utilizar <strong>Aprende Jugando</strong>, aceptas cumplir con estos Términos de Uso.
+                  Si no estás de acuerdo con alguna parte de estos términos, no debes utilizar la plataforma.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">2. Descripción del Servicio</h3>
+                <p>
+                  Aprende Jugando es una plataforma educativa gamificada que proporciona:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Sistema de misiones y desafíos educativos</li>
+                  <li>Seguimiento de progreso académico</li>
+                  <li>Sistema de niveles, experiencia y logros</li>
+                  <li>Herramientas para Game Masters (profesores)</li>
+                  <li>Panel de administración del sistema</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">3. Registro y Cuenta de Usuario</h3>
+                <p>Para utilizar la plataforma debes:</p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Proporcionar información verdadera y actualizada</li>
+                  <li>Ser mayor de 13 años (menores requieren autorización de tutor)</li>
+                  <li>Mantener la confidencialidad de tu contraseña</li>
+                  <li>Notificar inmediatamente cualquier uso no autorizado de tu cuenta</li>
+                  <li>Usar solo UNA cuenta por estudiante (el RUT es único)</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">4. Conducta del Usuario</h3>
+                <p>Te comprometes a NO:</p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Hacer trampa o manipular el sistema de puntos/logros</li>
+                  <li>Compartir o vender tu cuenta a otros usuarios</li>
+                  <li>Usar lenguaje ofensivo, discriminatorio o inapropiado</li>
+                  <li>Interferir con el funcionamiento normal de la plataforma</li>
+                  <li>Intentar acceder a cuentas de otros usuarios</li>
+                  <li>Copiar o plagiar el trabajo de otros estudiantes</li>
+                  <li>Publicar contenido que viole derechos de autor</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">5. Contenido y Propiedad Intelectual</h3>
+                <p>
+                  Todo el contenido de la plataforma (textos, imágenes, logos, misiones, etc.) es propiedad
+                  de Aprende Jugando y está protegido por leyes de propiedad intelectual. No puedes
+                  reproducir, distribuir o modificar este contenido sin autorización expresa.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">6. Evaluaciones y Calificaciones</h3>
+                <p>
+                  Las evaluaciones realizadas en la plataforma son parte de tu proceso educativo.
+                  Los resultados pueden ser compartidos con tus profesores e institución educativa.
+                  Hacer trampa en evaluaciones puede resultar en:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Suspensión temporal de la cuenta</li>
+                  <li>Pérdida de puntos y logros</li>
+                  <li>Notificación a tu institución educativa</li>
+                  <li>Cancelación permanente de la cuenta en casos graves</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">7. Suspensión y Terminación</h3>
+                <p>
+                  Nos reservamos el derecho de suspender o cancelar tu cuenta si:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Violas estos Términos de Uso</li>
+                  <li>Proporcionas información falsa o fraudulenta</li>
+                  <li>Tu conducta perjudica a otros usuarios o al sistema</li>
+                  <li>No accedes a la plataforma durante más de 12 meses</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">8. Limitación de Responsabilidad</h3>
+                <p>
+                  Aprende Jugando se proporciona "tal cual" sin garantías de ningún tipo.
+                  No nos hacemos responsables por:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+                  <li>Interrupciones del servicio o errores técnicos</li>
+                  <li>Pérdida de datos o progreso (recomendamos respaldos regulares)</li>
+                  <li>Decisiones académicas basadas exclusivamente en la plataforma</li>
+                  <li>Contenido generado por usuarios (comentarios, respuestas, etc.)</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">9. Modificaciones</h3>
+                <p>
+                  Nos reservamos el derecho de modificar estos términos en cualquier momento.
+                  Los cambios significativos serán notificados a través de la plataforma.
+                  El uso continuado después de las modificaciones constituye aceptación de los nuevos términos.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">10. Ley Aplicable</h3>
+                <p>
+                  Estos términos se rigen por las leyes de la República de Chile.
+                  Cualquier disputa será sometida a los tribunales competentes de Chile.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">11. Contacto</h3>
+                <p>
+                  Para consultas sobre estos términos, contáctanos a través de los canales
+                  de soporte disponibles en tu institución educativa.
+                </p>
+              </section>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="px-6 py-2 bg-[#228BE6] text-white rounded-lg hover:bg-[#1c6fb8] transition-colors font-semibold"
+                style={{ fontFamily: '"Poppins", "Montserrat", sans-serif' }}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

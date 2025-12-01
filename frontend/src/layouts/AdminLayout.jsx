@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
 import useSystemConfig from "../hooks/useSystemConfig";
+import notificacionesService from "../services/notificacionesService";
 import "../styles/adminLayout.css";
 import "../styles/adminUsuarios.css";
 import "../styles/themes.css";
@@ -19,7 +20,8 @@ function AdminLayout() {
 
   // Notificaciones
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [hasNewNotifications, setHasNewNotifications] = useState(true);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [noLeidas, setNoLeidas] = useState(0);
 
   // Menú de usuario
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -33,11 +35,56 @@ function AdminLayout() {
   const abrirSidebar = () => setSidebarOpen(true);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
+  const cargarNotificaciones = async () => {
+    try {
+      const response = await notificacionesService.getNotificaciones(10, false);
+      if (response.success) {
+        setNotificaciones(response.data.notificaciones);
+        setNoLeidas(response.data.noLeidas);
+      }
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error);
+    }
+  };
+
   const toggleNotifications = () => {
     setNotificationsOpen((prev) => !prev);
     if (!notificationsOpen) {
-      setHasNewNotifications(false);
+      cargarNotificaciones();
     }
+  };
+
+  const handleMarcarLeida = async (id) => {
+    try {
+      await notificacionesService.marcarComoLeida(id);
+      await cargarNotificaciones();
+    } catch (error) {
+      console.error('Error al marcar como leída:', error);
+    }
+  };
+
+  const handleMarcarTodasLeidas = async () => {
+    try {
+      await notificacionesService.marcarTodasLeidas();
+      await cargarNotificaciones();
+    } catch (error) {
+      console.error('Error al marcar todas como leídas:', error);
+    }
+  };
+
+  const formatearTiempo = (fecha) => {
+    const ahora = new Date();
+    const fechaNotif = new Date(fecha);
+    const diffMs = ahora - fechaNotif;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHoras = Math.floor(diffMins / 60);
+    const diffDias = Math.floor(diffHoras / 24);
+
+    if (diffMins < 1) return 'Ahora mismo';
+    if (diffMins < 60) return `Hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+    if (diffHoras < 24) return `Hace ${diffHoras} hora${diffHoras > 1 ? 's' : ''}`;
+    if (diffDias < 7) return `Hace ${diffDias} día${diffDias > 1 ? 's' : ''}`;
+    return fechaNotif.toLocaleDateString();
   };
 
   const toggleUserMenu = () => {
@@ -60,6 +107,30 @@ function AdminLayout() {
     // Ajusta la ruta si tu Login.jsx está en otra URL (por ejemplo '/login')
     navigate("/");
   };
+
+  // Cargar notificaciones al montar y periódicamente
+  useEffect(() => {
+    const cargarNotifs = async () => {
+      try {
+        const response = await notificacionesService.getNotificaciones(10, false);
+        if (response.success) {
+          setNotificaciones(response.data.notificaciones);
+          setNoLeidas(response.data.noLeidas);
+        }
+      } catch (error) {
+        console.error('Error al cargar notificaciones:', error);
+      }
+    };
+
+    cargarNotifs();
+
+    // Actualizar cada 30 segundos
+    const interval = setInterval(() => {
+      cargarNotifs();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
@@ -229,8 +300,8 @@ function AdminLayout() {
                   <path d="M10 2a4 4 0 00-4 4v1.528c0 .434-.14.857-.4 1.204L4.1 10.2A1 1 0 005 11.8h10a1 1 0 00.9-1.6l-1.5-1.968A2 2 0 0114 7.528V6a4 4 0 00-4-4z" />
                   <path d="M8 14a2 2 0 104 0H8z" />
                 </svg>
-                {hasNewNotifications && (
-                  <span className="notification-badge"></span>
+                {noLeidas > 0 && (
+                  <span className="notification-badge">{noLeidas}</span>
                 )}
               </button>
 
@@ -239,39 +310,74 @@ function AdminLayout() {
                 <div className="admin-notifications-dropdown">
                   <div className="notifications-header">
                     <h3>Notificaciones</h3>
+                    {noLeidas > 0 && (
+                      <button
+                        onClick={handleMarcarTodasLeidas}
+                        className="notifications-mark-all"
+                        style={{
+                          fontSize: '0.75rem',
+                          color: '#6366f1',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '0.25rem 0.5rem'
+                        }}
+                      >
+                        Marcar todas como leídas
+                      </button>
+                    )}
                   </div>
                   <div className="notifications-list">
-                    <div className="notification-item">
-                      <div className="notification-icon">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M5 12a4 4 0 018 0v1H5v-1zm-2 3a2 2 0 012-2h8a2 2 0 012 2v1H3v-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                    {notificaciones.length === 0 ? (
+                      <div style={{
+                        padding: '2rem',
+                        textAlign: 'center',
+                        color: '#9ca3af'
+                      }}>
+                        No hay notificaciones
                       </div>
-                      <div className="notification-content">
-                        <p className="notification-title">
-                          Nuevo usuario registrado
-                        </p>
-                        <p className="notification-time">Hace 5 minutos</p>
-                      </div>
-                    </div>
-                    <div className="notification-item">
-                      <div className="notification-icon">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M4 3a1 1 0 00-1 1v12h2V4a1 1 0 00-1-1zm5 4a1 1 0 00-1 1v8h2V8a1 1 0 00-1-1zm4-3a1 1 0 00-1 1v11h2V5a1 1 0 00-1-1zm4 6a1 1 0 00-1 1v5h2v-5a1 1 0 00-1-1z" />
-                        </svg>
-                      </div>
-                      <div className="notification-content">
-                        <p className="notification-title">
-                          Nuevo récord de usuarios activos
-                        </p>
-                        <p className="notification-time">Hace 1 hora</p>
-                      </div>
-                    </div>
+                    ) : (
+                      notificaciones.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`notification-item ${notif.leida ? '' : 'unread'}`}
+                          onClick={() => !notif.leida && handleMarcarLeida(notif.id)}
+                          style={{ cursor: notif.leida ? 'default' : 'pointer' }}
+                        >
+                          <div className="notification-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                              {notif.tipo === 'usuario' ? (
+                                <>
+                                  <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M5 12a4 4 0 018 0v1H5v-1zm-2 3a2 2 0 012-2h8a2 2 0 012 2v1H3v-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </>
+                              ) : (
+                                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                              )}
+                            </svg>
+                          </div>
+                          <div className="notification-content">
+                            <p className="notification-title">
+                              {notif.titulo}
+                            </p>
+                            {notif.mensaje && (
+                              <p className="notification-message" style={{
+                                fontSize: '0.8rem',
+                                color: '#6b7280',
+                                marginTop: '0.25rem'
+                              }}>
+                                {notif.mensaje}
+                              </p>
+                            )}
+                            <p className="notification-time">{formatearTiempo(notif.created_at)}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

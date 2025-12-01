@@ -13,13 +13,8 @@ const authService = {
   },
 
   // Registro
-  register: async (nombre, email, password, rol = 'estudiante') => {
-    const response = await api.post('/auth/register', {
-      nombre,
-      email,
-      password,
-      rol
-    });
+  register: async (userData) => {
+    const response = await api.post('/auth/register', userData);
     return response.data;
   },
 

@@ -1,6 +1,7 @@
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 const { registrarActividad } = require('../utils/actividadLogger');
+const { notificarAdmins } = require('./admin.notificaciones.controller');
 
 // Obtener todos los usuarios con filtros
 const getUsuarios = async (req, res) => {
@@ -175,6 +176,14 @@ const crearUsuario = async (req, res) => {
       `Nuevo usuario registrado: ${nombre} (${rut})`,
       usuario,
       'usuario'
+    );
+
+    // Crear notificación para todos los admins
+    await notificarAdmins(
+      'usuario',
+      'Nuevo usuario registrado',
+      `Se ha registrado un nuevo usuario: ${nombre} (${rol})`,
+      `/admin/usuarios`
     );
 
     res.status(201).json({

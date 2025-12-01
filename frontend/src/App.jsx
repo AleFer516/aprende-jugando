@@ -9,7 +9,8 @@ import Login from "./pages/Login.jsx";
 import SobreNosotros from "./pages/SobreNosotros.jsx";
 import Contacto from "./pages/Contacto.jsx";
 import Registro from "./pages/Registro.jsx";
-import RecuperarContrasena from "./pages/RecuperarContrasena.jsx";
+import OlvidoContrasena from "./pages/OlvidoContrasena.jsx";
+import RestablecerContrasena from "./pages/RestablecerContrasena.jsx";
 
 // 🟦 Panel Admin (rutas privadas / internas)
 import AdminLayout from "./layouts/AdminLayout.jsx";
@@ -59,8 +60,11 @@ function App() {
       {/* Registro */}
       <Route path="/registro" element={<Registro />} />
 
-      {/* Recuperar contraseña */}
-      <Route path="/recuperar-contraseña" element={<RecuperarContrasena />} />
+      {/* Recuperar contraseña - Solicitar recuperación */}
+      <Route path="/olvido-contrasena" element={<OlvidoContrasena />} />
+
+      {/* Restablecer contraseña - Con token */}
+      <Route path="/restablecer-contrasena/:token" element={<RestablecerContrasena />} />
 
       {/* Sobre nosotros */}
       <Route path="/sobre-nosotros" element={<SobreNosotros />} />

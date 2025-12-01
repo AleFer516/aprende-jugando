@@ -26,6 +26,7 @@ CREATE TABLE usuarios (
   monedas INT DEFAULT 0,
   estado ENUM('activo', 'inactivo', 'suspendido') DEFAULT 'activo',
   institucion VARCHAR(200),
+  fecha_nacimiento DATE NULL COMMENT 'Fecha de nacimiento del usuario',
   telefono VARCHAR(20) COMMENT 'Número de teléfono de contacto',
   avatar_url VARCHAR(500) COMMENT 'URL de la imagen de perfil',
   ultimo_acceso TIMESTAMP NULL COMMENT 'Última vez que el usuario inició sesión',
@@ -363,6 +364,23 @@ CREATE TABLE notificaciones (
   INDEX idx_leida (leida),
   INDEX idx_fecha (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tokens de recuperación de contraseña
+CREATE TABLE password_reset_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_rut VARCHAR(12) NOT NULL,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used TINYINT(1) DEFAULT 0 COMMENT '0 = no usado, 1 = usado',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (usuario_rut) REFERENCES usuarios(rut) ON DELETE CASCADE,
+
+  INDEX idx_token (token),
+  INDEX idx_usuario_rut (usuario_rut),
+  INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Tokens de recuperación de contraseña con expiración de 1 hora';
 
 -- ==========================================
 -- DATOS INICIALES - USUARIOS

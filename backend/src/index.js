@@ -28,6 +28,7 @@ const adminUsuariosRoutes = require('./routes/admin.usuarios.routes');
 const adminConfiguracionRoutes = require('./routes/admin.configuracion.routes');
 const adminPerfilRoutes = require('./routes/admin.perfil.routes');
 const adminEstadisticasRoutes = require('./routes/admin.estadisticas.routes');
+const adminNotificacionesRoutes = require('./routes/admin.notificaciones.routes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -63,6 +64,7 @@ app.use('/api/admin/usuarios', adminUsuariosRoutes);
 app.use('/api/admin/configuracion', adminConfiguracionRoutes);
 app.use('/api/admin/perfil', adminPerfilRoutes);
 app.use('/api/admin/estadisticas', adminEstadisticasRoutes);
+app.use('/api/admin/notificaciones', adminNotificacionesRoutes);
 
 // Ruta raíz
 app.get('/', (req, res) => {
