@@ -9,7 +9,10 @@
       "Bash(npm install:*)",
       "Bash(cmd /c \"mysql -u root -p5657 -e \"\"USE aprende_jugando; DESCRIBE password_reset_tokens;\"\"\")",
       "Bash(cmd /c \"mysql -u root -p5657 aprende_jugando -e \"\"DESCRIBE password_reset_tokens;\"\"\")",
-      "Bash(npm run mysql:create-table:*)"
+      "Bash(npm run mysql:create-table:*)",
+      "Bash(cat:*)",
+      "Bash(npm start)",
+      "Bash(timeout 10 bash:*)"
     ],
     "deny": [],
     "ask": []

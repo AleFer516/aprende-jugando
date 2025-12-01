@@ -2,81 +2,36 @@
 // Página de gestión de estudiantes del Game Master.
 // Muestra lista de estudiantes con búsqueda y filtros.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../services/api";
 import "../../styles/gmEstudiantes.css";
 import "../../styles/gmGestionarMision.css"; // Para usar los estilos de éxito
 import "../../styles/adminUsuarios.css"; // Para usar los estilos del modal
 import "../../styles/themes.css";
 
 function GMEstudiantes() {
-  // Datos de ejemplo de estudiantes
-  const estudiantesData = [
-    {
-      id: 1,
-      rut: "12.345.678-9",
-      nombre: "Ana María González",
-      curso: "3° Medio A",
-      nivel: "Avanzado",
-      estado: "Activo"
-    },
-    {
-      id: 2,
-      rut: "23.456.789-0",
-      nombre: "Carlos Pérez Silva",
-      curso: "2° Medio B",
-      nivel: "Intermedio",
-      estado: "Activo"
-    },
-    {
-      id: 3,
-      rut: "34.567.890-1",
-      nombre: "María José Fernández",
-      curso: "3° Medio A",
-      nivel: "Básico",
-      estado: "Inactivo"
-    },
-    {
-      id: 4,
-      rut: "45.678.901-2",
-      nombre: "Diego Morales",
-      curso: "1° Medio C",
-      nivel: "Intermedio",
-      estado: "Activo"
-    },
-    {
-      id: 5,
-      rut: "56.789.012-3",
-      nombre: "Valentina Torres",
-      curso: "2° Medio B",
-      nivel: "Avanzado",
-      estado: "Activo"
-    },
-    {
-      id: 6,
-      rut: "67.890.123-4",
-      nombre: "Matías Rojas",
-      curso: "1° Medio C",
-      nivel: "Básico",
-      estado: "Inactivo"
-    }
-  ];
-
-  const [estudiantes] = useState(estudiantesData);
+  const [estudiantes, setEstudiantes] = useState([]);
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filtroCurso, setFiltroCurso] = useState("Todos");
   const [filtroNivel, setFiltroNivel] = useState("Todos");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [busqueda, setBusqueda] = useState("");
   const [estudianteSeleccionado, setEstudianteSeleccionado] = useState(null);
+  const [detallesEstudiante, setDetallesEstudiante] = useState(null);
+  const [loadingDetalles, setLoadingDetalles] = useState(false);
   const [modalCrearAbierto, setModalCrearAbierto] = useState(false);
   const [modalDetallesAbierto, setModalDetallesAbierto] = useState(false);
   const [modalEditarAbierto, setModalEditarAbierto] = useState(false);
   const [mensajeExitoEdicion, setMensajeExitoEdicion] = useState(false);
+  const [mensajeExitoCreacion, setMensajeExitoCreacion] = useState(false);
+  const [loadingCreacion, setLoadingCreacion] = useState(false);
   const [formData, setFormData] = useState({
     rut: "",
     nombre: "",
-    curso: "",
-    nivel: "Intermedio",
-    estado: "Activo"
+    email: "",
+    cursoId: ""
   });
   const [formDataEdicion, setFormDataEdicion] = useState({
     rut: "",
@@ -87,14 +42,61 @@ function GMEstudiantes() {
   });
   const [errores, setErrores] = useState({});
 
-  // Datos de misiones activas por estudiante (simulado)
-  const misionesActivasPorEstudiante = {
-    1: 3,
-    2: 5,
-    3: 1,
-    4: 4,
-    5: 6,
-    6: 2
+  // Cargar estudiantes y cursos desde el backend
+  useEffect(() => {
+    cargarEstudiantes();
+    cargarCursos();
+  }, []);
+
+  const cargarEstudiantes = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get('/gm/estudiantes');
+
+      if (response.data.success) {
+        // Mapear datos del backend al formato del frontend
+        const estudiantesFormateados = response.data.estudiantes.map(est => ({
+          id: est.rut, // Usamos el RUT como ID único
+          rut: est.rut,
+          nombre: est.nombre,
+          email: est.email,
+          curso: est.cursos || 'Sin curso asignado',
+          nivel: obtenerNivelDesdeXP(est.nivel),
+          experiencia: est.experiencia || 0,
+          avatar_url: est.avatar_url,
+          estado: est.estado || 'Activo',
+          total_misiones: est.total_misiones || 0,
+          misiones_completadas: est.misiones_completadas || 0,
+          misiones_en_progreso: est.misiones_en_progreso || 0
+        }));
+
+        setEstudiantes(estudiantesFormateados);
+      }
+    } catch (err) {
+      console.error('Error al cargar estudiantes:', err);
+      setError('Error al cargar los estudiantes. Por favor intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cargarCursos = async () => {
+    try {
+      const response = await api.get('/gm/cursos');
+      if (response.data.success) {
+        setCursos(response.data.cursos || []);
+      }
+    } catch (err) {
+      console.error('Error al cargar cursos:', err);
+    }
+  };
+
+  // Convertir nivel numérico en texto
+  const obtenerNivelDesdeXP = (nivelNumerico) => {
+    if (nivelNumerico >= 10) return 'Avanzado';
+    if (nivelNumerico >= 5) return 'Intermedio';
+    return 'Básico';
   };
 
   // Obtener cursos únicos
@@ -121,10 +123,12 @@ function GMEstudiantes() {
 
   // Validar formulario
   const esFormularioValido = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|cl)$/i;
+
     return (
       validarRut(formData.rut) &&
       formData.nombre.length >= 3 &&
-      formData.curso.length >= 3
+      emailRegex.test(formData.email)
     );
   };
 
@@ -133,22 +137,22 @@ function GMEstudiantes() {
     setFormData({
       rut: "",
       nombre: "",
-      curso: "",
-      nivel: "Intermedio",
-      estado: "Activo"
+      email: "",
+      cursoId: ""
     });
     setErrores({});
+    setMensajeExitoCreacion(false);
     setModalCrearAbierto(true);
   };
 
   const cerrarModalCrear = () => {
     setModalCrearAbierto(false);
+    setMensajeExitoCreacion(false);
     setFormData({
       rut: "",
       nombre: "",
-      curso: "",
-      nivel: "Intermedio",
-      estado: "Activo"
+      email: "",
+      cursoId: ""
     });
     setErrores({});
   };
@@ -169,7 +173,7 @@ function GMEstudiantes() {
     }
   };
 
-  const handleCrearEstudiante = (e) => {
+  const handleCrearEstudiante = async (e) => {
     e.preventDefault();
 
     const nuevosErrores = {};
@@ -182,8 +186,9 @@ function GMEstudiantes() {
       nuevosErrores.nombre = "El nombre debe tener al menos 3 caracteres";
     }
 
-    if (formData.curso.length < 3) {
-      nuevosErrores.curso = "El curso es obligatorio";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|cl)$/i;
+    if (!emailRegex.test(formData.email)) {
+      nuevosErrores.email = "El email debe terminar en .com o .cl";
     }
 
     if (Object.keys(nuevosErrores).length > 0) {
@@ -191,20 +196,64 @@ function GMEstudiantes() {
       return;
     }
 
-    console.log("Crear estudiante:", formData);
-    alert("Estudiante agregado exitosamente\n(Esta funcionalidad se conectará al backend próximamente)");
-    cerrarModalCrear();
+    try {
+      setLoadingCreacion(true);
+
+      const response = await api.post('/gm/estudiantes', {
+        rut: formData.rut,
+        nombre: formData.nombre,
+        email: formData.email,
+        cursoId: formData.cursoId || null
+      });
+
+      if (response.data.success) {
+        setMensajeExitoCreacion(true);
+
+        // Recargar la lista de estudiantes
+        await cargarEstudiantes();
+
+        // Cerrar el modal después de 3 segundos
+        setTimeout(() => {
+          cerrarModalCrear();
+        }, 3000);
+      }
+    } catch (error) {
+      console.error('Error al crear estudiante:', error);
+
+      if (error.response?.data?.message) {
+        setErrores({ general: error.response.data.message });
+      } else {
+        setErrores({ general: 'Error al crear el estudiante. Por favor intenta de nuevo.' });
+      }
+    } finally {
+      setLoadingCreacion(false);
+    }
   };
 
   // Manejador para ver detalles del estudiante
-  const handleVerDetalles = (estudiante) => {
-    setEstudianteSeleccionado(estudiante);
-    setModalDetallesAbierto(true);
+  const handleVerDetalles = async (estudiante) => {
+    try {
+      setLoadingDetalles(true);
+      setEstudianteSeleccionado(estudiante);
+      setModalDetallesAbierto(true);
+
+      // Cargar detalles completos del estudiante
+      const response = await api.get(`/gm/estudiantes/${estudiante.rut}`);
+
+      if (response.data.success) {
+        setDetallesEstudiante(response.data.estudiante);
+      }
+    } catch (err) {
+      console.error('Error al cargar detalles del estudiante:', err);
+    } finally {
+      setLoadingDetalles(false);
+    }
   };
 
   const cerrarModalDetalles = () => {
     setModalDetallesAbierto(false);
     setEstudianteSeleccionado(null);
+    setDetallesEstudiante(null);
   };
 
   // Manejador para editar estudiante
@@ -319,76 +368,106 @@ function GMEstudiantes() {
       </div>
 
       {/* Contador de resultados */}
-      <div className="gm-estudiantes-count">
-        Mostrando {estudiantesFiltrados.length} de {estudiantes.length} estudiantes
-      </div>
+      {!loading && !error && (
+        <div className="gm-estudiantes-count">
+          Mostrando {estudiantesFiltrados.length} de {estudiantes.length} estudiantes
+        </div>
+      )}
 
       {/* Tabla en panel */}
       <div className="gm-estudiantes-table-container">
         <div className="gm-estudiantes-table-wrapper">
-          <table className="gm-estudiantes-table">
-            <thead>
-              <tr>
-                <th>Rut</th>
-                <th>Nombre</th>
-                <th>Curso</th>
-                <th>Nivel</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {estudiantesFiltrados.length > 0 ? (
-                estudiantesFiltrados.map((estudiante) => (
-                  <tr key={estudiante.id}>
-                    <td className="gm-estudiante-rut">{estudiante.rut}</td>
-                    <td className="gm-estudiante-nombre">{estudiante.nombre}</td>
-                    <td className="gm-estudiante-curso">{estudiante.curso}</td>
-                    <td className="gm-estudiante-nivel">{estudiante.nivel}</td>
-                    <td>
-                      <span className={`gm-estado-badge ${estudiante.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
-                        {estudiante.estado}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="gm-estudiantes-actions">
-                        <button
-                          className="gm-action-btn gm-action-btn-view"
-                          onClick={() => handleVerDetalles(estudiante)}
-                          title="Ver detalles"
-                        >
-                          <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                        <button
-                          className="gm-action-btn gm-action-btn-edit"
-                          onClick={() => handleEditar(estudiante)}
-                          title="Editar"
-                        >
-                          <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                        </button>
+          {loading ? (
+            <div className="gm-no-results">
+              <div className="gm-no-results-content">
+                <svg className="animate-spin h-12 w-12 text-blue-500" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p>Cargando estudiantes...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="gm-no-results">
+              <div className="gm-no-results-content">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="text-red-500">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                </svg>
+                <p>{error}</p>
+                <button
+                  onClick={cargarEstudiantes}
+                  className="gm-estudiantes-btn-crear"
+                  style={{ marginTop: '1rem' }}
+                >
+                  Reintentar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <table className="gm-estudiantes-table">
+              <thead>
+                <tr>
+                  <th>Rut</th>
+                  <th>Nombre</th>
+                  <th>Curso</th>
+                  <th>Nivel</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {estudiantesFiltrados.length > 0 ? (
+                  estudiantesFiltrados.map((estudiante) => (
+                    <tr key={estudiante.id}>
+                      <td className="gm-estudiante-rut">{estudiante.rut}</td>
+                      <td className="gm-estudiante-nombre">{estudiante.nombre}</td>
+                      <td className="gm-estudiante-curso">{estudiante.curso}</td>
+                      <td className="gm-estudiante-nivel">{estudiante.nivel}</td>
+                      <td>
+                        <span className={`gm-estado-badge ${estudiante.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
+                          {estudiante.estado}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="gm-estudiantes-actions">
+                          <button
+                            className="gm-action-btn gm-action-btn-view"
+                            onClick={() => handleVerDetalles(estudiante)}
+                            title="Ver detalles"
+                          >
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          <button
+                            className="gm-action-btn gm-action-btn-edit"
+                            onClick={() => handleEditar(estudiante)}
+                            title="Editar"
+                          >
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="gm-no-results">
+                      <div className="gm-no-results-content">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p>No se encontraron estudiantes que coincidan con los filtros aplicados.</p>
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="gm-no-results">
-                    <div className="gm-no-results-content">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <p>No se encontraron estudiantes que coincidan con los filtros aplicados.</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -400,109 +479,137 @@ function GMEstudiantes() {
               <h2>Agregar estudiante</h2>
             </header>
 
-            <form onSubmit={handleCrearEstudiante} className="admin-usuarios-form">
-              <div className="admin-usuarios-avatar-section">
-                <div className="admin-usuarios-avatar-large">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
-                  </svg>
+            {!mensajeExitoCreacion ? (
+              <form onSubmit={handleCrearEstudiante} className="admin-usuarios-form">
+                <div className="admin-usuarios-avatar-section">
+                  <div className="admin-usuarios-avatar-large">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
 
-              <div className="admin-usuarios-form-group">
-                <label>RUT</label>
-                <input
-                  type="text"
-                  name="rut"
-                  value={formData.rut}
-                  onChange={handleInputChange}
-                  placeholder="12.345.678-9"
-                  className={errores.rut ? "error" : ""}
-                  required
-                />
-                {errores.rut && (
-                  <span className="admin-usuarios-error">{errores.rut}</span>
-                )}
-              </div>
-
-              <div className="admin-usuarios-form-group">
-                <label>Nombre completo</label>
-                <input
-                  type="text"
-                  name="nombre"
-                  value={formData.nombre}
-                  onChange={handleInputChange}
-                  placeholder="Nombre del estudiante"
-                  className={errores.nombre ? "error" : ""}
-                  required
-                  minLength={3}
-                />
-                {errores.nombre && (
-                  <span className="admin-usuarios-error">{errores.nombre}</span>
-                )}
-              </div>
-
-              <div className="admin-usuarios-form-row">
                 <div className="admin-usuarios-form-group">
-                  <label>Curso</label>
+                  <label>RUT</label>
                   <input
                     type="text"
-                    name="curso"
-                    value={formData.curso}
+                    name="rut"
+                    value={formData.rut}
                     onChange={handleInputChange}
-                    placeholder="Ej: 3° Medio A"
-                    className={errores.curso ? "error" : ""}
+                    placeholder="12.345.678-9"
+                    className={errores.rut ? "error" : ""}
                     required
                   />
-                  {errores.curso && (
-                    <span className="admin-usuarios-error">{errores.curso}</span>
+                  {errores.rut && (
+                    <span className="admin-usuarios-error">{errores.rut}</span>
                   )}
                 </div>
+
                 <div className="admin-usuarios-form-group">
-                  <label>Nivel</label>
-                  <select
-                    name="nivel"
-                    value={formData.nivel}
+                  <label>Nombre completo</label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
                     onChange={handleInputChange}
+                    placeholder="Nombre del estudiante"
+                    className={errores.nombre ? "error" : ""}
                     required
+                    minLength={3}
+                  />
+                  {errores.nombre && (
+                    <span className="admin-usuarios-error">{errores.nombre}</span>
+                  )}
+                </div>
+
+                <div className="admin-usuarios-form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="estudiante@ejemplo.com"
+                    className={errores.email ? "error" : ""}
+                    required
+                  />
+                  {errores.email && (
+                    <span className="admin-usuarios-error">{errores.email}</span>
+                  )}
+                </div>
+
+                <div className="admin-usuarios-form-group">
+                  <label>Contraseña</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Mínimo 8 caracteres"
+                    className={errores.password ? "error" : ""}
+                    required
+                  />
+                  {errores.password && (
+                    <span className="admin-usuarios-error">{errores.password}</span>
+                  )}
+                  <small style={{ color: '#6b7280', fontSize: '0.75rem' }}>
+                    Debe incluir mayúscula, número y símbolo especial
+                  </small>
+                </div>
+
+                <div className="admin-usuarios-form-group">
+                  <label>Curso (opcional)</label>
+                  <select
+                    name="cursoId"
+                    value={formData.cursoId}
+                    onChange={handleInputChange}
                   >
-                    <option value="Básico">Básico</option>
-                    <option value="Intermedio">Intermedio</option>
-                    <option value="Avanzado">Avanzado</option>
+                    <option value="">Sin asignar</option>
+                    {cursos.map((curso) => (
+                      <option key={curso.id} value={curso.id}>
+                        {curso.nombre}
+                      </option>
+                    ))}
                   </select>
                 </div>
-              </div>
 
-              <div className="admin-usuarios-form-group">
-                <label>Estado</label>
-                <select
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </select>
-              </div>
+                {errores.general && (
+                  <div className="admin-usuarios-error" style={{ marginTop: '1rem', padding: '0.75rem', background: '#fee', borderRadius: '0.5rem' }}>
+                    {errores.general}
+                  </div>
+                )}
 
-              <footer className="admin-usuarios-modal-footer">
-                <button
-                  type="button"
-                  className="admin-usuarios-btn-cancelar"
-                  onClick={cerrarModalCrear}
-                >
-                  Volver
-                </button>
-                <button
-                  type="submit"
-                  className="admin-usuarios-btn-guardar"
-                  disabled={!esFormularioValido()}
-                >
-                  Guardar
-                </button>
-              </footer>
-            </form>
+                <footer className="admin-usuarios-modal-footer">
+                  <button
+                    type="button"
+                    className="admin-usuarios-btn-cancelar"
+                    onClick={cerrarModalCrear}
+                    disabled={loadingCreacion}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="admin-usuarios-btn-guardar"
+                    disabled={!esFormularioValido() || loadingCreacion}
+                  >
+                    {loadingCreacion ? 'Creando...' : 'Crear estudiante'}
+                  </button>
+                </footer>
+              </form>
+            ) : (
+              <div className="gm-asignar-exito">
+                <div className="gm-asignar-exito-icon">
+                  <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="gm-asignar-exito-titulo">¡Estudiante creado exitosamente!</h3>
+                <p className="gm-asignar-exito-texto">
+                  El estudiante ha sido registrado en el sistema.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -516,59 +623,133 @@ function GMEstudiantes() {
             </header>
 
             <div className="gm-detalles-content">
-              <div className="admin-usuarios-avatar-section">
-                <div className="admin-usuarios-avatar-large">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
-                  </svg>
+              {loadingDetalles ? (
+                <div className="gm-no-results">
+                  <div className="gm-no-results-content">
+                    <svg className="animate-spin h-8 w-8 text-blue-500" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p>Cargando detalles...</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="admin-usuarios-avatar-section">
+                    <div className="admin-usuarios-avatar-large">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" />
+                      </svg>
+                    </div>
+                  </div>
 
-              <div className="gm-detalles-info">
-                <div className="gm-detalles-item">
-                  <span className="gm-detalles-label">RUT:</span>
-                  <span className="gm-detalles-value">{estudianteSeleccionado.rut}</span>
-                </div>
+                  <div className="gm-detalles-info">
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">RUT:</span>
+                      <span className="gm-detalles-value">{estudianteSeleccionado.rut}</span>
+                    </div>
 
-                <div className="gm-detalles-item">
-                  <span className="gm-detalles-label">Nombre completo:</span>
-                  <span className="gm-detalles-value">{estudianteSeleccionado.nombre}</span>
-                </div>
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">Nombre completo:</span>
+                      <span className="gm-detalles-value">{estudianteSeleccionado.nombre}</span>
+                    </div>
 
-                <div className="gm-detalles-item">
-                  <span className="gm-detalles-label">Curso:</span>
-                  <span className="gm-detalles-value">{estudianteSeleccionado.curso}</span>
-                </div>
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">Email:</span>
+                      <span className="gm-detalles-value">{estudianteSeleccionado.email}</span>
+                    </div>
 
-                <div className="gm-detalles-item">
-                  <span className="gm-detalles-label">Nivel:</span>
-                  <span className="gm-detalles-value gm-nivel-badge">{estudianteSeleccionado.nivel}</span>
-                </div>
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">Curso(s):</span>
+                      <span className="gm-detalles-value">{estudianteSeleccionado.curso}</span>
+                    </div>
 
-                <div className="gm-detalles-item">
-                  <span className="gm-detalles-label">Estado:</span>
-                  <span className={`gm-estado-badge ${estudianteSeleccionado.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
-                    {estudianteSeleccionado.estado}
-                  </span>
-                </div>
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">Nivel:</span>
+                      <span className="gm-detalles-value gm-nivel-badge">{estudianteSeleccionado.nivel}</span>
+                    </div>
 
-                <div className="gm-detalles-item gm-detalles-misiones">
-                  <span className="gm-detalles-label">Misiones activas:</span>
-                  <span className="gm-detalles-misiones-count">
-                    {misionesActivasPorEstudiante[estudianteSeleccionado.id] || 0}
-                  </span>
-                </div>
-              </div>
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">Experiencia:</span>
+                      <span className="gm-detalles-value">{estudianteSeleccionado.experiencia} XP</span>
+                    </div>
 
-              <footer className="admin-usuarios-modal-footer">
-                <button
-                  type="button"
-                  className="admin-usuarios-btn-cancelar"
-                  onClick={cerrarModalDetalles}
-                >
-                  Cerrar
-                </button>
-              </footer>
+                    <div className="gm-detalles-item">
+                      <span className="gm-detalles-label">Estado:</span>
+                      <span className={`gm-estado-badge ${estudianteSeleccionado.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
+                        {estudianteSeleccionado.estado}
+                      </span>
+                    </div>
+
+                    <div className="gm-detalles-item gm-detalles-misiones">
+                      <span className="gm-detalles-label">Misiones totales:</span>
+                      <span className="gm-detalles-misiones-count">
+                        {estudianteSeleccionado.total_misiones || 0}
+                      </span>
+                    </div>
+
+                    <div className="gm-detalles-item gm-detalles-misiones">
+                      <span className="gm-detalles-label">Misiones completadas:</span>
+                      <span className="gm-detalles-misiones-count" style={{ color: '#10b981' }}>
+                        {estudianteSeleccionado.misiones_completadas || 0}
+                      </span>
+                    </div>
+
+                    <div className="gm-detalles-item gm-detalles-misiones">
+                      <span className="gm-detalles-label">Misiones en progreso:</span>
+                      <span className="gm-detalles-misiones-count" style={{ color: '#f59e0b' }}>
+                        {estudianteSeleccionado.misiones_en_progreso || 0}
+                      </span>
+                    </div>
+
+                    {detallesEstudiante && detallesEstudiante.cursos && (
+                      <div className="gm-detalles-item" style={{ marginTop: '1rem', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <span className="gm-detalles-label">Cursos inscritos:</span>
+                        <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
+                          {detallesEstudiante.cursos.map((curso) => (
+                            <li key={curso.id} style={{ marginBottom: '0.25rem' }}>
+                              <strong>{curso.nombre}</strong>
+                              {curso.descripcion && <span> - {curso.descripcion}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {detallesEstudiante && detallesEstudiante.logros && detallesEstudiante.logros.length > 0 && (
+                      <div className="gm-detalles-item" style={{ marginTop: '1rem', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <span className="gm-detalles-label">Logros obtenidos ({detallesEstudiante.logros.length}):</span>
+                        <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {detallesEstudiante.logros.slice(0, 5).map((logro) => (
+                            <span
+                              key={logro.id}
+                              style={{
+                                padding: '0.25rem 0.75rem',
+                                background: '#f3f4f6',
+                                borderRadius: '9999px',
+                                fontSize: '0.875rem'
+                              }}
+                              title={logro.descripcion}
+                            >
+                              {logro.icono} {logro.nombre}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <footer className="admin-usuarios-modal-footer">
+                    <button
+                      type="button"
+                      className="admin-usuarios-btn-cancelar"
+                      onClick={cerrarModalDetalles}
+                    >
+                      Cerrar
+                    </button>
+                  </footer>
+                </>
+              )}
             </div>
           </div>
         </div>

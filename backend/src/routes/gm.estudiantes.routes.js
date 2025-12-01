@@ -4,7 +4,8 @@ const {
   obtenerEstudiantes,
   obtenerEstudiantePorId,
   obtenerProgresoMision,
-  obtenerEstadisticasGenerales
+  obtenerEstadisticasGenerales,
+  crearEstudiante
 } = require('../controllers/gm.estudiantes.controller');
 const { verificarToken, verificarRol } = require('../middlewares/auth.middleware');
 
@@ -17,6 +18,9 @@ router.get('/estadisticas', obtenerEstadisticasGenerales);
 
 // Obtener todos los estudiantes
 router.get('/', obtenerEstudiantes);
+
+// Crear nuevo estudiante
+router.post('/', crearEstudiante);
 
 // Obtener un estudiante específico
 router.get('/:id', obtenerEstudiantePorId);

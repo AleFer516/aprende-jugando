@@ -482,6 +482,49 @@ Si encuentras problemas no cubiertos en esta guía:
 
 ---
 
+## 🔐 Sistema de Recuperación de Contraseñas
+
+El proyecto incluye un sistema completo de recuperación de contraseñas que funciona en entorno local usando Gmail SMTP.
+
+### ✅ Componentes Incluidos:
+
+**Backend:**
+- Tabla `password_reset_tokens` en la base de datos (ya incluida en SCHEMA_COMPLETO.sql)
+- Endpoints `/api/auth/forgot-password` y `/api/auth/reset-password`
+- Servicio de email con Nodemailer configurado para Gmail
+- Tokens con expiración de 1 hora y uso único
+
+**Frontend:**
+- Página `/olvido-contrasena` - Solicitar recuperación
+- Página `/restablecer-contrasena/:token` - Cambiar contraseña con token
+- Validación de contraseñas seguras
+- Interfaz coherente con el diseño del login
+
+### 🧪 Probar el Sistema:
+
+1. **Registra un usuario:**
+   - Ve a http://localhost:3000/registro
+   - Registra un estudiante con tu email real
+
+2. **Solicita recuperación:**
+   - Ve a http://localhost:3000/olvido-contrasena
+   - Ingresa el email que registraste
+   - Revisa tu bandeja de entrada (y carpeta SPAM)
+
+3. **Restablece tu contraseña:**
+   - Haz clic en el enlace del email
+   - Ingresa tu nueva contraseña (min 8 chars, 1 mayúscula, 1 número, 1 símbolo)
+   - Inicia sesión con la nueva contraseña
+
+### 📝 Notas Importantes:
+
+- Los tokens expiran en 1 hora
+- Cada token solo se puede usar una vez
+- El sistema está diseñado para seguridad (no revela si un email existe o no)
+- Los emails se envían desde tu cuenta de Gmail configurada en `.env`
+
+---
+
 ## ✅ ¡Instalación Completa!
 
 Si completaste todos los pasos, tu instalación está lista. Puedes comenzar a usar Aprende Jugando en tu servidor local.
@@ -489,9 +532,16 @@ Si completaste todos los pasos, tu instalación está lista. Puedes comenzar a u
 **URLs importantes:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:4000/api
-- Documentación API: http://localhost:4000 (si está configurado)
+- Login: http://localhost:3000/login
+- Registro: http://localhost:3000/registro
+- Recuperar Contraseña: http://localhost:3000/olvido-contrasena
+
+**Credenciales de Prueba:**
+- Admin: `admin@test.com` / `password123`
+- GM: `gm@test.com` / `password123`
+- Estudiante: `estudiante@test.com` / `password123`
 
 ---
 
-**Última actualización:** Noviembre 2024
-**Versión del proyecto:** 2.0
+**Última actualización:** Diciembre 2024
+**Versión del proyecto:** 2.1 - Sistema de recuperación de contraseñas incluido

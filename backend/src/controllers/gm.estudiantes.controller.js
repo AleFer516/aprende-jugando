@@ -12,9 +12,10 @@ const obtenerEstudiantes = async (req, res) => {
         u.email,
         u.nivel,
         u.experiencia,
-        u.avatar,
+        u.avatar_url,
+        u.estado,
         u.created_at,
-        GROUP_CONCAT(DISTINCT c.nombre) as cursos,
+        GROUP_CONCAT(DISTINCT c.nombre SEPARATOR ', ') as cursos,
         COUNT(DISTINCT em.mision_id) as total_misiones,
         COUNT(DISTINCT CASE WHEN em.estado = 'Completada' THEN em.mision_id END) as misiones_completadas,
         COUNT(DISTINCT CASE WHEN em.estado = 'En progreso' THEN em.mision_id END) as misiones_en_progreso,
@@ -23,7 +24,8 @@ const obtenerEstudiantes = async (req, res) => {
       INNER JOIN curso_estudiantes ce ON u.rut = ce.estudiante_rut
       INNER JOIN cursos c ON ce.curso_id = c.id
       LEFT JOIN estudiante_misiones em ON u.rut = em.estudiante_rut
-      GROUP BY u.rut
+      WHERE c.gm_rut = ? AND u.rol = 'estudiante'
+      GROUP BY u.rut, u.nombre, u.email, u.nivel, u.experiencia, u.avatar_url, u.estado, u.created_at
       ORDER BY u.nombre`,
       [gmRut]
     );
@@ -56,7 +58,7 @@ const obtenerEstudiantePorId = async (req, res) => {
         u.email,
         u.nivel,
         u.experiencia,
-        u.avatar,
+        u.avatar_url,
         u.created_at
       FROM usuarios u
       INNER JOIN curso_estudiantes ce ON u.rut = ce.estudiante_rut
@@ -261,9 +263,147 @@ const obtenerEstadisticasGenerales = async (req, res) => {
   }
 };
 
+// Crear nuevo estudiante
+const crearEstudiante = async (req, res) => {
+  try {
+    const { rut, nombre, email, cursoId } = req.body;
+    const gmRut = req.usuario.rut;
+
+    // Validaciones
+    if (!rut || !nombre || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'RUT, nombre y email son obligatorios'
+      });
+    }
+
+    // Verificar que el curso pertenece al GM
+    if (cursoId) {
+      const [cursos] = await db.query(
+        'SELECT id FROM cursos WHERE id = ? AND gm_rut = ?',
+        [cursoId, gmRut]
+      );
+
+      if (cursos.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'No tienes permiso para asignar estudiantes a este curso'
+        });
+      }
+    }
+
+    // Verificar si el RUT ya existe
+    const [usuarioExistente] = await db.query(
+      'SELECT rut FROM usuarios WHERE rut = ?',
+      [rut]
+    );
+
+    if (usuarioExistente.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ya existe un usuario con este RUT'
+      });
+    }
+
+    // Verificar si el email ya existe
+    const [emailExistente] = await db.query(
+      'SELECT email FROM usuarios WHERE email = ?',
+      [email]
+    );
+
+    if (emailExistente.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ya existe un usuario con este email'
+      });
+    }
+
+    // Generar contraseña automática (8 caracteres: letras, números y símbolos)
+    const crypto = require('crypto');
+    const generarPassword = () => {
+      const mayusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const minusculas = 'abcdefghijklmnopqrstuvwxyz';
+      const numeros = '0123456789';
+      const simbolos = '!@#$%^&*';
+
+      // Asegurar al menos uno de cada tipo
+      let password = '';
+      password += mayusculas[Math.floor(Math.random() * mayusculas.length)];
+      password += minusculas[Math.floor(Math.random() * minusculas.length)];
+      password += numeros[Math.floor(Math.random() * numeros.length)];
+      password += simbolos[Math.floor(Math.random() * simbolos.length)];
+
+      // Completar con caracteres aleatorios
+      const todosCaracteres = mayusculas + minusculas + numeros + simbolos;
+      for (let i = password.length; i < 10; i++) {
+        password += todosCaracteres[Math.floor(Math.random() * todosCaracteres.length)];
+      }
+
+      // Mezclar la contraseña
+      return password.split('').sort(() => Math.random() - 0.5).join('');
+    };
+
+    const passwordTemporal = generarPassword();
+
+    // Hashear la contraseña
+    const bcrypt = require('bcryptjs');
+    const passwordHash = await bcrypt.hash(passwordTemporal, 10);
+
+    // Crear el usuario
+    await db.query(
+      `INSERT INTO usuarios (rut, nombre, email, password, rol, nivel, experiencia, estado)
+       VALUES (?, ?, ?, ?, 'estudiante', 1, 0, 'activo')`,
+      [rut, nombre, email, passwordHash]
+    );
+
+    // Asignar al curso si se proporcionó
+    if (cursoId) {
+      await db.query(
+        'INSERT INTO curso_estudiantes (curso_id, estudiante_rut) VALUES (?, ?)',
+        [cursoId, rut]
+      );
+    }
+
+    // Registrar actividad
+    await db.query(
+      `INSERT INTO actividad_admin (fecha, hora, titulo, usuario, tipo)
+       VALUES (CURDATE(), CURTIME(), ?, ?, 'usuario')`,
+      [`Nuevo estudiante registrado: ${nombre}`, gmRut]
+    );
+
+    // Enviar email con la contraseña temporal
+    try {
+      const { enviarEmailBienvenida } = require('../config/email');
+      await enviarEmailBienvenida(email, nombre, passwordTemporal);
+      console.log(`📧 Email de bienvenida enviado a ${email}`);
+    } catch (emailError) {
+      console.error('⚠️ Error al enviar email de bienvenida:', emailError);
+      // No fallar la creación si el email falla
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Estudiante creado exitosamente. Se ha enviado un email con la contraseña temporal.',
+      estudiante: {
+        rut,
+        nombre,
+        email
+      }
+    });
+  } catch (error) {
+    console.error('Error al crear estudiante:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al crear estudiante',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   obtenerEstudiantes,
   obtenerEstudiantePorId,
   obtenerProgresoMision,
-  obtenerEstadisticasGenerales
+  obtenerEstadisticasGenerales,
+  crearEstudiante
 };
