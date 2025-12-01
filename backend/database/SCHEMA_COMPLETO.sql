@@ -4,6 +4,21 @@
 -- Base de datos gamificada de aprendizaje
 -- Incluye tablas para Admin, GM y Estudiantes
 -- ==========================================
+--
+-- NOTAS IMPORTANTES SOBRE VALORES ENUM:
+-- ==========================================
+-- 1. Estado de misiones (tabla: estudiante_misiones):
+--    Valores válidos: 'no_iniciada', 'en_progreso', 'completada',
+--                     'revisando', 'aprobada', 'rechazada', 'abandonada'
+--    NO usar: 'Pendiente', 'En progreso', 'Completada' (mayúsculas)
+--
+-- 2. Columnas de texto en tabla mision_pistas:
+--    Usar columna 'texto', NO 'descripcion'
+--
+-- 3. Columnas de texto en tabla misiones:
+--    Usar columna 'titulo', NO 'nombre'
+--    Usar columna 'creador_rut', NO 'gm_rut'
+-- ==========================================
 
 -- Eliminar y crear base de datos desde cero
 DROP DATABASE IF EXISTS aprende_jugando;
@@ -191,6 +206,7 @@ CREATE TABLE misiones (
   categoria ENUM('matematicas', 'ciencias', 'lenguaje', 'historia', 'arte', 'deportes', 'tecnologia', 'otros') DEFAULT 'otros',
   tiempo_estimado INT,
   contenido JSON,
+  competencias_json JSON COMMENT 'Competencias de la misión en formato JSON',
   estado ENUM('activa', 'inactiva', 'borrador') DEFAULT 'activa',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

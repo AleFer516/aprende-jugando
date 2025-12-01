@@ -22,7 +22,7 @@ async function seedExtraData() {
     // Asignar misión al estudiante
     console.log('📝 Asignando misión al estudiante...');
     await connection.query(
-      'INSERT INTO estudiante_misiones (estudiante_id, mision_id, estado, progreso, actividad_actual, xp_ganado) VALUES (1, 1, "Pendiente", 0, 1, 0)'
+      'INSERT INTO estudiante_misiones (estudiante_id, mision_id, estado, progreso, actividad_actual, xp_ganado) VALUES (1, 1, "no_iniciada", 0, 1, 0)'
     );
     console.log('✅ Misión asignada\n');
 

@@ -2,54 +2,20 @@
 // Página de gestión de misiones del Game Master.
 // Lista de misiones con búsqueda, filtros y acción de gestión.
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 import "../../styles/gmMisiones.css";
 import "../../styles/adminUsuarios.css"; // Para usar los estilos del modal
 import "../../styles/themes.css";
 
 function GMMisiones() {
   const navigate = useNavigate();
-  // Datos de ejemplo de misiones
-  const misionesData = [
-    {
-      id: 1,
-      titulo: "Problemas de fracciones",
-      descripcion: "Resolver ejercicios de fracciones",
-      categoria: "Matemáticas",
-      dificultad: "Baja"
-    },
-    {
-      id: 2,
-      titulo: "Tipos de energía",
-      descripcion: "Identificar diferentes tipos de energía",
-      categoria: "Ciencias",
-      dificultad: "Media"
-    },
-    {
-      id: 3,
-      titulo: "Poema de primavera",
-      descripcion: "Escribir un poema sobre la primavera",
-      categoria: "Lenguaje",
-      dificultad: "Alta"
-    },
-    {
-      id: 4,
-      titulo: "Ecuaciones de primer grado",
-      descripcion: "Resolver ecuaciones lineales con una incógnita",
-      categoria: "Matemáticas",
-      dificultad: "Media"
-    },
-    {
-      id: 5,
-      titulo: "Ciclo del agua",
-      descripcion: "Explicar las etapas del ciclo del agua",
-      categoria: "Ciencias",
-      dificultad: "Baja"
-    }
-  ];
 
-  const [misiones] = useState(misionesData);
+  const [misiones, setMisiones] = useState([]);
+  const [cursos, setCursos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("Todas");
   const [filtroDificultad, setFiltroDificultad] = useState("Todas");
@@ -58,6 +24,7 @@ function GMMisiones() {
     titulo: "",
     dificultad: "Alta",
     categoria: "Matemáticas",
+    cursoId: "",
     objetivoAprendizaje: "",
     competencias: [""],
     pistas: [""],
@@ -65,9 +32,59 @@ function GMMisiones() {
     competenciasDescripcion: ""
   });
   const [errores, setErrores] = useState({});
+  const [mensajeExitoCreacion, setMensajeExitoCreacion] = useState(false);
+
+  const capitalizeFirst = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  const cargarMisiones = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get('/gm/misiones');
+
+      if (response.data.success) {
+        // Formatear misiones para el frontend
+        const misionesFormateadas = response.data.misiones.map(m => ({
+          id: m.id,
+          titulo: m.titulo,
+          descripcion: m.descripcion || 'Sin descripción',
+          categoria: m.categoria ? capitalizeFirst(m.categoria) : 'Otros',
+          dificultad: m.dificultad ? capitalizeFirst(m.dificultad) : 'Media'
+        }));
+        setMisiones(misionesFormateadas);
+      }
+    } catch (err) {
+      console.error('Error al cargar misiones:', err);
+      setError('Error al cargar las misiones');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const cargarCursos = useCallback(async () => {
+    try {
+      const response = await api.get('/gm/cursos');
+      if (response.data.success) {
+        setCursos(response.data.cursos);
+      }
+    } catch (err) {
+      console.error('Error al cargar cursos:', err);
+    }
+  }, []);
+
+  // Cargar misiones y cursos al montar el componente
+  useEffect(() => {
+    cargarMisiones();
+    cargarCursos();
+  }, [cargarMisiones, cargarCursos]);
 
   // Categorías y dificultades para los combos
-  const categoriasUnicas = ["Todas", ...new Set(misiones.map((m) => m.categoria))];
+  const categoriasUnicas = misiones.length > 0
+    ? ["Todas", ...new Set(misiones.map((m) => m.categoria))]
+    : ["Todas"];
   const categoriasDisponibles = ["Matemáticas", "Ciencias", "Lenguaje", "Historia", "Arte"];
   const dificultades = ["Todas", "Baja", "Media", "Alta"];
   const dificultadesDisponibles = ["Baja", "Media", "Alta"];
@@ -102,6 +119,7 @@ function GMMisiones() {
       titulo: "",
       dificultad: "Alta",
       categoria: "Matemáticas",
+      cursoId: "",
       objetivoAprendizaje: "",
       competencias: [""],
       pistas: [""],
@@ -118,6 +136,7 @@ function GMMisiones() {
       titulo: "",
       dificultad: "Alta",
       categoria: "Matemáticas",
+      cursoId: "",
       objetivoAprendizaje: "",
       competencias: [""],
       pistas: [""],
@@ -201,13 +220,17 @@ function GMMisiones() {
     }
   };
 
-  const handleCrearMision = (e) => {
+  const handleCrearMision = async (e) => {
     e.preventDefault();
 
     const nuevosErrores = {};
 
     if (formData.titulo.trim().length < 3) {
       nuevosErrores.titulo = "El título debe tener al menos 3 caracteres";
+    }
+
+    if (!formData.cursoId) {
+      nuevosErrores.cursoId = "Debe seleccionar un curso";
     }
 
     if (formData.objetivoAprendizaje.trim().length < 10) {
@@ -222,14 +245,59 @@ function GMMisiones() {
       nuevosErrores.competenciasDescripcion = "Las competencias deben tener al menos 10 caracteres";
     }
 
+    if (!formData.competencias.some(c => c.trim().length > 0)) {
+      nuevosErrores.competencias = "Debe agregar al menos una competencia";
+    }
+
+    if (!formData.pistas.some(p => p.trim().length > 0)) {
+      nuevosErrores.pistas = "Debe agregar al menos una pista";
+    }
+
     if (Object.keys(nuevosErrores).length > 0) {
       setErrores(nuevosErrores);
       return;
     }
 
-    console.log("Crear misión:", formData);
-    alert("Misión creada exitosamente\n(Esta funcionalidad se conectará al backend próximamente)");
-    cerrarModalCrear();
+    try {
+      // Mapear dificultad y categoría al formato de la DB
+      const dificultadMap = {
+        'Baja': 'facil',
+        'Media': 'medio',
+        'Alta': 'dificil'
+      };
+
+      const categoriaMap = {
+        'Matemáticas': 'matematicas',
+        'Ciencias': 'ciencias',
+        'Lenguaje': 'lenguaje',
+        'Historia': 'historia',
+        'Arte': 'arte'
+      };
+
+      const response = await api.post('/gm/misiones', {
+        titulo: formData.titulo,
+        descripcion: formData.descripcion,
+        dificultad: dificultadMap[formData.dificultad] || 'medio',
+        categoria: categoriaMap[formData.categoria] || 'otros',
+        curso_id: parseInt(formData.cursoId),
+        competencias: formData.competencias.filter(c => c.trim().length > 0),
+        pistas: formData.pistas.filter(p => p.trim().length > 0)
+      });
+
+      if (response.data.success) {
+        setMensajeExitoCreacion(true);
+        await cargarMisiones();
+        setTimeout(() => {
+          cerrarModalCrear();
+          setMensajeExitoCreacion(false);
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Error al crear misión:', err);
+      setErrores({
+        general: err.response?.data?.message || 'Error al crear la misión. Intente nuevamente.'
+      });
+    }
   };
 
   const handleGestionarMision = (mision) => {
@@ -309,8 +377,15 @@ function GMMisiones() {
 
       {/* Contador de resultados */}
       <div className="gm-misiones-count">
-        Mostrando {misionesFiltradas.length} de {misiones.length} misiones
+        {loading ? 'Cargando...' : `Mostrando ${misionesFiltradas.length} de ${misiones.length} misiones`}
       </div>
+
+      {/* Mensaje de error */}
+      {error && (
+        <div style={{ padding: '1rem', backgroundColor: '#fee', color: '#c00', borderRadius: '8px', marginBottom: '1rem' }}>
+          {error}
+        </div>
+      )}
 
       {/* Tabla en panel (mismo estilo que Estudiantes) */}
       <div className="gm-misiones-table-container">
@@ -378,8 +453,35 @@ function GMMisiones() {
             </header>
 
             <form onSubmit={handleCrearMision} className="admin-usuarios-form">
-              {/* Fila: Título, Dificultad, Categoría */}
-              <div className="gm-mision-form-row-triple">
+              {/* Mensaje de éxito */}
+              {mensajeExitoCreacion && (
+                <div style={{
+                  padding: '1rem',
+                  backgroundColor: '#d4edda',
+                  color: '#155724',
+                  borderRadius: '8px',
+                  marginBottom: '1rem',
+                  textAlign: 'center'
+                }}>
+                  ✓ Misión creada exitosamente
+                </div>
+              )}
+
+              {/* Mensaje de error general */}
+              {errores.general && (
+                <div style={{
+                  padding: '1rem',
+                  backgroundColor: '#fee',
+                  color: '#c00',
+                  borderRadius: '8px',
+                  marginBottom: '1rem'
+                }}>
+                  {errores.general}
+                </div>
+              )}
+
+              {/* Fila: Título, Curso */}
+              <div className="gm-mision-form-row-dual" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
                 <div className="admin-usuarios-form-group">
                   <label>Título</label>
                   <input
@@ -401,6 +503,28 @@ function GMMisiones() {
                   )}
                 </div>
 
+                <div className="admin-usuarios-form-group">
+                  <label>Curso</label>
+                  <select
+                    name="cursoId"
+                    value={formData.cursoId}
+                    onChange={handleInputChange}
+                    className={errores.cursoId ? "error" : ""}
+                    required
+                  >
+                    <option value="">Seleccione un curso</option>
+                    {cursos.map((curso) => (
+                      <option key={curso.id} value={curso.id}>{curso.nombre}</option>
+                    ))}
+                  </select>
+                  {errores.cursoId && (
+                    <span className="admin-usuarios-error">{errores.cursoId}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Fila: Dificultad, Categoría */}
+              <div className="gm-mision-form-row-dual" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="admin-usuarios-form-group">
                   <label>Dificultad</label>
                   <select

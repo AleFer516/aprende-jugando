@@ -19,20 +19,9 @@ const obtenerEstadisticasDashboard = async (req, res) => {
       [gmRut, gmRut]
     );
 
-    // Calcular horas acumuladas (basado en tiempo de respuesta de estudiantes)
-    const [horasAcumuladas] = await db.query(
-      `SELECT
-        COALESCE(SUM(er.tiempo_respuesta), 0) / 3600 as horas_totales
-      FROM estudiante_respuestas er
-      INNER JOIN actividades a ON er.actividad_id = a.id
-      INNER JOIN misiones m ON a.mision_id = m.id
-      WHERE m.gm_rut = ?`,
-      [gmRut]
-    );
-
     const estadisticas = {
       ...estadisticasPrincipales[0],
-      horasAcumuladas: `${horasAcumuladas[0].horas_totales.toFixed(1)} h`
+      horasAcumuladas: '0.0 h' // Sin datos de tiempo de respuesta disponibles
     };
 
     res.json({
@@ -59,7 +48,7 @@ const obtenerMisionesPorRevisar = async (req, res) => {
         ev.id,
         ev.mision_id,
         u.nombre as estudiante,
-        m.nombre as mision,
+        m.titulo as mision,
         em.fecha_completado as fechaEntrega
       FROM evaluaciones ev
       INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
@@ -126,7 +115,7 @@ const obtenerMisionesRecientes = async (req, res) => {
     const [misiones] = await db.query(
       `SELECT
         m.id,
-        m.nombre,
+        m.titulo as nombre,
         m.created_at,
         CASE
           WHEN DATE(m.created_at) = CURDATE() THEN 'Hoy'
@@ -135,7 +124,7 @@ const obtenerMisionesRecientes = async (req, res) => {
           ELSE 'Hace más de una semana'
         END as fecha
       FROM misiones m
-      WHERE m.gm_rut = ?
+      WHERE m.creador_rut = ?
       ORDER BY m.created_at DESC
       LIMIT 5`,
       [gmRut]
@@ -166,18 +155,18 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
         COALESCE(AVG(em.progreso), 0) as promedio
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE m.gm_rut = ?`,
+      WHERE m.creador_rut = ?`,
       [gmRut]
     );
 
-    // Horas semanales estudiadas (últimos 7 días)
-    const [horasSemanales] = await db.query(
+    // Respuestas recientes (últimos 7 días)
+    const [actividadSemanal] = await db.query(
       `SELECT
-        COALESCE(SUM(er.tiempo_respuesta), 0) / 3600 as horas
+        COUNT(*) as respuestas_totales
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
       INNER JOIN misiones m ON a.mision_id = m.id
-      WHERE m.gm_rut = ? AND er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
+      WHERE m.creador_rut = ? AND er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
       [gmRut]
     );
 
@@ -191,7 +180,7 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
       INNER JOIN misiones m ON a.mision_id = m.id
-      WHERE m.gm_rut = ? AND m.categoria IS NOT NULL
+      WHERE m.creador_rut = ? AND m.categoria IS NOT NULL
       GROUP BY m.categoria
       ORDER BY tasa_error DESC
       LIMIT 1`,
@@ -204,7 +193,7 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
         STDDEV(em.progreso) as desviacion
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE m.gm_rut = ? AND em.estado = 'Completada'`,
+      WHERE m.creador_rut = ? AND em.estado = 'Completada'`,
       [gmRut]
     );
 
@@ -228,9 +217,9 @@ const obtenerIndicadoresAvanzados = async (req, res) => {
       },
       {
         id: 3,
-        nombre: "Horas semanales estudiadas",
-        descripcion: "Promedio de horas dedicadas al estudio por semana",
-        valor: `${(horasSemanales[0].horas || 0).toFixed(1)} hrs`
+        nombre: "Actividad semanal",
+        descripcion: "Número de respuestas registradas en la última semana",
+        valor: `${actividadSemanal[0].respuestas_totales} respuestas`
       },
       {
         id: 4,
@@ -286,7 +275,7 @@ const obtenerResumenDashboard = async (req, res) => {
           ev.id,
           ev.mision_id,
           u.nombre as estudiante,
-          m.nombre as mision,
+          m.titulo as mision,
           em.fecha_completado as fechaEntrega
         FROM evaluaciones ev
         INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
@@ -315,7 +304,7 @@ const obtenerResumenDashboard = async (req, res) => {
       db.query(
         `SELECT
           m.id,
-          m.nombre,
+          m.titulo as nombre,
           CASE
             WHEN DATE(m.created_at) = CURDATE() THEN 'Hoy'
             WHEN DATE(m.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) THEN 'Ayer'
@@ -323,21 +312,21 @@ const obtenerResumenDashboard = async (req, res) => {
             ELSE 'Hace más de una semana'
           END as fecha
         FROM misiones m
-        WHERE m.gm_rut = ?
+        WHERE m.creador_rut = ?
         ORDER BY m.created_at DESC
         LIMIT 5`,
         [gmRut]
       ),
-      // Indicadores (solo progreso promedio y horas semanales)
+      // Indicadores (progreso promedio y actividad semanal)
       db.query(
         `SELECT
           COALESCE(AVG(em.progreso), 0) as progresoPromedio,
-          COALESCE(SUM(CASE WHEN er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN er.tiempo_respuesta ELSE 0 END), 0) / 3600 as horasSemanales
+          COUNT(DISTINCT CASE WHEN er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN er.id END) as actividadSemanal
         FROM estudiante_misiones em
         INNER JOIN misiones m ON em.mision_id = m.id
         LEFT JOIN actividades a ON m.id = a.mision_id
         LEFT JOIN estudiante_respuestas er ON a.id = er.actividad_id
-        WHERE m.gm_rut = ?`,
+        WHERE m.creador_rut = ?`,
         [gmRut]
       )
     ]);
@@ -353,7 +342,7 @@ const obtenerResumenDashboard = async (req, res) => {
       dashboard: {
         estadisticas: {
           ...estadisticas,
-          horasAcumuladas: `${(indicadoresData.horasSemanales || 0).toFixed(1)} h`
+          horasAcumuladas: '0.0 h' // Sin datos de tiempo disponibles
         },
         misionesPorRevisar,
         estadoAvanceCursos,
@@ -367,9 +356,9 @@ const obtenerResumenDashboard = async (req, res) => {
           },
           {
             id: 2,
-            nombre: "Horas semanales estudiadas",
-            descripcion: "Promedio de horas dedicadas al estudio por semana",
-            valor: `${(indicadoresData.horasSemanales || 0).toFixed(1)} hrs`
+            nombre: "Actividad semanal",
+            descripcion: "Número de respuestas registradas en la última semana",
+            valor: `${indicadoresData.actividadSemanal} respuestas`
           }
         ]
       }

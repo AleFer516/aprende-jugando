@@ -62,9 +62,9 @@ const obtenerDashboard = async (req, res) => {
       WHERE em.estudiante_id = ?
       ORDER BY
         CASE em.estado
-          WHEN 'En progreso' THEN 1
-          WHEN 'Pendiente' THEN 2
-          WHEN 'Completada' THEN 3
+          WHEN 'en_progreso' THEN 1
+          WHEN 'no_iniciada' THEN 2
+          WHEN 'completada' THEN 3
         END,
         em.updated_at DESC
       LIMIT 6`,
@@ -80,7 +80,7 @@ const obtenerDashboard = async (req, res) => {
         em.fecha_completado as fecha
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND em.estado = 'Completada'
+      WHERE em.estudiante_id = ? AND em.estado = 'completada'
       ORDER BY em.fecha_completado DESC
       LIMIT 3)
       UNION ALL
@@ -91,7 +91,7 @@ const obtenerDashboard = async (req, res) => {
         em.created_at as fecha
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND em.estado = 'Pendiente'
+      WHERE em.estudiante_id = ? AND em.estado = 'no_iniciada'
       ORDER BY em.created_at DESC
       LIMIT 2)
       ORDER BY fecha DESC

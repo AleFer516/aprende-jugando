@@ -25,9 +25,9 @@ const obtenerProgreso = async (req, res) => {
     // Estado de misiones
     const [estadoMisiones] = await db.query(
       `SELECT
-        COUNT(CASE WHEN estado = 'Completada' THEN 1 END) as completadas,
-        COUNT(CASE WHEN estado = 'En progreso' THEN 1 END) as enProgreso,
-        COUNT(CASE WHEN estado = 'Pendiente' THEN 1 END) as pendientes,
+        COUNT(CASE WHEN estado = 'completada' THEN 1 END) as completadas,
+        COUNT(CASE WHEN estado = 'en_progreso' THEN 1 END) as enProgreso,
+        COUNT(CASE WHEN estado = 'no_iniciada' THEN 1 END) as pendientes,
         COUNT(*) as total
       FROM estudiante_misiones
       WHERE estudiante_id = ?`,

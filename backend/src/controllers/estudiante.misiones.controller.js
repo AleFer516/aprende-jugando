@@ -245,9 +245,9 @@ const responderActividad = async (req, res) => {
         SET
           progreso = ?,
           estado = CASE
-            WHEN ? = 100 THEN 'Completada'
-            WHEN progreso > 0 THEN 'En progreso'
-            ELSE 'Pendiente'
+            WHEN ? = 100 THEN 'completada'
+            WHEN progreso > 0 THEN 'en_progreso'
+            ELSE 'no_iniciada'
           END,
           fecha_completado = CASE WHEN ? = 100 THEN NOW() ELSE fecha_completado END
         WHERE estudiante_id = ? AND mision_id = ?`,
@@ -310,8 +310,8 @@ const iniciarMision = async (req, res) => {
 
     await db.query(
       `UPDATE estudiante_misiones
-      SET estado = 'En progreso', fecha_inicio = NOW()
-      WHERE estudiante_id = ? AND mision_id = ? AND estado = 'Pendiente'`,
+      SET estado = 'en_progreso', fecha_inicio = NOW()
+      WHERE estudiante_id = ? AND mision_id = ? AND estado = 'no_iniciada'`,
       [estudianteId, id]
     );
 

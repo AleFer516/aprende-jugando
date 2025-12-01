@@ -126,11 +126,11 @@ const obtenerEstudiantePorId = async (req, res) => {
     const [estadisticas] = await db.query(
       `SELECT
         COUNT(*) as total_misiones,
-        COUNT(CASE WHEN estado = 'Completada' THEN 1 END) as completadas,
-        COUNT(CASE WHEN estado = 'En progreso' THEN 1 END) as en_progreso,
-        COUNT(CASE WHEN estado = 'Pendiente' THEN 1 END) as pendientes,
+        COUNT(CASE WHEN estado = 'completada' THEN 1 END) as completadas,
+        COUNT(CASE WHEN estado = 'en_progreso' THEN 1 END) as en_progreso,
+        COUNT(CASE WHEN estado = 'no_iniciada' THEN 1 END) as pendientes,
         SUM(xp_ganado) as xp_total_ganado,
-        AVG(CASE WHEN estado = 'Completada' THEN progreso END) as promedio_progreso
+        AVG(CASE WHEN estado = 'completada' THEN progreso END) as promedio_progreso
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
       WHERE em.estudiante_rut = ? AND m.gm_rut = ?`,

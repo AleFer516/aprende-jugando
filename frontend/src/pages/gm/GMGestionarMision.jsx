@@ -3,7 +3,8 @@
 // Muestra detalles completos de la misión con opciones de edición y asignación.
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import api from "../../services/api";
 import "../../styles/gmGestionarMision.css";
 import "../../styles/adminUsuarios.css";
 import "../../styles/themes.css";
@@ -12,6 +13,9 @@ function GMGestionarMision() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [mision, setMision] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [modalAsignarAbierto, setModalAsignarAbierto] = useState(false);
   const [mensajeExito, setMensajeExito] = useState(false);
   const [modalProgresoAbierto, setModalProgresoAbierto] = useState(false);
@@ -30,50 +34,64 @@ function GMGestionarMision() {
     retroalimentacion: ""
   });
 
-  // Datos de ejemplo de cursos
-  const cursosData = [
-    { id: 1, nombre: "Curso A", codigo: "01", categoria: "Matemáticas" },
-    { id: 2, nombre: "Curso B", codigo: "02", categoria: "Ciencias" },
-    { id: 3, nombre: "Curso C", codigo: "03", categoria: "Lenguaje" }
-  ];
+  const [cursos, setCursos] = useState([]);
+  const [estudiantes, setEstudiantes] = useState([]);
 
-  const [cursos] = useState(cursosData);
+  const capitalizeFirst = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
 
-  // Datos de ejemplo de estudiantes con progreso
-  const estudiantesData = [
-    { id: 1, rut: "12.345.678-9", nombre: "Ana María González", nivel: "Avanzado", progreso: 85 },
-    { id: 2, rut: "23.456.789-0", nombre: "Carlos Pérez Silva", nivel: "Intermedio", progreso: 60 },
-    { id: 3, rut: "34.567.890-1", nombre: "María José Fernández", nivel: "Básico", progreso: 40 },
-    { id: 4, rut: "45.678.901-2", nombre: "Diego Morales", nivel: "Intermedio", progreso: 75 },
-    { id: 5, rut: "56.789.012-3", nombre: "Valentina Torres", nivel: "Avanzado", progreso: 95 },
-    { id: 6, rut: "67.890.123-4", nombre: "Matías Rojas", nivel: "Básico", progreso: 30 }
-  ];
+  // Cargar datos de la misión
+  const cargarMision = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get(`/gm/misiones/${id}`);
 
-  const [estudiantes] = useState(estudiantesData);
+      if (response.data.success) {
+        const misionData = response.data.mision;
 
-  // Datos de ejemplo de la misión (en producción vendrían del backend)
-  const [mision] = useState({
-    id: 1,
-    titulo: "Resolver ecuaciones de primer grado",
-    dificultad: "Baja",
-    categoria: "Matemáticas",
-    objetivoAprendizaje: "Que el estudiante sea capaz de resolver ecuaciones de primer grado con una incógnita, aplicando reglas básicas de equivalencia y manteniendo el equilibrio de la igualdad.",
-    competencias: [
-      "Aplicar propiedades básicas de igualdad",
-      "Aislar términos en una ecuación",
-      "Simplificar expresiones algebraicas",
-      "Verificar soluciones reemplazando en la ecuación original"
-    ],
-    pistas: [
-      "Recuerda: lo que haces en un lado de la ecuación, debes hacerlo en el otro.",
-      "Agrupa términos semejantes para simplificar tu avance.",
-      "Si tienes dudas, prueba reemplazar tu respuesta para verificar si cumple la igualdad.",
-      "Identifica primero qué operación te permitirá aislar la incógnita más rápido."
-    ],
-    descripcion: "En esta misión, el estudiante se adentra en un desafío matemático donde deberá manipular ecuaciones paso a paso para encontrar el valor desconocido. A través de ejemplos guiados y ejercicios prácticos, comprenderá cómo funcionan las transformaciones permitidas y por qué mantener el equilibrio en ambos lados de la igualdad es esencial.",
-    competenciasDescripcion: "Esta misión desarrolla habilidades fundamentales de pensamiento algebraico, razonamiento lógico y resolución de problemas. Los estudiantes aprenderán a trabajar con símbolos matemáticos y a aplicar procesos sistemáticos para encontrar soluciones.",
-    retroalimentacion: "Al finalizar la misión, el sistema te mostrará si tus respuestas son correctas, incorrectas o parcialmente correctas. Además, recibirás comentarios personalizados que te indicarán qué paso fue aplicado correctamente, dónde cometiste errores y qué estrategia podrías mejorar para resolver ecuaciones similares en el futuro."
-  });
+        // Formatear datos para el frontend
+        setMision({
+          id: misionData.id,
+          titulo: misionData.titulo,
+          dificultad: capitalizeFirst(misionData.dificultad),
+          categoria: capitalizeFirst(misionData.categoria),
+          objetivoAprendizaje: misionData.descripcion || 'Sin objetivo especificado',
+          competencias: misionData.competencias || [],
+          pistas: misionData.pistas || [],
+          descripcion: misionData.descripcion || 'Sin descripción',
+          competenciasDescripcion: 'Competencias asociadas a esta misión',
+          retroalimentacion: 'Se proporcionará retroalimentación al completar la misión',
+          curso_nombre: misionData.curso_nombre,
+          estadisticas: misionData.estadisticas || {}
+        });
+      }
+    } catch (err) {
+      console.error('Error al cargar misión:', err);
+      setError('Error al cargar la misión. Por favor intente nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  // Cargar cursos disponibles
+  const cargarCursos = useCallback(async () => {
+    try {
+      const response = await api.get('/gm/cursos');
+      if (response.data.success) {
+        setCursos(response.data.cursos);
+      }
+    } catch (err) {
+      console.error('Error al cargar cursos:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarMision();
+    cargarCursos();
+  }, [cargarMision, cargarCursos]);
 
   const handleVolver = () => {
     navigate("/gm/misiones");
@@ -196,13 +214,61 @@ function GMGestionarMision() {
     }, 2000);
   };
 
-  const handleVerProgresoCurso = (curso) => {
+  const handleVerProgresoCurso = async (curso) => {
     setCursoSeleccionado(curso);
+
+    // Cargar estudiantes del curso con progreso en esta misión
+    try {
+      const response = await api.get(`/gm/estudiantes`);
+      if (response.data.success) {
+        // Filtrar estudiantes por curso (esto debería mejorarse en el backend)
+        setEstudiantes(response.data.estudiantes || []);
+      }
+    } catch (err) {
+      console.error('Error al cargar estudiantes:', err);
+      setEstudiantes([]);
+    }
   };
 
   const handleVolverACursos = () => {
     setCursoSeleccionado(null);
   };
+
+  if (loading) {
+    return (
+      <div className="gm-gestionar-mision">
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>Cargando datos de la misión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="gm-gestionar-mision">
+        <div style={{ padding: '2rem', backgroundColor: '#fee', color: '#c00', borderRadius: '8px', margin: '1rem' }}>
+          {error}
+        </div>
+        <button className="gm-gestion-btn gm-btn-volver" onClick={handleVolver}>
+          Volver a Misiones
+        </button>
+      </div>
+    );
+  }
+
+  if (!mision) {
+    return (
+      <div className="gm-gestionar-mision">
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>No se encontró la misión</p>
+        </div>
+        <button className="gm-gestion-btn gm-btn-volver" onClick={handleVolver}>
+          Volver a Misiones
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="gm-gestionar-mision">
@@ -262,16 +328,20 @@ function GMGestionarMision() {
           {/* Competencias */}
           <div className="gm-gestion-card">
             <h2 className="gm-gestion-card-title">Competencias</h2>
-            <ul className="gm-gestion-list">
-              {mision.competencias.map((competencia, index) => (
-                <li key={index} className="gm-gestion-list-item">
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  {competencia}
-                </li>
-              ))}
-            </ul>
+            {mision.competencias && mision.competencias.length > 0 ? (
+              <ul className="gm-gestion-list">
+                {mision.competencias.map((competencia, index) => (
+                  <li key={index} className="gm-gestion-list-item">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    {competencia}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="gm-gestion-card-text">No se han definido competencias para esta misión.</p>
+            )}
           </div>
 
           {/* Descripción */}
@@ -292,18 +362,22 @@ function GMGestionarMision() {
           {/* Pistas */}
           <div className="gm-gestion-card gm-card-pistas">
             <h2 className="gm-gestion-card-title">Pistas</h2>
-            <ul className="gm-gestion-pistas-list">
-              {mision.pistas.map((pista, index) => (
-                <li key={index} className="gm-gestion-pista-item">
-                  <div className="gm-pista-icon">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <p className="gm-pista-text">{pista}</p>
-                </li>
-              ))}
-            </ul>
+            {mision.pistas && mision.pistas.length > 0 ? (
+              <ul className="gm-gestion-pistas-list">
+                {mision.pistas.map((pista, index) => (
+                  <li key={index} className="gm-gestion-pista-item">
+                    <div className="gm-pista-icon">
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <p className="gm-pista-text">{pista}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="gm-gestion-card-text">No se han definido pistas para esta misión.</p>
+            )}
           </div>
 
           {/* Retroalimentación */}
@@ -340,21 +414,29 @@ function GMGestionarMision() {
                       </tr>
                     </thead>
                     <tbody>
-                      {cursos.map((curso) => (
-                        <tr key={curso.id}>
-                          <td className="gm-asignar-curso-nombre">{curso.nombre}</td>
-                          <td className="gm-asignar-curso-codigo">{curso.codigo}</td>
-                          <td className="gm-asignar-curso-categoria">{curso.categoria}</td>
-                          <td>
-                            <button
-                              className="gm-asignar-btn-curso"
-                              onClick={() => handleAsignarACurso(curso)}
-                            >
-                              Asignar
-                            </button>
+                      {cursos.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>
+                            No hay cursos disponibles
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        cursos.map((curso) => (
+                          <tr key={curso.id}>
+                            <td className="gm-asignar-curso-nombre">{curso.nombre}</td>
+                            <td className="gm-asignar-curso-codigo">{curso.id}</td>
+                            <td className="gm-asignar-curso-categoria">{curso.nombre}</td>
+                            <td>
+                              <button
+                                className="gm-asignar-btn-curso"
+                                onClick={() => handleAsignarACurso(curso)}
+                              >
+                                Asignar
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -412,21 +494,29 @@ function GMGestionarMision() {
                       </tr>
                     </thead>
                     <tbody>
-                      {cursos.map((curso) => (
-                        <tr key={curso.id}>
-                          <td className="gm-progreso-curso-nombre">{curso.nombre}</td>
-                          <td className="gm-progreso-curso-codigo">{curso.codigo}</td>
-                          <td className="gm-progreso-curso-categoria">{curso.categoria}</td>
-                          <td>
-                            <button
-                              className="gm-progreso-btn-curso"
-                              onClick={() => handleVerProgresoCurso(curso)}
-                            >
-                              Ver progreso
-                            </button>
+                      {cursos.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>
+                            No hay cursos disponibles
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        cursos.map((curso) => (
+                          <tr key={curso.id}>
+                            <td className="gm-progreso-curso-nombre">{curso.nombre}</td>
+                            <td className="gm-progreso-curso-codigo">{curso.id}</td>
+                            <td className="gm-progreso-curso-categoria">{curso.nombre}</td>
+                            <td>
+                              <button
+                                className="gm-progreso-btn-curso"
+                                onClick={() => handleVerProgresoCurso(curso)}
+                              >
+                                Ver progreso
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -461,24 +551,32 @@ function GMGestionarMision() {
                       </tr>
                     </thead>
                     <tbody>
-                      {estudiantes.map((estudiante) => (
-                        <tr key={estudiante.id}>
-                          <td className="gm-progreso-estudiante-rut">{estudiante.rut}</td>
-                          <td className="gm-progreso-estudiante-nombre">{estudiante.nombre}</td>
-                          <td className="gm-progreso-estudiante-nivel">{estudiante.nivel}</td>
-                          <td>
-                            <div className="gm-progreso-bar-container">
-                              <div className="gm-progreso-bar-wrapper">
-                                <div
-                                  className="gm-progreso-bar-fill"
-                                  style={{ width: `${estudiante.progreso}%` }}
-                                ></div>
-                              </div>
-                              <span className="gm-progreso-bar-text">{estudiante.progreso}%</span>
-                            </div>
+                      {estudiantes.length === 0 ? (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>
+                            No hay estudiantes en este curso
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        estudiantes.map((estudiante) => (
+                          <tr key={estudiante.rut}>
+                            <td className="gm-progreso-estudiante-rut">{estudiante.rut}</td>
+                            <td className="gm-progreso-estudiante-nombre">{estudiante.nombre}</td>
+                            <td className="gm-progreso-estudiante-nivel">{estudiante.nivel || 'N/A'}</td>
+                            <td>
+                              <div className="gm-progreso-bar-container">
+                                <div className="gm-progreso-bar-wrapper">
+                                  <div
+                                    className="gm-progreso-bar-fill"
+                                    style={{ width: `${estudiante.progreso || 0}%` }}
+                                  ></div>
+                                </div>
+                                <span className="gm-progreso-bar-text">{estudiante.progreso || 0}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>

@@ -274,7 +274,7 @@ const agregarEstudiante = async (req, res) => {
     // Asignar todas las misiones activas del curso al estudiante
     await connection.query(
       `INSERT INTO estudiante_misiones (estudiante_rut, mision_id, estado)
-      SELECT ?, m.id, 'Pendiente'
+      SELECT ?, m.id, 'no_iniciada'
       FROM misiones m
       WHERE m.curso_id = ? AND m.estado = 'activa'`,
       [estudiante_rut, id]
