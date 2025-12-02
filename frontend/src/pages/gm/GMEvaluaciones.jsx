@@ -2,101 +2,61 @@
 // Página de evaluaciones del Game Master.
 // Lista entregas de evaluaciones con filtros y botón Revisar.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 import "../../styles/gmEvaluaciones.css";
 import "../../styles/themes.css";
 
 function GMEvaluaciones() {
   const navigate = useNavigate();
 
-  // Lista de cursos disponibles
-  const cursosData = [
-    { id: 1, nombre: "3° Medio A", codigo: "3MA-2025", categoria: "Secundaria", totalEvaluaciones: 3 },
-    { id: 2, nombre: "2° Medio B", codigo: "2MB-2025", categoria: "Secundaria", totalEvaluaciones: 2 },
-    { id: 3, nombre: "1° Medio C", codigo: "1MC-2025", categoria: "Secundaria", totalEvaluaciones: 1 }
-  ];
-
-  // Evaluaciones por curso
-  const evaluacionesPorCurso = {
-    1: [ // 3° Medio A
-      {
-        id: 1,
-        rut: "12.345.678-9",
-        nombre: "Alejandra Fernandez",
-        curso: "3° Medio A",
-        categoria: "Matemáticas",
-        fechaEntrega: "15/07/2025",
-        estado: "Pendiente",
-        reciente: true
-      },
-      {
-        id: 2,
-        rut: "12.345.678-9",
-        nombre: "Jeremías Cancino",
-        curso: "3° Medio A",
-        categoria: "Ciencias",
-        fechaEntrega: "20/07/2025",
-        estado: "Finalizado",
-        reciente: true
-      },
-      {
-        id: 6,
-        rut: "11.222.333-4",
-        nombre: "Martín Silva",
-        curso: "3° Medio A",
-        categoria: "Historia",
-        fechaEntrega: "22/07/2025",
-        estado: "Pendiente",
-        reciente: true
-      }
-    ],
-    2: [ // 2° Medio B
-      {
-        id: 3,
-        rut: "12.345.678-9",
-        nombre: "Camila Santis",
-        curso: "2° Medio B",
-        categoria: "Lenguaje",
-        fechaEntrega: "11/09/2025",
-        estado: "Finalizado",
-        reciente: false
-      },
-      {
-        id: 5,
-        rut: "23.456.789-0",
-        nombre: "Valentina Torres",
-        curso: "2° Medio B",
-        categoria: "Ciencias",
-        fechaEntrega: "28/06/2025",
-        estado: "Finalizado",
-        reciente: true
-      }
-    ],
-    3: [ // 1° Medio C
-      {
-        id: 4,
-        rut: "23.456.789-0",
-        nombre: "Diego Morales",
-        curso: "1° Medio C",
-        categoria: "Matemáticas",
-        fechaEntrega: "03/05/2025",
-        estado: "Pendiente",
-        reciente: false
-      }
-    ]
-  };
-
+  const [cursos, setCursos] = useState([]);
+  const [evaluaciones, setEvaluaciones] = useState([]);
   const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
   const [filtroCategoria, setFiltroCategoria] = useState("Todas");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [soloRecientes, setSoloRecientes] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Cargar cursos al montar el componente
+  useEffect(() => {
+    cargarCursos();
+  }, []);
+
+  const cargarCursos = async () => {
+    try {
+      setCargando(true);
+      setError(null);
+      const response = await api.get('/gm/evaluaciones/cursos');
+      setCursos(response.data.cursos || []);
+    } catch (err) {
+      console.error('Error al cargar cursos:', err);
+      setError('Error al cargar los cursos');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const cargarEvaluacionesCurso = async (cursoId) => {
+    try {
+      setCargando(true);
+      setError(null);
+      const response = await api.get(`/gm/evaluaciones/cursos/${cursoId}`);
+      setEvaluaciones(response.data.evaluaciones || []);
+    } catch (err) {
+      console.error('Error al cargar evaluaciones:', err);
+      setError('Error al cargar las evaluaciones del curso');
+      setEvaluaciones([]);
+    } finally {
+      setCargando(false);
+    }
+  };
 
   // Obtener evaluaciones del curso seleccionado
-  const evaluacionesActuales = cursoSeleccionado
-    ? evaluacionesPorCurso[cursoSeleccionado.id] || []
-    : [];
+  const evaluacionesActuales = evaluaciones;
 
   // Valores únicos para selects
   const categoriasUnicas = ["Todas", ...new Set(evaluacionesActuales.map((e) => e.categoria))];
@@ -119,17 +79,20 @@ function GMEvaluaciones() {
     );
   });
 
-  const handleSeleccionarCurso = (curso) => {
+  const handleSeleccionarCurso = async (curso) => {
     setCursoSeleccionado(curso);
     // Resetear filtros
     setFiltroCategoria("Todas");
     setFiltroEstado("Todos");
     setSoloRecientes(false);
     setBusqueda("");
+    // Cargar evaluaciones del curso
+    await cargarEvaluacionesCurso(curso.id);
   };
 
   const handleVolverACursos = () => {
     setCursoSeleccionado(null);
+    setEvaluaciones([]);
   };
 
   const handleRevisar = (ev) => {
@@ -148,39 +111,61 @@ function GMEvaluaciones() {
         <div className="gm-evaluaciones-cursos-container">
           <p className="gm-evaluaciones-subtitle">Selecciona un curso para revisar las evaluaciones</p>
 
-          <div className="gm-evaluaciones-table-container">
-            <div className="gm-evaluaciones-table-wrapper">
-              <table className="gm-evaluaciones-table">
-                <thead>
-                  <tr>
-                    <th>Curso</th>
-                    <th>Código</th>
-                    <th>Categoría</th>
-                    <th>Evaluaciones</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cursosData.map((curso) => (
-                    <tr key={curso.id}>
-                      <td className="gm-curso-nombre">{curso.nombre}</td>
-                      <td className="gm-curso-codigo">{curso.codigo}</td>
-                      <td className="gm-curso-categoria">{curso.categoria}</td>
-                      <td className="gm-curso-total">{curso.totalEvaluaciones}</td>
-                      <td>
-                        <button
-                          className="gm-evaluaciones-revisar-btn"
-                          onClick={() => handleSeleccionarCurso(curso)}
-                        >
-                          Ver evaluaciones
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {error && (
+            <div className="gm-evaluaciones-error">
+              <p>{error}</p>
             </div>
-          </div>
+          )}
+
+          {cargando ? (
+            <div className="gm-evaluaciones-loading">
+              <p>Cargando cursos...</p>
+            </div>
+          ) : (
+            <div className="gm-evaluaciones-table-container">
+              <div className="gm-evaluaciones-table-wrapper">
+                <table className="gm-evaluaciones-table">
+                  <thead>
+                    <tr>
+                      <th>Curso</th>
+                      <th>Código</th>
+                      <th>Categoría</th>
+                      <th>Evaluaciones</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cursos.length > 0 ? (
+                      cursos.map((curso) => (
+                        <tr key={curso.id}>
+                          <td className="gm-curso-nombre">{curso.nombre}</td>
+                          <td className="gm-curso-codigo">{curso.codigo || 'N/A'}</td>
+                          <td className="gm-curso-categoria">{curso.categoria}</td>
+                          <td className="gm-curso-total">{curso.totalEvaluaciones}</td>
+                          <td>
+                            <button
+                              className="gm-evaluaciones-revisar-btn"
+                              onClick={() => handleSeleccionarCurso(curso)}
+                            >
+                              Ver evaluaciones
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="gm-evaluaciones-no-results">
+                          <div className="gm-evaluaciones-no-results-content">
+                            <p>No hay cursos disponibles.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* Vista 2: Evaluaciones del curso seleccionado */
@@ -270,65 +255,86 @@ function GMEvaluaciones() {
           </div>
 
           {/* Tabla de evaluaciones */}
-          <div className="gm-evaluaciones-table-container">
-            <div className="gm-evaluaciones-table-wrapper">
-              <table className="gm-evaluaciones-table">
-                <thead>
-                  <tr>
-                    <th>Rut</th>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Fecha de entrega</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {evaluacionesFiltradas.length > 0 ? (
-                    evaluacionesFiltradas.map((ev) => (
-                      <tr key={ev.id}>
-                        <td className="gm-evaluacion-rut">{ev.rut}</td>
-                        <td className="gm-evaluacion-nombre">{ev.nombre}</td>
-                        <td className="gm-evaluacion-categoria">{ev.categoria}</td>
-                        <td className="gm-evaluacion-fecha">{ev.fechaEntrega}</td>
-                        <td>
-                          <span
-                            className={
-                              "gm-evaluacion-estado-badge " +
-                              (ev.estado === "Pendiente"
-                                ? "pendiente"
-                                : "finalizado")
+          {error && (
+            <div className="gm-evaluaciones-error">
+              <p>{error}</p>
+            </div>
+          )}
+
+          {cargando ? (
+            <div className="gm-evaluaciones-loading">
+              <p>Cargando evaluaciones...</p>
+            </div>
+          ) : (
+            <div className="gm-evaluaciones-table-container">
+              <div className="gm-evaluaciones-table-wrapper">
+                <table className="gm-evaluaciones-table">
+                  <thead>
+                    <tr>
+                      <th>Rut</th>
+                      <th>Nombre</th>
+                      <th>Categoría</th>
+                      <th>Fecha de entrega</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {evaluacionesFiltradas.length > 0 ? (
+                      evaluacionesFiltradas.map((ev) => (
+                        <tr key={ev.id}>
+                          <td className="gm-evaluacion-rut">{ev.rut}</td>
+                          <td className="gm-evaluacion-nombre">{ev.nombre}</td>
+                          <td className="gm-evaluacion-categoria">{ev.categoria || 'General'}</td>
+                          <td className="gm-evaluacion-fecha">
+                            {ev.fechaEntrega
+                              ? new Date(ev.fechaEntrega).toLocaleDateString('es-CL', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })
+                              : 'N/A'
                             }
-                          >
-                            {ev.estado}
-                          </span>
-                        </td>
-                        <td>
-                          <button
-                            className="gm-evaluaciones-revisar-btn"
-                            onClick={() => handleRevisar(ev)}
-                          >
-                            Revisar
-                          </button>
+                          </td>
+                          <td>
+                            <span
+                              className={
+                                "gm-evaluacion-estado-badge " +
+                                (ev.estado === "Pendiente"
+                                  ? "pendiente"
+                                  : "finalizado")
+                              }
+                            >
+                              {ev.estado}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              className="gm-evaluaciones-revisar-btn"
+                              onClick={() => handleRevisar(ev)}
+                            >
+                              Revisar
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="gm-evaluaciones-no-results">
+                          <div className="gm-evaluaciones-no-results-content">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p>No se encontraron evaluaciones que coincidan con los filtros.</p>
+                          </div>
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="6" className="gm-evaluaciones-no-results">
-                        <div className="gm-evaluaciones-no-results-content">
-                          <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <p>No se encontraron evaluaciones que coincidan con los filtros.</p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </div>

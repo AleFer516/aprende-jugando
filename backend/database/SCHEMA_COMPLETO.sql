@@ -214,6 +214,9 @@ CREATE TABLE misiones (
   FOREIGN KEY (creador_rut) REFERENCES usuarios(rut) ON DELETE SET NULL,
   INDEX idx_curso (curso_id),
   INDEX idx_tipo (tipo),
+  INDEX idx_dificultad (dificultad),
+  INDEX idx_estado (estado),
+  INDEX idx_creador (creador_rut),
   INDEX idx_activo (activo),
   INDEX idx_orden (orden)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -665,15 +668,32 @@ INSERT INTO misiones (curso_id, titulo, descripcion, tipo, dificultad, puntos_ex
 -- ==========================================
 -- DATOS DE PRUEBA - PROGRESO DE ESTUDIANTES
 -- ==========================================
+-- Estados: no_iniciada, en_progreso, completada, revisando, aprobada, rechazada
+-- Las misiones 'completada' aparecerán en el panel de evaluaciones del GM
 
-INSERT INTO estudiante_misiones (mision_id, estudiante_rut, estado, progreso, puntuacion, intentos, fecha_inicio) VALUES
-(1, '11.222.333-4', 'completada', 100, 88.00, 2, DATE_SUB(NOW(), INTERVAL 7 DAY)),
-(2, '11.222.333-4', 'completada', 100, 92.00, 1, DATE_SUB(NOW(), INTERVAL 4 DAY)),
-(3, '11.222.333-4', 'en_progreso', 45, NULL, 1, DATE_SUB(NOW(), INTERVAL 1 DAY)),
-(1, '11.222.333-5', 'completada', 100, 95.00, 1, DATE_SUB(NOW(), INTERVAL 5 DAY)),
-(2, '11.222.333-5', 'en_progreso', 60, NULL, 1, DATE_SUB(NOW(), INTERVAL 2 DAY)),
-(1, '22.333.444-5', 'completada', 100, 100.00, 1, DATE_SUB(NOW(), INTERVAL 10 DAY)),
-(4, '22.333.444-5', 'en_progreso', 75, NULL, 1, DATE_SUB(NOW(), INTERVAL 3 DAY));
+INSERT INTO estudiante_misiones (mision_id, estudiante_rut, estado, progreso, puntuacion, intentos, fecha_inicio, fecha_completado) VALUES
+-- Estudiante Test (11.222.333-4) - Curso Matemáticas
+(1, '11.222.333-4', 'completada', 100, 88.00, 2, DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 6 DAY)),
+(2, '11.222.333-4', 'completada', 100, 92.00, 1, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY)),
+(3, '11.222.333-4', 'en_progreso', 45, NULL, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NULL),
+
+-- María González (11.222.333-5) - Curso Matemáticas
+(1, '11.222.333-5', 'completada', 100, 95.00, 1, DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(2, '11.222.333-5', 'completada', 100, 87.50, 2, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(3, '11.222.333-5', 'no_iniciada', 0, NULL, 0, NULL, NULL),
+
+-- Juan Pérez (22.333.444-5) - Curso Matemáticas
+(1, '22.333.444-5', 'aprobada', 100, 100.00, 1, DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 9 DAY)),
+(2, '22.333.444-5', 'completada', 100, 91.00, 1, DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(3, '22.333.444-5', 'en_progreso', 30, NULL, 1, NOW(), NULL),
+
+-- Estudiante Test (11.222.333-4) - Curso Ciencias
+(4, '11.222.333-4', 'completada', 100, 85.00, 1, DATE_SUB(NOW(), INTERVAL 8 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY)),
+(5, '11.222.333-4', 'en_progreso', 50, NULL, 1, DATE_SUB(NOW(), INTERVAL 2 DAY), NULL),
+
+-- Juan Pérez (22.333.444-5) - Curso Ciencias
+(4, '22.333.444-5', 'completada', 100, 78.00, 2, DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(5, '22.333.444-5', 'completada', 100, 93.00, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW());
 
 -- ==========================================
 -- DATOS DE PRUEBA - EVALUACIONES

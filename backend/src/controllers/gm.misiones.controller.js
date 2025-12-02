@@ -73,7 +73,13 @@ const obtenerMisionPorId = async (req, res) => {
     let competencias = [];
     if (mision.competencias_json) {
       try {
-        competencias = JSON.parse(mision.competencias_json);
+        // Si competencias_json es un objeto, ya está parseado
+        if (typeof mision.competencias_json === 'object') {
+          competencias = Array.isArray(mision.competencias_json) ? mision.competencias_json : [];
+        } else if (typeof mision.competencias_json === 'string') {
+          // Si es string, intentar parsear
+          competencias = JSON.parse(mision.competencias_json);
+        }
       } catch (e) {
         console.error('Error al parsear competencias:', e);
         competencias = [];

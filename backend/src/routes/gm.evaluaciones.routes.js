@@ -5,13 +5,21 @@ const {
   obtenerTodasEvaluaciones,
   obtenerEvaluacionPorId,
   evaluarMision,
-  obtenerEstadisticas
+  obtenerEstadisticas,
+  obtenerCursosConEvaluaciones,
+  obtenerEvaluacionesPorCurso
 } = require('../controllers/gm.evaluaciones.controller');
 const { verificarToken, verificarRol } = require('../middlewares/auth.middleware');
 
 // Todas las rutas requieren autenticación y rol GM
 router.use(verificarToken);
 router.use(verificarRol(['gm', 'admin']));
+
+// Obtener cursos con evaluaciones
+router.get('/cursos', obtenerCursosConEvaluaciones);
+
+// Obtener evaluaciones de un curso específico
+router.get('/cursos/:cursoId', obtenerEvaluacionesPorCurso);
 
 // Obtener estadísticas de evaluaciones
 router.get('/estadisticas', obtenerEstadisticas);
