@@ -21,7 +21,11 @@ try {
   // Middlewares
   app.use(cors());
   app.use(express.json());
+
+  // Servir archivos estáticos (avatares, logos, etc.)
+  app.use('/uploads', express.static('uploads'));
   console.log('✅ Middlewares configurados');
+  console.log('✅ Archivos estáticos configurados en /uploads');
 
   // Cargar rutas una por una con manejo de errores
   console.log('\n📁 Cargando rutas...');

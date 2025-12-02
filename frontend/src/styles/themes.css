@@ -35,6 +35,16 @@ body.theme-light {
   --admin-success: #10b981;
   --admin-warning: #f59e0b;
   --admin-error: #ef4444;
+
+  /* Variables genéricas para reutilización */
+  --text-primary: #061e48;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --card-bg: #ffffff;
+  --card-header-bg: linear-gradient(135deg, #061e48, #0a2e5c);
+  --card-header-text: #ffffff;
+  --border-color: #e2e8f0;
+  --input-bg: #ffffff;
 }
 
 /* Variables CSS para tema oscuro */
@@ -71,6 +81,16 @@ body.theme-dark {
   --admin-success: #22c55e;
   --admin-warning: #f59e0b;
   --admin-error: #ef4444;
+
+  /* Variables genéricas para reutilización */
+  --text-primary: #f1f5f9;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --card-bg: #07133f;
+  --card-header-bg: #061e48;
+  --card-header-text: #ffffff;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --input-bg: #020826;
 }
 
 /* Aplicar variables al layout - solo en modo oscuro */

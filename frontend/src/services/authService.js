@@ -38,6 +38,28 @@ const authService = {
   // Obtener token
   getToken: () => {
     return localStorage.getItem('token');
+  },
+
+  // Actualizar avatar del usuario en localStorage
+  updateUserAvatar: (avatarUrl) => {
+    const usuario = authService.getCurrentUser();
+    if (usuario) {
+      usuario.avatar = avatarUrl;
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+      // Disparar evento personalizado para notificar cambios
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: usuario }));
+    }
+  },
+
+  // Actualizar nombre del usuario en localStorage
+  updateUserName: (nombre) => {
+    const usuario = authService.getCurrentUser();
+    if (usuario) {
+      usuario.nombre = nombre;
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+      // Disparar evento personalizado para notificar cambios
+      window.dispatchEvent(new CustomEvent('userUpdated', { detail: usuario }));
+    }
   }
 };
 

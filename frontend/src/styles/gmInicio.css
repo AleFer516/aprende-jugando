@@ -396,6 +396,17 @@
 .gm-recent-mission-date {
   font-size: 0.85rem;
   color: #9bb4ff;
+  margin-bottom: 0.5rem;
+}
+
+.gm-recent-mission-course {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
 }
 
 .gm-recent-mission-btn {

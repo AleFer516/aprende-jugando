@@ -2,27 +2,79 @@
 // Página de perfil del usuario Game Master (solo visualización).
 // Las ediciones se realizan desde la página de Configuración.
 
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import gmService from "../../services/gmService";
 import "../../styles/gmPerfil.css";
 import "../../styles/themes.css";
 
 function GMPerfil() {
   const navigate = useNavigate();
+  const [perfil, setPerfil] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const datosUsuario = {
-    nombre: "Felipe",
-    correo: "felipe.gm@luminia.cl",
-    rol: "Game Master",
-    telefono: "+56 9 9876 5432",
-    biografia:
-      "Profesor a cargo de las misiones del sistema Luminia. Motivado por hacer las matemáticas más entretenidas.",
-    fechaRegistro: "10 de marzo, 2024",
-    ultimoAcceso: "Hoy a las 09:15"
-  };
+  useEffect(() => {
+    const cargarPerfil = async () => {
+      try {
+        setLoading(true);
+        const response = await gmService.getPerfil();
+        if (response.success) {
+          setPerfil(response.perfil);
+        }
+      } catch (error) {
+        console.error("Error al cargar perfil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarPerfil();
+  }, []);
 
   const irAConfiguracion = () => {
     navigate("/gm/configuracion");
   };
+
+  const formatearFecha = (fecha) => {
+    if (!fecha) return "No disponible";
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formatearUltimoAcceso = (fecha) => {
+    if (!fecha) return "Nunca";
+    const date = new Date(fecha);
+    const ahora = new Date();
+    const diff = Math.floor((ahora - date) / 1000); // diferencia en segundos
+
+    if (diff < 60) return "Hace un momento";
+    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} minutos`;
+    if (diff < 86400) return `Hoy a las ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    if (diff < 172800) return `Ayer a las ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="gm-perfil">
+        <div className="gm-perfil-header">
+          <h1 className="gm-perfil-title">Mi Perfil</h1>
+        </div>
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          Cargando perfil...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gm-perfil">
@@ -56,13 +108,21 @@ function GMPerfil() {
             {/* Avatar */}
             <div className="gm-perfil-avatar-section">
               <div className="gm-perfil-avatar">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clipRule="evenodd"
+                {perfil?.avatar ? (
+                  <img
+                    src={`http://localhost:4000${perfil.avatar}`}
+                    alt={perfil.nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                   />
-                </svg>
+                ) : (
+                  <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
               </div>
             </div>
 
@@ -71,30 +131,30 @@ function GMPerfil() {
               <div className="gm-perfil-form-row">
                 <div className="gm-perfil-form-group">
                   <label>Nombre completo</label>
-                  <p>{datosUsuario.nombre}</p>
+                  <p>{perfil?.nombre || 'No disponible'}</p>
                 </div>
 
                 <div className="gm-perfil-form-group">
                   <label>Correo electrónico</label>
-                  <p>{datosUsuario.correo}</p>
+                  <p>{perfil?.email || 'No disponible'}</p>
                 </div>
               </div>
 
               <div className="gm-perfil-form-row">
                 <div className="gm-perfil-form-group">
-                  <label>Rol</label>
-                  <p className="gm-perfil-rol-badge">{datosUsuario.rol}</p>
+                  <label>RUT</label>
+                  <p>{perfil?.rut || 'No disponible'}</p>
                 </div>
 
                 <div className="gm-perfil-form-group">
                   <label>Teléfono</label>
-                  <p>{datosUsuario.telefono}</p>
+                  <p>{perfil?.telefono || 'No registrado'}</p>
                 </div>
               </div>
 
               <div className="gm-perfil-form-group">
-                <label>Biografía</label>
-                <p>{datosUsuario.biografia}</p>
+                <label>Rol</label>
+                <p className="gm-perfil-rol-badge">Game Master</p>
               </div>
             </div>
           </div>
@@ -118,17 +178,50 @@ function GMPerfil() {
               <div className="gm-perfil-info-item">
                 <span className="gm-perfil-info-label">Fecha de registro</span>
                 <span className="gm-perfil-info-value">
-                  {datosUsuario.fechaRegistro}
+                  {formatearFecha(perfil?.created_at)}
                 </span>
               </div>
 
               <div className="gm-perfil-info-item">
                 <span className="gm-perfil-info-label">Último acceso</span>
                 <span className="gm-perfil-info-value">
-                  {datosUsuario.ultimoAcceso}
+                  {formatearUltimoAcceso(perfil?.ultimo_acceso)}
                 </span>
               </div>
             </div>
+
+            {/* Estadísticas adicionales */}
+            {perfil?.estadisticas && (
+              <div className="gm-perfil-info-grid" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+                <div className="gm-perfil-info-item">
+                  <span className="gm-perfil-info-label">Cursos creados</span>
+                  <span className="gm-perfil-info-value">
+                    {perfil.estadisticas.total_cursos || 0}
+                  </span>
+                </div>
+
+                <div className="gm-perfil-info-item">
+                  <span className="gm-perfil-info-label">Misiones creadas</span>
+                  <span className="gm-perfil-info-value">
+                    {perfil.estadisticas.total_misiones || 0}
+                  </span>
+                </div>
+
+                <div className="gm-perfil-info-item">
+                  <span className="gm-perfil-info-label">Estudiantes</span>
+                  <span className="gm-perfil-info-value">
+                    {perfil.estadisticas.total_estudiantes || 0}
+                  </span>
+                </div>
+
+                <div className="gm-perfil-info-item">
+                  <span className="gm-perfil-info-label">Evaluaciones realizadas</span>
+                  <span className="gm-perfil-info-value">
+                    {perfil.estadisticas.total_evaluaciones || 0}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

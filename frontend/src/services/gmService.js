@@ -138,16 +138,52 @@ const gmService = {
     return response.data;
   },
 
-  actualizarConfiguracion: async (configuracion) => {
-    const response = await api.put('/gm/configuracion', configuracion);
+  actualizarConfiguracion: async (notificaciones) => {
+    const response = await api.put('/gm/configuracion', {
+      notificaciones
+    });
     return response.data;
   },
 
-  cambiarContrasena: async (contrasenaActual, contrasenaNueva) => {
-    const response = await api.put('/gm/configuracion/cambiar-contrasena', {
-      contrasenaActual,
-      contrasenaNueva
+  // Información personal
+  getInformacionPersonal: async () => {
+    const response = await api.get('/gm/configuracion/informacion-personal');
+    return response.data;
+  },
+
+  actualizarInformacionPersonal: async (nombre, email) => {
+    const response = await api.put('/gm/configuracion/informacion-personal', {
+      nombre,
+      email
     });
+    return response.data;
+  },
+
+  // Cambiar contraseña
+  cambiarContrasena: async (passwordActual, passwordNueva, passwordConfirmar) => {
+    const response = await api.put('/gm/configuracion/cambiar-contrasena', {
+      passwordActual,
+      passwordNueva,
+      passwordConfirmar
+    });
+    return response.data;
+  },
+
+  // Avatar
+  subirAvatar: async (file) => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await api.post('/gm/configuracion/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  eliminarAvatar: async () => {
+    const response = await api.delete('/gm/configuracion/avatar');
     return response.data;
   },
 

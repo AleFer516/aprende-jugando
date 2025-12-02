@@ -7,7 +7,7 @@ const obtenerPerfil = async (req, res) => {
 
     // Obtener información básica del GM
     const [usuarios] = await db.query(
-      'SELECT rut, nombre, email, avatar, created_at FROM usuarios WHERE id = ?',
+      'SELECT rut, nombre, email, avatar, telefono, created_at, ultimo_acceso FROM usuarios WHERE rut = ?',
       [gmRut]
     );
 
@@ -29,7 +29,7 @@ const obtenerPerfil = async (req, res) => {
         COUNT(DISTINCT CASE WHEN ev.estado = 'evaluada' THEN ev.id END) as total_evaluaciones
       FROM usuarios u
       LEFT JOIN cursos c ON u.rut = c.gm_rut
-      LEFT JOIN misiones m ON u.rut = m.gm_rut
+      LEFT JOIN misiones m ON u.rut = m.creador_rut
       LEFT JOIN curso_estudiantes ce ON c.id = ce.curso_id
       LEFT JOIN evaluaciones ev ON u.rut = ev.gm_rut
       WHERE u.rut = ?`,
@@ -56,16 +56,16 @@ const obtenerPerfil = async (req, res) => {
     const [actividadReciente] = await db.query(
       `(SELECT
         'mision' as tipo,
-        m.nombre as descripcion,
+        m.titulo as descripcion,
         m.created_at as fecha
       FROM misiones m
-      WHERE m.gm_rut = ?
+      WHERE m.creador_rut = ?
       ORDER BY m.created_at DESC
       LIMIT 5)
       UNION ALL
       (SELECT
         'evaluacion' as tipo,
-        CONCAT('Evaluó a ', u.nombre, ' en ', m.nombre) as descripcion,
+        CONCAT('Evaluó a ', u.nombre, ' en ', m.titulo) as descripcion,
         ev.updated_at as fecha
       FROM evaluaciones ev
       INNER JOIN usuarios u ON ev.estudiante_rut = u.rut
@@ -113,7 +113,7 @@ const actualizarPerfil = async (req, res) => {
 
     // Verificar si el email ya existe (excepto el del usuario actual)
     const [usuariosExistentes] = await db.query(
-      'SELECT id FROM usuarios WHERE email = ? AND id != ?',
+      'SELECT rut FROM usuarios WHERE email = ? AND rut != ?',
       [email, gmRut]
     );
 
@@ -126,7 +126,7 @@ const actualizarPerfil = async (req, res) => {
 
     // Actualizar perfil
     await db.query(
-      'UPDATE usuarios SET nombre = ?, email = ?, avatar = ? WHERE id = ?',
+      'UPDATE usuarios SET nombre = ?, email = ?, avatar = ? WHERE rut = ?',
       [nombre, email, avatar || null, gmRut]
     );
 
@@ -174,7 +174,7 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
         dificultad,
         COUNT(*) as cantidad
       FROM misiones
-      WHERE gm_rut = ?
+      WHERE creador_rut = ?
       GROUP BY dificultad`,
       [gmRut]
     );
@@ -185,7 +185,7 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
         DATE_FORMAT(created_at, '%Y-%m') as mes,
         COUNT(*) as misiones_creadas
       FROM misiones
-      WHERE gm_rut = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      WHERE creador_rut = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
       GROUP BY DATE_FORMAT(created_at, '%Y-%m')
       ORDER BY mes`,
       [gmRut]
@@ -199,7 +199,7 @@ const obtenerEstadisticasDetalladas = async (req, res) => {
         (COUNT(CASE WHEN estado = 'Completada' THEN 1 END) / COUNT(*) * 100) as tasa_completitud
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE m.gm_rut = ?`,
+      WHERE m.creador_rut = ?`,
       [gmRut]
     );
 

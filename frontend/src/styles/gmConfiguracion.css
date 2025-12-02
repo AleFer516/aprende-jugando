@@ -25,13 +25,13 @@
   font-family: "Poppins", "Montserrat", sans-serif;
   font-weight: 700;
   font-size: 2rem;
-  color: #061e48;
+  color: #0f172a !important;
   margin: 0 0 0.5rem 0;
 }
 
 .gm-config-perfil-subtitle {
   font-size: 1rem;
-  color: #64748b;
+  color: #475569 !important;
   margin: 0 0 2rem 0;
 }
 
@@ -52,7 +52,7 @@
 /* Cards */
 
 .gm-config-perfil-card {
-  background: white;
+  background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -73,7 +73,7 @@
   font-family: "Poppins", "Montserrat", sans-serif;
   font-weight: 600;
   font-size: 1.25rem;
-  color: white;
+  color: #ffffff !important;
   margin: 0;
 }
 
@@ -137,16 +137,16 @@
 .config-label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #334155;
+  color: #1e293b !important;
 }
 
 .config-input {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #cbd5e1 !important;
   border-radius: 12px;
   font-size: 1rem;
-  color: #334155;
-  background: white;
+  color: #0f172a !important;
+  background: #ffffff !important;
   transition: all 0.3s ease;
 }
 
@@ -180,7 +180,7 @@
 .config-section-label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #334155;
+  color: #1e293b !important;
 }
 
 /* Radio buttons */
@@ -196,7 +196,7 @@
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.95rem;
-  color: #334155;
+  color: #1e293b !important;
 }
 
 .config-radio-option input[type="radio"] {
@@ -284,18 +284,18 @@
 
 .config-switch-text {
   font-size: 0.95rem;
-  color: #334155;
+  color: #1e293b !important;
 }
 
 /* Select */
 
 .config-select {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #cbd5e1 !important;
   border-radius: 12px;
   font-size: 1rem;
-  color: #334155;
-  background: white;
+  color: #0f172a !important;
+  background: #ffffff !important;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -338,7 +338,7 @@
   padding: 0.65rem 1.25rem;
   border: 2px solid #00a7d5;
   border-radius: 12px;
-  background: white;
+  background: #ffffff;
   color: #00a7d5;
   font-size: 0.95rem;
   font-weight: 600;

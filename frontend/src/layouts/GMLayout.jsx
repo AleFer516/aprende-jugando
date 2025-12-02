@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
 import useSystemConfig from "../hooks/useSystemConfig";
+import authService from "../services/authService";
 import "../styles/gmLayout.css";
 import "../styles/adminUsuarios.css";
 import "../styles/themes.css";
@@ -25,6 +26,9 @@ function GMLayout() {
 
   // Modal de cierre de sesión
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+
+  // Información del usuario
+  const [usuario, setUsuario] = useState(authService.getCurrentUser());
 
   const navigate = useNavigate();
 
@@ -57,6 +61,16 @@ function GMLayout() {
     alert("Sesión cerrada correctamente.");
     navigate("/");
   };
+
+  // Escuchar cambios en la información del usuario
+  useEffect(() => {
+    const handleUserUpdated = (event) => {
+      setUsuario(event.detail);
+    };
+
+    window.addEventListener('userUpdated', handleUserUpdated);
+    return () => window.removeEventListener('userUpdated', handleUserUpdated);
+  }, []);
 
   // Cerrar dropdowns al hacer clic fuera
   useEffect(() => {
@@ -282,9 +296,17 @@ function GMLayout() {
                 aria-label="Menú de usuario"
               >
                 <div className="gm-avatar">
-                  <span>GM</span>
+                  {usuario?.avatar ? (
+                    <img
+                      src={`http://localhost:4000${usuario.avatar}`}
+                      alt={usuario.nombre}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span>{usuario?.nombre?.charAt(0) || 'GM'}</span>
+                  )}
                 </div>
-                <span className="gm-username">Profesor</span>
+                <span className="gm-username">{usuario?.nombre || 'Profesor'}</span>
                 <svg
                   className="gm-user-caret"
                   viewBox="0 0 20 20"
@@ -298,12 +320,20 @@ function GMLayout() {
                 <div className="gm-user-dropdown">
                   <div className="gm-user-dropdown-header">
                     <div className="gm-user-dropdown-avatar">
-                      <span>GM</span>
+                      {usuario?.avatar ? (
+                        <img
+                          src={`http://localhost:4000${usuario.avatar}`}
+                          alt={usuario.nombre}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                        />
+                      ) : (
+                        <span>{usuario?.nombre?.charAt(0) || 'GM'}</span>
+                      )}
                     </div>
                     <div>
-                      <p className="gm-user-dropdown-name">Profesor</p>
+                      <p className="gm-user-dropdown-name">{usuario?.nombre || 'Profesor'}</p>
                       <p className="gm-user-dropdown-email">
-                        profesor@luminia.app
+                        {usuario?.email || 'profesor@luminia.app'}
                       </p>
                     </div>
                   </div>

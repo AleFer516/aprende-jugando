@@ -56,7 +56,7 @@ const obtenerMisionesPorRevisar = async (req, res) => {
       LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
       WHERE ev.gm_rut = ? AND ev.estado = 'pendiente'
       ORDER BY em.fecha_completado DESC
-      LIMIT 10`,
+      LIMIT 3`,
       [gmRut]
     );
 
@@ -122,11 +122,13 @@ const obtenerMisionesRecientes = async (req, res) => {
           WHEN DATE(m.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) THEN 'Ayer'
           WHEN m.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 'Esta semana'
           ELSE 'Hace más de una semana'
-        END as fecha
+        END as fecha,
+        c.nombre as curso
       FROM misiones m
+      LEFT JOIN cursos c ON m.curso_id = c.id
       WHERE m.creador_rut = ?
       ORDER BY m.created_at DESC
-      LIMIT 5`,
+      LIMIT 6`,
       [gmRut]
     );
 
@@ -283,7 +285,7 @@ const obtenerResumenDashboard = async (req, res) => {
         LEFT JOIN estudiante_misiones em ON ev.estudiante_rut = em.estudiante_rut AND ev.mision_id = em.mision_id
         WHERE ev.gm_rut = ? AND ev.estado = 'pendiente'
         ORDER BY em.fecha_completado DESC
-        LIMIT 10`,
+        LIMIT 3`,
         [gmRut]
       ),
       // Avance de cursos
@@ -305,16 +307,19 @@ const obtenerResumenDashboard = async (req, res) => {
         `SELECT
           m.id,
           m.titulo as nombre,
+          m.created_at,
           CASE
             WHEN DATE(m.created_at) = CURDATE() THEN 'Hoy'
             WHEN DATE(m.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) THEN 'Ayer'
             WHEN m.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 'Esta semana'
             ELSE 'Hace más de una semana'
-          END as fecha
+          END as fecha,
+          c.nombre as curso
         FROM misiones m
+        LEFT JOIN cursos c ON m.curso_id = c.id
         WHERE m.creador_rut = ?
         ORDER BY m.created_at DESC
-        LIMIT 5`,
+        LIMIT 6`,
         [gmRut]
       ),
       // Indicadores (progreso promedio y actividad semanal)

@@ -2,8 +2,11 @@
 // Página de configuración de perfil del Game Master.
 // Permite editar información personal, preferencias y seguridad.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import gmService from "../../services/gmService";
+import authService from "../../services/authService";
+import "../../styles/themes.css";
 import "../../styles/gmConfiguracion.css";
 
 function GMConfiguracionPerfil() {
@@ -11,16 +14,22 @@ function GMConfiguracionPerfil() {
 
   // Estado de información personal
   const [infoPersonal, setInfoPersonal] = useState({
-    nombre: "Felipe",
-    email: "correo@inacapmail.cl",
+    nombre: "",
+    email: "",
     avatar: null,
   });
+
+  const [loading, setLoading] = useState(true);
 
   // Estado de preferencias
   const [preferencias, setPreferencias] = useState({
     tema: theme,
-    notificaciones: true,
-    idioma: "Español",
+  });
+
+  // Estado de notificaciones
+  const [notificaciones, setNotificaciones] = useState({
+    email: true,
+    sistema: true,
   });
 
   // Estado de seguridad
@@ -34,6 +43,46 @@ function GMConfiguracionPerfil() {
 
   const [mensajeToast, setMensajeToast] = useState(null);
   const [tipoToast, setTipoToast] = useState("success");
+
+  // Cargar información personal y configuración al montar el componente
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        setLoading(true);
+
+        // Cargar información personal
+        const infoResponse = await gmService.getInformacionPersonal();
+        if (infoResponse.success) {
+          setInfoPersonal({
+            nombre: infoResponse.data.nombre || "",
+            email: infoResponse.data.email || "",
+            avatar: infoResponse.data.avatar || null
+          });
+        }
+
+        // Cargar configuración de notificaciones
+        const configResponse = await gmService.getConfiguracion();
+        if (configResponse.success && configResponse.configuracion.notificaciones) {
+          setNotificaciones({
+            email: configResponse.configuracion.notificaciones.email !== undefined
+              ? configResponse.configuracion.notificaciones.email
+              : true,
+            sistema: configResponse.configuracion.notificaciones.sistema !== undefined
+              ? configResponse.configuracion.notificaciones.sistema
+              : true,
+          });
+        }
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+        mostrarToast("Error al cargar información", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarDatos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const mostrarToast = (mensaje, tipo = "success") => {
     setMensajeToast(mensaje);
@@ -51,28 +100,125 @@ function GMConfiguracionPerfil() {
     mostrarToast(`Tema ${nuevoTema === "oscuro" ? "oscuro" : "claro"} aplicado correctamente.`);
   };
 
-  const toggleNotificaciones = () => {
-    setPreferencias((prev) => ({
-      ...prev,
-      notificaciones: !prev.notificaciones,
-    }));
-    mostrarToast(
-      `Notificaciones ${!preferencias.notificaciones ? "activadas" : "desactivadas"}.`
-    );
-  };
+  const toggleNotificaciones = async (tipo) => {
+    try {
+      const nuevasNotificaciones = {
+        ...notificaciones,
+        [tipo]: !notificaciones[tipo]
+      };
 
-  const handleChangeIdioma = (idioma) => {
-    setPreferencias((prev) => ({ ...prev, idioma }));
-    mostrarToast(`Idioma cambiado a ${idioma}.`);
+      // Actualizar en el backend
+      const response = await gmService.actualizarConfiguracion(nuevasNotificaciones);
+
+      if (response.success) {
+        // Actualizar estado local
+        setNotificaciones(nuevasNotificaciones);
+        mostrarToast(
+          `Notificaciones por ${tipo === 'email' ? 'email' : 'sistema'} ${nuevasNotificaciones[tipo] ? "activadas" : "desactivadas"}.`
+        );
+      }
+    } catch (error) {
+      console.error("Error al actualizar notificaciones:", error);
+      mostrarToast(
+        error.response?.data?.message || "Error al actualizar notificaciones",
+        "error"
+      );
+    }
   };
 
   const handleCambiarAvatar = () => {
-    mostrarToast("Función de cambio de avatar en desarrollo.", "info");
+    // Crear input file temporal para seleccionar archivo
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Validar tamaño (5MB máximo)
+        if (file.size > 5 * 1024 * 1024) {
+          mostrarToast("El archivo es demasiado grande. Máximo 5MB.", "error");
+          return;
+        }
+
+        try {
+          const response = await gmService.subirAvatar(file);
+
+          if (response.success) {
+            // Actualizar avatar en el estado
+            setInfoPersonal(prev => ({
+              ...prev,
+              avatar: response.avatarUrl
+            }));
+
+            // Actualizar avatar en authService para que se refleje en toda la app
+            authService.updateUserAvatar(response.avatarUrl);
+
+            mostrarToast("Avatar actualizado correctamente.");
+          }
+        } catch (error) {
+          console.error("Error al subir avatar:", error);
+          mostrarToast(
+            error.response?.data?.message || "Error al subir el avatar",
+            "error"
+          );
+        }
+      }
+    };
+    input.click();
   };
 
-  const handleEditarInfo = (e) => {
+  const handleEliminarAvatar = async () => {
+    // Confirmar eliminación
+    if (!window.confirm("¿Estás seguro de que deseas eliminar tu avatar?")) {
+      return;
+    }
+
+    try {
+      const response = await gmService.eliminarAvatar();
+
+      if (response.success) {
+        // Actualizar avatar en el estado
+        setInfoPersonal(prev => ({
+          ...prev,
+          avatar: null
+        }));
+
+        // Actualizar avatar en authService para que se refleje en toda la app
+        authService.updateUserAvatar(null);
+
+        mostrarToast("Avatar eliminado correctamente.");
+      }
+    } catch (error) {
+      console.error("Error al eliminar avatar:", error);
+      mostrarToast(
+        error.response?.data?.message || "Error al eliminar el avatar",
+        "error"
+      );
+    }
+  };
+
+  const handleEditarInfo = async (e) => {
     e.preventDefault();
-    mostrarToast("Información personal actualizada correctamente.");
+
+    try {
+      const response = await gmService.actualizarInformacionPersonal(
+        infoPersonal.nombre,
+        infoPersonal.email
+      );
+
+      if (response.success) {
+        // Actualizar nombre en authService para que se refleje en toda la app
+        authService.updateUserName(response.data.nombre);
+
+        mostrarToast("Información personal actualizada correctamente.");
+      }
+    } catch (error) {
+      console.error("Error al actualizar información:", error);
+      mostrarToast(
+        error.response?.data?.message || "Error al actualizar la información",
+        "error"
+      );
+    }
   };
 
   const validarPassword = () => {
@@ -124,7 +270,7 @@ function GMConfiguracionPerfil() {
     return errores;
   };
 
-  const handleCambiarPassword = (e) => {
+  const handleCambiarPassword = async (e) => {
     e.preventDefault();
 
     const errores = validarPassword();
@@ -135,14 +281,28 @@ function GMConfiguracionPerfil() {
       return;
     }
 
-    // Si no hay errores, proceder con el cambio
-    setErroresPassword([]);
-    mostrarToast("Contraseña actualizada correctamente.");
-    setSeguridad({
-      passwordActual: "",
-      passwordNueva: "",
-      passwordConfirmar: ""
-    });
+    try {
+      const response = await gmService.cambiarContrasena(
+        seguridad.passwordActual,
+        seguridad.passwordNueva,
+        seguridad.passwordConfirmar
+      );
+
+      if (response.success) {
+        setErroresPassword([]);
+        mostrarToast("Contraseña actualizada correctamente.");
+        setSeguridad({
+          passwordActual: "",
+          passwordNueva: "",
+          passwordConfirmar: ""
+        });
+      }
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error);
+      const mensaje = error.response?.data?.message || "Error al cambiar la contraseña";
+      setErroresPassword([mensaje]);
+      mostrarToast(mensaje, "error");
+    }
   };
 
   const handleChangeSeguridad = (campo, valor) => {
@@ -172,20 +332,42 @@ function GMConfiguracionPerfil() {
             <div className="config-avatar-section">
               <div className="config-avatar">
                 {infoPersonal.avatar ? (
-                  <img src={infoPersonal.avatar} alt="Avatar" />
+                  <img
+                    src={`http://localhost:4000${infoPersonal.avatar}`}
+                    alt="Avatar"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
                 ) : (
                   <div className="config-avatar-placeholder">
-                    {infoPersonal.nombre.charAt(0)}
+                    {infoPersonal.nombre?.charAt(0) || '?'}
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                className="config-btn-outline"
-                onClick={handleCambiarAvatar}
-              >
-                Cambiar avatar
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="config-btn-outline"
+                  onClick={handleCambiarAvatar}
+                >
+                  Cambiar avatar
+                </button>
+                {infoPersonal.avatar && (
+                  <button
+                    type="button"
+                    className="config-btn-outline"
+                    onClick={handleEliminarAvatar}
+                    style={{
+                      borderColor: '#ef4444',
+                      color: '#ef4444'
+                    }}
+                  >
+                    Eliminar avatar
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Formulario */}
@@ -262,32 +444,30 @@ function GMConfiguracionPerfil() {
             {/* Notificaciones */}
             <div className="config-section">
               <label className="config-section-label">Notificaciones</label>
+
               <div className="config-switch-row">
                 <label className="config-switch">
                   <input
                     type="checkbox"
-                    checked={preferencias.notificaciones}
-                    onChange={toggleNotificaciones}
+                    checked={notificaciones.email}
+                    onChange={() => toggleNotificaciones('email')}
                   />
                   <span className="config-switch-slider" />
                 </label>
-                <span className="config-switch-text">Activar</span>
+                <span className="config-switch-text">Notificaciones por email</span>
               </div>
-            </div>
 
-            {/* Idioma */}
-            <div className="config-section">
-              <label className="config-section-label">Idioma</label>
-              <select
-                className="config-select"
-                value={preferencias.idioma}
-                onChange={(e) => handleChangeIdioma(e.target.value)}
-              >
-                <option value="Español">Español</option>
-                <option value="English">English</option>
-                <option value="Português">Português</option>
-                <option value="Français">Français</option>
-              </select>
+              <div className="config-switch-row" style={{ marginTop: '0.75rem' }}>
+                <label className="config-switch">
+                  <input
+                    type="checkbox"
+                    checked={notificaciones.sistema}
+                    onChange={() => toggleNotificaciones('sistema')}
+                  />
+                  <span className="config-switch-slider" />
+                </label>
+                <span className="config-switch-text">Notificaciones en el sistema</span>
+              </div>
             </div>
           </div>
         </article>
