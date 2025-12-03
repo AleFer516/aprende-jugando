@@ -3,12 +3,12 @@ const db = require('../db');
 // Obtener dashboard completo del estudiante
 const obtenerDashboard = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Información del estudiante
     const [estudiantes] = await db.query(
-      'SELECT id, nombre, nivel, experiencia FROM usuarios WHERE id = ?',
-      [estudianteId]
+      'SELECT rut, nombre, nivel, experiencia FROM usuarios WHERE rut = ?',
+      [estudianteRut]
     );
 
     if (estudiantes.length === 0) {
@@ -27,10 +27,10 @@ const obtenerDashboard = async (req, res) => {
     // Contar misiones para desbloquear siguiente nivel
     const [misionesParaDesbloquear] = await db.query(
       `SELECT
-        (? - COUNT(CASE WHEN estado = 'Completada' THEN 1 END)) as faltan
+        (? - COUNT(CASE WHEN estado = 'completada' THEN 1 END)) as faltan
       FROM estudiante_misiones
-      WHERE estudiante_id = ?`,
-      [estudiante.nivel * 2, estudianteId]
+      WHERE estudiante_rut = ?`,
+      [estudiante.nivel * 2, estudianteRut]
     );
 
     // Obtener logros recientes (últimos 3)
@@ -39,27 +39,27 @@ const obtenerDashboard = async (req, res) => {
         l.id,
         l.nombre as titulo,
         l.descripcion,
-        el.fecha_desbloqueo as fecha
+        el.obtenido_at as fecha
       FROM estudiante_logros el
       INNER JOIN logros l ON el.logro_id = l.id
-      WHERE el.estudiante_id = ?
-      ORDER BY el.fecha_desbloqueo DESC
+      WHERE el.estudiante_rut = ?
+      ORDER BY el.obtenido_at DESC
       LIMIT 3`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     // Obtener misiones del estudiante
     const [tusMisiones] = await db.query(
       `SELECT
         m.id,
-        m.nombre,
+        m.titulo as nombre,
         m.dificultad,
-        m.xp_recompensa as xp,
+        m.puntos_experiencia as xp,
         em.estado,
         em.progreso
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ?
+      WHERE em.estudiante_rut = ?
       ORDER BY
         CASE em.estado
           WHEN 'en_progreso' THEN 1
@@ -68,7 +68,7 @@ const obtenerDashboard = async (req, res) => {
         END,
         em.updated_at DESC
       LIMIT 6`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     // Obtener actividad reciente
@@ -76,27 +76,27 @@ const obtenerDashboard = async (req, res) => {
       `(SELECT
         'mision' as tipo,
         CONCAT('Completaste la misión') as titulo,
-        m.nombre as descripcion,
+        m.titulo as descripcion,
         em.fecha_completado as fecha
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND em.estado = 'completada'
+      WHERE em.estudiante_rut = ? AND em.estado = 'completada'
       ORDER BY em.fecha_completado DESC
       LIMIT 3)
       UNION ALL
       (SELECT
         'asignacion' as tipo,
-        m.nombre as titulo,
+        m.titulo as titulo,
         'El Game Master te asignó una nueva misión' as descripcion,
         em.created_at as fecha
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND em.estado = 'no_iniciada'
+      WHERE em.estudiante_rut = ? AND em.estado = 'no_iniciada'
       ORDER BY em.created_at DESC
       LIMIT 2)
       ORDER BY fecha DESC
       LIMIT 5`,
-      [estudianteId, estudianteId]
+      [estudianteRut, estudianteRut]
     );
 
     res.json({

@@ -18,6 +18,17 @@
 -- 3. Columnas de texto en tabla misiones:
 --    Usar columna 'titulo', NO 'nombre'
 --    Usar columna 'creador_rut', NO 'gm_rut'
+--
+-- 4. Columnas adicionales en tabla actividades:
+--    Usar columna 'tipo_pregunta', NO 'tipo'
+--    Incluye campos: titulo, enunciado, pregunta, tipo_pregunta, consejo, respuesta_correcta
+--
+-- 5. Columnas en tabla actividad_opciones:
+--    Usar columna 'valor' para el valor de la opción
+--    Usar columna 'texto' para el texto mostrado al usuario
+--
+-- 6. Columnas en tabla estudiante_respuestas:
+--    Incluye campos: intentos, tiempo_respuesta (en segundos)
 -- ==========================================
 
 -- Eliminar y crear base de datos desde cero
@@ -43,7 +54,7 @@ CREATE TABLE usuarios (
   institucion VARCHAR(200),
   fecha_nacimiento DATE NULL COMMENT 'Fecha de nacimiento del usuario',
   telefono VARCHAR(20) COMMENT 'Número de teléfono de contacto',
-  avatar VARCHAR(500) COMMENT 'Ruta del archivo de avatar del usuario',
+  avatar LONGTEXT COMMENT 'Avatar del usuario en formato base64 o ruta del archivo',
   notificaciones_email BOOLEAN DEFAULT TRUE COMMENT 'Activar notificaciones por email',
   notificaciones_sistema BOOLEAN DEFAULT TRUE COMMENT 'Activar notificaciones en el sistema',
   ultimo_acceso TIMESTAMP NULL COMMENT 'Última vez que el usuario inició sesión',
@@ -153,6 +164,42 @@ CREATE TABLE estudiante_logros (
   UNIQUE KEY unique_estudiante_logro (estudiante_rut, logro_id),
   INDEX idx_estudiante (estudiante_rut),
   INDEX idx_logro (logro_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ==========================================
+-- SISTEMA DE PERSONALIZACIONES
+-- ==========================================
+
+-- Personalizaciones disponibles (apariencias, atuendos, accesorios, herramientas)
+CREATE TABLE personalizaciones (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tipo ENUM('apariencia', 'atuendo', 'accesorio', 'herramienta') NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  imagen VARCHAR(255) NOT NULL,
+  requisito_nivel INT DEFAULT 0 COMMENT 'Nivel mínimo para desbloquear',
+  requisito_misiones INT DEFAULT 0 COMMENT 'Misiones completadas para desbloquear',
+  orden INT DEFAULT 0 COMMENT 'Orden de aparición',
+  activo BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_tipo (tipo),
+  INDEX idx_orden (orden)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Configuración de personaje del estudiante
+CREATE TABLE estudiante_personaje (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  estudiante_rut VARCHAR(12) NOT NULL,
+  apariencia_activa INT DEFAULT 1,
+  atuendo_activo INT DEFAULT 10,
+  accesorio_activo INT DEFAULT 19,
+  herramienta_activa INT DEFAULT 28,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_estudiante (estudiante_rut),
+  FOREIGN KEY (estudiante_rut) REFERENCES usuarios(rut) ON DELETE CASCADE,
+  FOREIGN KEY (apariencia_activa) REFERENCES personalizaciones(id),
+  FOREIGN KEY (atuendo_activo) REFERENCES personalizaciones(id),
+  FOREIGN KEY (accesorio_activo) REFERENCES personalizaciones(id),
+  FOREIGN KEY (herramienta_activa) REFERENCES personalizaciones(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
@@ -439,11 +486,11 @@ INSERT INTO usuarios (rut, nombre, email, password, rol, nivel, experiencia, mon
   '11.222.333-4',
   'Estudiante Test',
   'estudiante@test.com',
-  '$2b$10$yKyWzl4SZSGCKJqUtDH54.EaPpGaVCAyPC5SycIuFVKXIvNYduc/S',
+  '$2b$10$yKyWzl4SZSGCKJqUtDH54.EaPpGaVCAyPC5SycIuFVKXIvNYduc/S',  -- Password: password123
   'estudiante',
-  5,
-  1200,
-  200,
+  1,    -- Nivel inicial (recién registrado)
+  0,    -- Sin experiencia
+  0,    -- Sin monedas
   'activo',
   'Colegio San Ignacio'
 ),
@@ -561,6 +608,58 @@ INSERT INTO logros (nombre, descripcion, icono, condicion, valor_requerido, punt
 ('Coleccionista', 'Obtén 1000 monedas', '💰', 'monedas', 1000, 300, 0, 'raro');
 
 -- ==========================================
+-- DATOS INICIALES - PERSONALIZACIONES
+-- ==========================================
+
+-- Apariencias (9 opciones)
+INSERT INTO personalizaciones (tipo, nombre, imagen, requisito_nivel, requisito_misiones, orden) VALUES
+('apariencia', 'Apariencia 1', '/images/apariencia1.png', 0, 0, 1),
+('apariencia', 'Apariencia 2', '/images/apariencia2.png', 3, 0, 2),
+('apariencia', 'Apariencia 3', '/images/apariencia3.png', 5, 0, 3),
+('apariencia', 'Apariencia 4', '/images/apariencia4.png', 0, 20, 4),
+('apariencia', 'Apariencia 5', '/images/apariencia5.png', 8, 0, 5),
+('apariencia', 'Apariencia 6', '/images/apariencia6.png', 10, 0, 6),
+('apariencia', 'Apariencia 7', '/images/apariencia7.png', 12, 0, 7),
+('apariencia', 'Apariencia 8', '/images/apariencia8.png', 15, 0, 8),
+('apariencia', 'Apariencia 9', '/images/apariencia9.png', 20, 0, 9);
+
+-- Atuendos (9 opciones)
+INSERT INTO personalizaciones (tipo, nombre, imagen, requisito_nivel, requisito_misiones, orden) VALUES
+('atuendo', 'Atuendo 1', '/images/atuendo1.png', 0, 0, 1),
+('atuendo', 'Atuendo 2', '/images/atuendo2.png', 3, 0, 2),
+('atuendo', 'Atuendo 3', '/images/atuendo3.png', 5, 0, 3),
+('atuendo', 'Atuendo 4', '/images/atuendo4.png', 0, 20, 4),
+('atuendo', 'Atuendo 5', '/images/atuendo5.png', 8, 0, 5),
+('atuendo', 'Atuendo 6', '/images/atuendo6.png', 10, 0, 6),
+('atuendo', 'Atuendo 7', '/images/atuendo7.png', 12, 0, 7),
+('atuendo', 'Atuendo 8', '/images/atuendo8.png', 15, 0, 8),
+('atuendo', 'Atuendo 9', '/images/atuendo9.png', 20, 0, 9);
+
+-- Accesorios (9 opciones)
+INSERT INTO personalizaciones (tipo, nombre, imagen, requisito_nivel, requisito_misiones, orden) VALUES
+('accesorio', 'Accesorio 1', '/images/accesorio1.png', 0, 0, 1),
+('accesorio', 'Accesorio 2', '/images/accesorio2.png', 3, 0, 2),
+('accesorio', 'Accesorio 3', '/images/accesorio3.png', 5, 0, 3),
+('accesorio', 'Accesorio 4', '/images/accesorio4.png', 0, 20, 4),
+('accesorio', 'Accesorio 5', '/images/accesorio5.png', 8, 0, 5),
+('accesorio', 'Accesorio 6', '/images/accesorio6.png', 10, 0, 6),
+('accesorio', 'Accesorio 7', '/images/accesorio7.png', 12, 0, 7),
+('accesorio', 'Accesorio 8', '/images/accesorio8.png', 15, 0, 8),
+('accesorio', 'Accesorio 9', '/images/accesorio9.png', 20, 0, 9);
+
+-- Herramientas (9 opciones)
+INSERT INTO personalizaciones (tipo, nombre, imagen, requisito_nivel, requisito_misiones, orden) VALUES
+('herramienta', 'Herramienta 1', '/images/herramienta1.png', 0, 0, 1),
+('herramienta', 'Herramienta 2', '/images/herramienta2.png', 3, 0, 2),
+('herramienta', 'Herramienta 3', '/images/herramienta3.png', 5, 0, 3),
+('herramienta', 'Herramienta 4', '/images/herramienta4.png', 0, 20, 4),
+('herramienta', 'Herramienta 5', '/images/herramienta5.png', 8, 0, 5),
+('herramienta', 'Herramienta 6', '/images/herramienta6.png', 10, 0, 6),
+('herramienta', 'Herramienta 7', '/images/herramienta7.png', 12, 0, 7),
+('herramienta', 'Herramienta 8', '/images/herramienta8.png', 15, 0, 8),
+('herramienta', 'Herramienta 9', '/images/herramienta9.png', 20, 0, 9);
+
+-- ==========================================
 -- DATOS INICIALES - COMPETENCIAS
 -- ==========================================
 
@@ -595,10 +694,10 @@ INSERT INTO cursos (nombre, descripcion, codigo_acceso, gm_rut, activo) VALUES
 -- ==========================================
 
 INSERT INTO curso_estudiantes (curso_id, estudiante_rut, progreso) VALUES
-(1, '11.222.333-4', 60.00),
+(1, '11.222.333-4', 0.00),  -- Estudiante test: sin progreso (recién inscrito)
 (1, '11.222.333-5', 45.50),
 (1, '22.333.444-5', 30.25),
-(2, '11.222.333-4', 55.75),
+(2, '11.222.333-4', 0.00),  -- Estudiante test: sin progreso (recién inscrito)
 (2, '22.333.444-5', 20.00);
 
 -- ==========================================
@@ -674,10 +773,10 @@ INSERT INTO misiones (curso_id, titulo, descripcion, tipo, dificultad, puntos_ex
 -- Las misiones 'completada' aparecerán en el panel de evaluaciones del GM
 
 INSERT INTO estudiante_misiones (mision_id, estudiante_rut, estado, progreso, puntuacion, intentos, fecha_inicio, fecha_completado) VALUES
--- Estudiante Test (11.222.333-4) - Curso Matemáticas
-(1, '11.222.333-4', 'completada', 100, 88.00, 2, DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 6 DAY)),
-(2, '11.222.333-4', 'completada', 100, 92.00, 1, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY)),
-(3, '11.222.333-4', 'en_progreso', 45, NULL, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NULL),
+-- Estudiante Test (11.222.333-4) - Misiones asignadas sin iniciar (nivel 1, recién inscrito)
+(1, '11.222.333-4', 'no_iniciada', 0, NULL, 0, NULL, NULL),
+(2, '11.222.333-4', 'no_iniciada', 0, NULL, 0, NULL, NULL),
+(3, '11.222.333-4', 'no_iniciada', 0, NULL, 0, NULL, NULL),
 
 -- María González (11.222.333-5) - Curso Matemáticas
 (1, '11.222.333-5', 'completada', 100, 95.00, 1, DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
@@ -689,10 +788,6 @@ INSERT INTO estudiante_misiones (mision_id, estudiante_rut, estado, progreso, pu
 (2, '22.333.444-5', 'completada', 100, 91.00, 1, DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
 (3, '22.333.444-5', 'en_progreso', 30, NULL, 1, NOW(), NULL),
 
--- Estudiante Test (11.222.333-4) - Curso Ciencias
-(4, '11.222.333-4', 'completada', 100, 85.00, 1, DATE_SUB(NOW(), INTERVAL 8 DAY), DATE_SUB(NOW(), INTERVAL 7 DAY)),
-(5, '11.222.333-4', 'en_progreso', 50, NULL, 1, DATE_SUB(NOW(), INTERVAL 2 DAY), NULL),
-
 -- Juan Pérez (22.333.444-5) - Curso Ciencias
 (4, '22.333.444-5', 'completada', 100, 78.00, 2, DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
 (5, '22.333.444-5', 'completada', 100, 93.00, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), NOW());
@@ -702,11 +797,9 @@ INSERT INTO estudiante_misiones (mision_id, estudiante_rut, estado, progreso, pu
 -- ==========================================
 
 INSERT INTO evaluaciones (mision_id, estudiante_rut, gm_rut, calificacion, comentarios, estado, fecha_entrega, fecha_revision) VALUES
-(1, '11.222.333-4', '98.765.432-1', 88.00, 'Buen trabajo, pero revisa las sumas con acarreo.', 'aprobada', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 6 DAY)),
-(2, '11.222.333-4', '98.765.432-1', 92.00, 'Muy bien! Dominas las restas.', 'aprobada', DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 3 DAY)),
+-- Estudiante Test (11.222.333-4) - Sin evaluaciones (nivel 1, sin misiones completadas)
 (1, '11.222.333-5', '98.765.432-1', 95.00, 'Excelente trabajo, sigue así!', 'aprobada', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
-(1, '22.333.444-5', '98.765.432-1', 100.00, 'Perfecto! Excelente comprensión.', 'aprobada', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 9 DAY)),
-(3, '11.222.333-4', '98.765.432-1', NULL, NULL, 'pendiente', DATE_SUB(NOW(), INTERVAL 1 DAY), NULL);
+(1, '22.333.444-5', '98.765.432-1', 100.00, 'Perfecto! Excelente comprensión.', 'aprobada', DATE_SUB(NOW(), INTERVAL 10 DAY), DATE_SUB(NOW(), INTERVAL 9 DAY));
 
 -- ==========================================
 -- DATOS DE PRUEBA - ACTIVIDAD ADMIN
@@ -784,6 +877,33 @@ SELECT '========================================' as separador;
 SELECT '✅ IMPORTANTE: Todos los usuarios tienen la misma contraseña' as nota;
 SELECT '   Contraseña: password123' as nota;
 SELECT '========================================' as separador;
+
+-- ==========================================
+-- ACTUALIZACIONES DE ESQUEMA
+-- ==========================================
+-- Agregar columnas faltantes identificadas durante el desarrollo
+
+-- Agregar campos a la tabla misiones para información completa de misión
+ALTER TABLE misiones
+ADD COLUMN objetivo_aprendizaje TEXT COMMENT 'Objetivo pedagógico de la misión' AFTER descripcion,
+ADD COLUMN retroalimentacion TEXT COMMENT 'Retroalimentación general para el estudiante' AFTER objetivo_aprendizaje;
+
+-- Agregar campos a la tabla actividades para compatibilidad con el sistema
+ALTER TABLE actividades
+ADD COLUMN titulo VARCHAR(200) COMMENT 'Título de la actividad' AFTER mision_id,
+ADD COLUMN enunciado TEXT COMMENT 'Enunciado o contexto de la actividad' AFTER titulo,
+CHANGE COLUMN tipo tipo_pregunta ENUM('opcion_multiple', 'verdadero_falso', 'completar', 'ordenar', 'relacionar', 'abierta') NOT NULL,
+ADD COLUMN consejo TEXT COMMENT 'Consejo o pista para resolver la actividad' AFTER tipo_pregunta,
+ADD COLUMN respuesta_correcta TEXT COMMENT 'Respuesta correcta de la actividad' AFTER explicacion;
+
+-- Agregar campo valor a actividad_opciones para compatibilidad
+ALTER TABLE actividad_opciones
+ADD COLUMN valor TEXT COMMENT 'Valor de la opción (puede ser diferente del texto mostrado)' AFTER texto;
+
+-- Agregar campos faltantes a estudiante_respuestas
+ALTER TABLE estudiante_respuestas
+ADD COLUMN intentos INT DEFAULT 1 COMMENT 'Número de intentos realizados' AFTER es_correcta,
+ADD COLUMN tiempo_respuesta INT DEFAULT 0 COMMENT 'Tiempo en segundos que tomó responder' AFTER intentos;
 
 SELECT '' as espacio;
 SELECT '🚀 TODO LISTO PARA USAR!' as mensaje;

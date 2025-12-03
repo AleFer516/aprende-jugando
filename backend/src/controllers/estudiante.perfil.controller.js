@@ -4,12 +4,12 @@ const bcrypt = require('bcryptjs');
 // Obtener perfil del estudiante
 const obtenerPerfil = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Información del estudiante
     const [estudiantes] = await db.query(
-      'SELECT id, nombre, email, nivel, experiencia, avatar, created_at FROM usuarios WHERE id = ?',
-      [estudianteId]
+      'SELECT rut, nombre, email, nivel, experiencia, avatar, notificaciones_sistema, created_at FROM usuarios WHERE rut = ?',
+      [estudianteRut]
     );
 
     if (estudiantes.length === 0) {
@@ -25,11 +25,12 @@ const obtenerPerfil = async (req, res) => {
     const [estadisticas] = await db.query(
       `SELECT
         COUNT(*) as total_misiones,
-        COUNT(CASE WHEN estado = 'Completada' THEN 1 END) as completadas,
-        SUM(xp_ganado) as xp_ganado
-      FROM estudiante_misiones
-      WHERE estudiante_id = ?`,
-      [estudianteId]
+        COUNT(CASE WHEN em.estado = 'completada' THEN 1 END) as completadas,
+        SUM(CASE WHEN em.estado = 'completada' THEN m.puntos_experiencia ELSE 0 END) as xp_ganado
+      FROM estudiante_misiones em
+      INNER JOIN misiones m ON em.mision_id = m.id
+      WHERE em.estudiante_rut = ?`,
+      [estudianteRut]
     );
 
     // Cursos inscritos
@@ -38,11 +39,11 @@ const obtenerPerfil = async (req, res) => {
         c.id,
         c.nombre,
         c.descripcion,
-        ce.fecha_inscripcion
+        ce.inscrito_at as fecha_inscripcion
       FROM curso_estudiantes ce
       INNER JOIN cursos c ON ce.curso_id = c.id
-      WHERE ce.estudiante_id = ?`,
-      [estudianteId]
+      WHERE ce.estudiante_rut = ?`,
+      [estudianteRut]
     );
 
     // Logros desbloqueados
@@ -52,13 +53,13 @@ const obtenerPerfil = async (req, res) => {
         l.nombre,
         l.descripcion,
         l.icono,
-        el.fecha_desbloqueo
+        el.obtenido_at as fecha_desbloqueo
       FROM estudiante_logros el
       INNER JOIN logros l ON el.logro_id = l.id
-      WHERE el.estudiante_id = ?
-      ORDER BY el.fecha_desbloqueo DESC
+      WHERE el.estudiante_rut = ?
+      ORDER BY el.obtenido_at DESC
       LIMIT 5`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     res.json({
@@ -80,41 +81,22 @@ const obtenerPerfil = async (req, res) => {
   }
 };
 
-// Actualizar perfil del estudiante
+// Actualizar perfil del estudiante (solo avatar)
 const actualizarPerfil = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
-    const { nombre, email, avatar } = req.body;
+    const estudianteRut = req.usuario.rut;
+    const { avatar } = req.body;
 
-    if (!nombre || !email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Nombre y email son requeridos'
-      });
-    }
-
-    // Verificar si el email ya existe
-    const [usuariosExistentes] = await db.query(
-      'SELECT id FROM usuarios WHERE email = ? AND id != ?',
-      [email, estudianteId]
-    );
-
-    if (usuariosExistentes.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'El email ya está en uso'
-      });
-    }
-
-    // Actualizar perfil
+    // Permitir null para eliminar el avatar
+    // Actualizar solo el avatar
     await db.query(
-      'UPDATE usuarios SET nombre = ?, email = ?, avatar = ? WHERE id = ?',
-      [nombre, email, avatar || null, estudianteId]
+      'UPDATE usuarios SET avatar = ? WHERE rut = ?',
+      [avatar || null, estudianteRut]
     );
 
     res.json({
       success: true,
-      message: 'Perfil actualizado exitosamente'
+      message: avatar ? 'Avatar actualizado exitosamente' : 'Avatar eliminado exitosamente'
     });
   } catch (error) {
     console.error('Error al actualizar perfil:', error);
@@ -129,43 +111,25 @@ const actualizarPerfil = async (req, res) => {
 // Obtener configuración del estudiante
 const obtenerConfiguracion = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
-    // Obtener configuración
-    const [configuracion] = await db.query(
-      'SELECT tema, idioma FROM estudiante_configuracion WHERE estudiante_id = ?',
-      [estudianteId]
+    // Obtener configuración del usuario
+    const [usuarios] = await db.query(
+      'SELECT notificaciones_sistema FROM usuarios WHERE rut = ?',
+      [estudianteRut]
     );
 
-    if (configuracion.length === 0) {
-      // Crear configuración por defecto
-      await db.query(
-        'INSERT INTO estudiante_configuracion (estudiante_id) VALUES (?)',
-        [estudianteId]
-      );
-
-      return res.json({
-        success: true,
-        configuracion: {
-          tema: 'light',
-          idioma: 'es',
-          notificaciones: {
-            emailNuevasMisiones: true,
-            emailLogrosDesbloqueados: true
-          }
-        }
+    if (usuarios.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
       });
     }
 
     res.json({
       success: true,
       configuracion: {
-        tema: configuracion[0].tema,
-        idioma: configuracion[0].idioma,
-        notificaciones: {
-          emailNuevasMisiones: true,
-          emailLogrosDesbloqueados: true
-        }
+        notificaciones: usuarios[0].notificaciones_sistema
       }
     });
   } catch (error) {
@@ -181,28 +145,14 @@ const obtenerConfiguracion = async (req, res) => {
 // Actualizar configuración del estudiante
 const actualizarConfiguracion = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
-    const { tema, idioma } = req.body;
+    const estudianteRut = req.usuario.rut;
+    const { notificaciones } = req.body;
 
-    // Verificar si existe configuración
-    const [configuracion] = await db.query(
-      'SELECT id FROM estudiante_configuracion WHERE estudiante_id = ?',
-      [estudianteId]
+    // Actualizar configuración de notificaciones
+    await db.query(
+      'UPDATE usuarios SET notificaciones_sistema = ? WHERE rut = ?',
+      [notificaciones, estudianteRut]
     );
-
-    if (configuracion.length === 0) {
-      // Crear configuración
-      await db.query(
-        'INSERT INTO estudiante_configuracion (estudiante_id, tema, idioma) VALUES (?, ?, ?)',
-        [estudianteId, tema || 'light', idioma || 'es']
-      );
-    } else {
-      // Actualizar configuración
-      await db.query(
-        'UPDATE estudiante_configuracion SET tema = ?, idioma = ? WHERE estudiante_id = ?',
-        [tema, idioma, estudianteId]
-      );
-    }
 
     res.json({
       success: true,
@@ -221,7 +171,7 @@ const actualizarConfiguracion = async (req, res) => {
 // Cambiar contraseña del estudiante
 const cambiarContrasena = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
     const { contrasenaActual, contrasenaNueva } = req.body;
 
     if (!contrasenaActual || !contrasenaNueva) {
@@ -233,8 +183,8 @@ const cambiarContrasena = async (req, res) => {
 
     // Obtener contraseña actual
     const [usuarios] = await db.query(
-      'SELECT password FROM usuarios WHERE id = ?',
-      [estudianteId]
+      'SELECT password FROM usuarios WHERE rut = ?',
+      [estudianteRut]
     );
 
     if (usuarios.length === 0) {
@@ -259,8 +209,8 @@ const cambiarContrasena = async (req, res) => {
 
     // Actualizar contraseña
     await db.query(
-      'UPDATE usuarios SET password = ? WHERE id = ?',
-      [passwordHash, estudianteId]
+      'UPDATE usuarios SET password = ? WHERE rut = ?',
+      [passwordHash, estudianteRut]
     );
 
     res.json({

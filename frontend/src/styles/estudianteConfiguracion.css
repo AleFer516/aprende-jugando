@@ -149,7 +149,7 @@
   display: block;
   font-weight: 600;
   font-size: 0.875rem;
-  color: #ffffff;
+  color: #ffffff !important;
   margin-bottom: 0.5rem;
 }
 
@@ -237,7 +237,7 @@
 .config-radio-label {
   font-family: "Poppins", "Montserrat", sans-serif;
   font-size: 0.875rem;
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 500;
 }
 
@@ -461,6 +461,10 @@
   color: #94a3b8;
 }
 
+.theme-dark .estudiante-config-perfil-card-header h2 {
+  color: #ffffff;
+}
+
 .theme-dark .estudiante-config-perfil-card {
   background: #0a0f2e;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -471,11 +475,11 @@
 }
 
 .theme-dark .config-label {
-  color: #e2e8f0;
+  color: #ffffff !important;
 }
 
 .theme-dark .config-radio-label {
-  color: #cbd5e1;
+  color: #ffffff !important;
 }
 
 .theme-dark .config-input,

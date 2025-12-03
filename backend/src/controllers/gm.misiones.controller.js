@@ -156,6 +156,8 @@ const crearMision = async (req, res) => {
     const {
       titulo,
       descripcion,
+      objetivo_aprendizaje,
+      retroalimentacion,
       dificultad,
       categoria,
       xp_recompensa,
@@ -183,11 +185,13 @@ const crearMision = async (req, res) => {
     // Insertar misión
     const [result] = await connection.query(
       `INSERT INTO misiones
-        (titulo, descripcion, dificultad, categoria, tipo, puntos_experiencia, monedas_recompensa, curso_id, creador_rut, fecha_inicio, fecha_limite, estado, competencias_json)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (titulo, descripcion, objetivo_aprendizaje, retroalimentacion, dificultad, categoria, tipo, puntos_experiencia, monedas_recompensa, curso_id, creador_rut, fecha_inicio, fecha_limite, estado, competencias_json)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         titulo,
         descripcion,
+        objetivo_aprendizaje || null,
+        retroalimentacion || null,
         dificultad || 'medio',
         categoria || 'otros',
         'ejercicio',
@@ -242,8 +246,8 @@ const crearMision = async (req, res) => {
           for (let j = 0; j < actividad.opciones.length; j++) {
             const opcion = actividad.opciones[j];
             await connection.query(
-              'INSERT INTO actividad_opciones (actividad_id, valor, es_correcta, orden) VALUES (?, ?, ?, ?)',
-              [actividadId, opcion.valor, opcion.es_correcta || false, j + 1]
+              'INSERT INTO actividad_opciones (actividad_id, texto, valor, es_correcta, orden) VALUES (?, ?, ?, ?, ?)',
+              [actividadId, opcion.texto || opcion.valor, opcion.valor, opcion.es_correcta || false, j + 1]
             );
           }
         }
@@ -301,6 +305,8 @@ const actualizarMision = async (req, res) => {
     const {
       titulo,
       descripcion,
+      objetivo_aprendizaje,
+      retroalimentacion,
       dificultad,
       categoria,
       xp_recompensa,
@@ -333,11 +339,11 @@ const actualizarMision = async (req, res) => {
     // Actualizar misión
     await connection.query(
       `UPDATE misiones
-      SET titulo = ?, descripcion = ?, dificultad = ?, categoria = ?,
-          puntos_experiencia = ?, estado = ?, fecha_inicio = ?, fecha_limite = ?,
-          competencias_json = ?
+      SET titulo = ?, descripcion = ?, objetivo_aprendizaje = ?, retroalimentacion = ?,
+          dificultad = ?, categoria = ?, puntos_experiencia = ?, estado = ?,
+          fecha_inicio = ?, fecha_limite = ?, competencias_json = ?
       WHERE id = ? AND creador_rut = ?`,
-      [titulo, descripcion, dificultad, categoria, xp_recompensa, estado, fecha_inicio, fecha_fin, competenciasJson, id, gmRut]
+      [titulo, descripcion, objetivo_aprendizaje, retroalimentacion, dificultad, categoria, xp_recompensa, estado, fecha_inicio, fecha_fin, competenciasJson, id, gmRut]
     );
 
     // Actualizar pistas (eliminar las anteriores y crear las nuevas)

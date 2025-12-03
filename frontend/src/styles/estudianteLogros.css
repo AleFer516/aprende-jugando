@@ -81,6 +81,67 @@
 }
 
 /* ===========================
+   ESTADÍSTICAS DE LOGROS
+   =========================== */
+
+.logros-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(7, 19, 63, 0.85);
+  border-radius: 18px;
+  border: 1px solid rgba(0, 167, 213, 0.3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  animation: statsSlideIn 0.6s ease;
+}
+
+@keyframes statsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logro-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.logro-stat-item:hover {
+  background: rgba(0, 167, 213, 0.1);
+  transform: translateY(-2px);
+}
+
+.logro-stat-value {
+  font-family: "Poppins", "Montserrat", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #00d4ff;
+  line-height: 1;
+}
+
+.logro-stat-label {
+  font-size: 0.875rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===========================
    GRID DE LOGROS
    =========================== */
 
@@ -254,6 +315,108 @@
   background: rgba(15, 23, 42, 0.8);
 }
 
+/* ===========================
+   REQUISITOS Y PROGRESO
+   =========================== */
+
+.logro-requisito {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 167, 213, 0.08);
+  border-radius: 8px;
+  border-left: 3px solid rgba(0, 167, 213, 0.5);
+}
+
+.logro-requisito-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.logro-requisito-text {
+  font-size: 0.875rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.logro-progreso {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.logro-progreso-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.logro-progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00a7d5, #00d4ff);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+  position: relative;
+}
+
+.logro-progreso-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.logro-progreso-text {
+  font-size: 0.875rem;
+  color: #00d4ff;
+  font-weight: 600;
+  min-width: 3.5rem;
+  text-align: right;
+}
+
+.logro-xp-reward {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.15));
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.logro-xp-reward svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* Cinta de "Desbloqueado" */
 
 .logro-ribbon {
@@ -282,6 +445,15 @@
   .logros-grid {
     grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   }
+
+  .logros-stats {
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .logro-stat-value {
+    font-size: 1.75rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -296,6 +468,33 @@
   .logros-grid {
     grid-template-columns: 1fr;
   }
+
+  .logros-stats {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .logro-stat-item {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .logro-stat-value {
+    font-size: 1.5rem;
+  }
+
+  .logro-stat-label {
+    font-size: 0.8rem;
+  }
+
+  .logro-card {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .logro-icon-wrapper {
+    align-self: center;
+  }
 }
 
 /* ===========================
@@ -308,6 +507,27 @@
 
 .theme-dark .logros-subtitle {
   color: rgba(255, 255, 255, 0.7);
+}
+
+.theme-dark .logros-stats {
+  background: rgba(10, 15, 46, 0.9);
+  border-color: rgba(0, 167, 213, 0.4);
+}
+
+.theme-dark .logro-stat-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .logro-stat-item:hover {
+  background: rgba(0, 167, 213, 0.15);
+}
+
+.theme-dark .logro-stat-value {
+  color: #22d3ee;
+}
+
+.theme-dark .logro-stat-label {
+  color: #cbd5e1;
 }
 
 .theme-dark .logro-card {
@@ -325,15 +545,60 @@
   border-color: rgba(255, 255, 255, 0.05);
 }
 
+.theme-dark .logro-card-bloqueado {
+  background: rgba(10, 15, 46, 0.5);
+  border-color: rgba(226, 232, 240, 0.2);
+}
+
 .theme-dark .logro-nombre {
   color: #f1f5f9;
 }
 
-.theme-dark .logro-descripcion {
+.theme-dark .logro-title {
+  color: #f1f5f9;
+}
+
+.theme-dark .logro-description {
   color: rgba(255, 255, 255, 0.7);
 }
 
 .theme-dark .logro-locked .logro-nombre,
 .theme-dark .logro-locked .logro-descripcion {
   color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-dark .logro-requisito {
+  background: rgba(0, 167, 213, 0.12);
+  border-left-color: rgba(0, 167, 213, 0.6);
+}
+
+.theme-dark .logro-requisito-label {
+  color: #94a3b8;
+}
+
+.theme-dark .logro-requisito-text {
+  color: #e2e8f0;
+}
+
+.theme-dark .logro-progreso-bar {
+  background: rgba(10, 15, 46, 0.9);
+}
+
+.theme-dark .logro-progreso-fill {
+  background: linear-gradient(90deg, #0072a4, #00a7d5);
+  box-shadow: 0 0 10px rgba(0, 167, 213, 0.6);
+}
+
+.theme-dark .logro-progreso-text {
+  color: #22d3ee;
+}
+
+.theme-dark .logro-xp-reward {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fcd34d;
+}
+
+.theme-dark .logro-date {
+  color: #7dd3fc;
 }

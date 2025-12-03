@@ -97,7 +97,7 @@ const obtenerEstudiantePorId = async (req, res) => {
         m.puntos_experiencia,
         em.estado,
         em.progreso,
-        em.xp_ganado,
+        em.puntuacion,
         em.fecha_inicio,
         em.fecha_completado
       FROM estudiante_misiones em
@@ -129,7 +129,7 @@ const obtenerEstudiantePorId = async (req, res) => {
         COUNT(CASE WHEN estado = 'completada' THEN 1 END) as completadas,
         COUNT(CASE WHEN estado = 'en_progreso' THEN 1 END) as en_progreso,
         COUNT(CASE WHEN estado = 'no_iniciada' THEN 1 END) as pendientes,
-        SUM(xp_ganado) as xp_total_ganado,
+        AVG(em.puntuacion) as promedio_puntuacion,
         AVG(CASE WHEN estado = 'completada' THEN progreso END) as promedio_progreso
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
@@ -349,7 +349,7 @@ const crearEstudiante = async (req, res) => {
     const bcrypt = require('bcryptjs');
     const passwordHash = await bcrypt.hash(passwordTemporal, 10);
 
-    // Crear el usuario
+    // Crear el usuario (nivel 1, experiencia 0)
     await db.query(
       `INSERT INTO usuarios (rut, nombre, email, password, rol, nivel, experiencia, estado)
        VALUES (?, ?, ?, ?, 'estudiante', 1, 0, 'activo')`,

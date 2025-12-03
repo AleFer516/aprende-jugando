@@ -1,27 +1,33 @@
 import api from './api';
 
 const notificacionesService = {
-  // Obtener notificaciones
-  getNotificaciones: async (limit = 10, soloNoLeidas = false) => {
-    const response = await api.get(`/admin/notificaciones?limit=${limit}&solo_no_leidas=${soloNoLeidas}`);
+  // Obtener notificaciones del usuario
+  getNotificaciones: async (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.offset) queryParams.append('offset', params.offset);
+    if (params.soloNoLeidas !== undefined) queryParams.append('soloNoLeidas', params.soloNoLeidas);
+
+    const url = `/notificaciones${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await api.get(url);
     return response.data;
   },
 
   // Marcar notificación como leída
-  marcarComoLeida: async (id) => {
-    const response = await api.put(`/admin/notificaciones/${id}/leida`);
+  marcarComoLeida: async (notificacionId) => {
+    const response = await api.put(`/notificaciones/${notificacionId}/leida`);
     return response.data;
   },
 
-  // Marcar todas como leídas
-  marcarTodasLeidas: async () => {
-    const response = await api.put('/admin/notificaciones/marcar-todas-leidas');
+  // Marcar todas las notificaciones como leídas
+  marcarTodasComoLeidas: async () => {
+    const response = await api.put('/notificaciones/marcar-todas-leidas');
     return response.data;
   },
 
   // Eliminar notificación
-  eliminarNotificacion: async (id) => {
-    const response = await api.delete(`/admin/notificaciones/${id}`);
+  eliminarNotificacion: async (notificacionId) => {
+    const response = await api.delete(`/notificaciones/${notificacionId}`);
     return response.data;
   }
 };

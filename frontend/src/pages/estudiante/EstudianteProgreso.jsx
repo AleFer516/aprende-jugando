@@ -1,55 +1,86 @@
 // src/pages/estudiante/EstudianteProgreso.jsx
 // Página de progreso del panel de estudiantes
 
+import { useState, useEffect } from "react";
+import estudianteService from "../../services/estudianteService";
 import "../../styles/estudianteProgreso.css";
 
 function EstudianteProgreso() {
-  // Datos de ejemplo
-  const estudiante = {
-    nivel: 5,
-    tituloNivel: "Explorador del saber",
-    xpActual: 1250,
-    xpSiguienteNivel: 1500,
+  const [loading, setLoading] = useState(true);
+  const [estudiante, setEstudiante] = useState(null);
+  const [estadoMisiones, setEstadoMisiones] = useState(null);
+  const [metricas, setMetricas] = useState(null);
+  const [estadisticasAprendizaje, setEstadisticasAprendizaje] = useState([]);
+
+  useEffect(() => {
+    cargarProgreso();
+  }, []);
+
+  const cargarProgreso = async () => {
+    try {
+      setLoading(true);
+      const response = await estudianteService.getProgreso();
+      if (response.success) {
+        setEstudiante(response.progreso.estudiante);
+        setEstadoMisiones(response.progreso.estadoMisiones);
+        setMetricas(response.progreso.metricas);
+        setEstadisticasAprendizaje(response.progreso.estadisticasAprendizaje || []);
+      }
+    } catch (error) {
+      console.error("Error al cargar progreso:", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="estudiante-progreso" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Cargando progreso...</p>
+      </div>
+    );
+  }
+
+  if (!estudiante || !estadoMisiones || !metricas) {
+    return (
+      <div className="estudiante-progreso" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <p style={{ color: 'var(--text-muted)' }}>No se pudo cargar el progreso.</p>
+      </div>
+    );
+  }
 
   const xpPercentage = Math.min(
     100,
     Math.round((estudiante.xpActual / estudiante.xpSiguienteNivel) * 100)
   );
 
-  const estadoMisiones = {
-    completadas: 6,
-    enProgreso: 3,
-    pendientes: 3,
-  };
-
-  const totalMisiones =
-    estadoMisiones.completadas +
-    estadoMisiones.enProgreso +
-    estadoMisiones.pendientes;
-
-  const metricas = {
-    totalMisiones: totalMisiones,
-    misionesCompletadas: estadoMisiones.completadas,
-    tiempoEstudio: "8h",
-  };
-
-  const estadisticasAprendizaje = [
-    { tema: "Fracciones", progreso: 85, color: "#00a7d5" },
-    { tema: "Ecuaciones", progreso: 65, color: "#0891b2" },
-    { tema: "Funciones", progreso: 45, color: "#06b6d4" },
-  ];
+  const totalMisiones = estadoMisiones.total || 0;
 
   // Calcular porcentajes para el gráfico de dona
-  const completadasPorcentaje = Math.round(
+  const completadasPorcentaje = totalMisiones > 0 ? Math.round(
     (estadoMisiones.completadas / totalMisiones) * 100
-  );
-  const enProgresoPorcentaje = Math.round(
+  ) : 0;
+  const enProgresoPorcentaje = totalMisiones > 0 ? Math.round(
     (estadoMisiones.enProgreso / totalMisiones) * 100
-  );
-  const pendientesPorcentaje = Math.round(
+  ) : 0;
+  const pendientesPorcentaje = totalMisiones > 0 ? Math.round(
     (estadoMisiones.pendientes / totalMisiones) * 100
-  );
+  ) : 0;
+
+  const capitalizarCategoria = (categoria) => {
+    if (!categoria) return "";
+    const categorias = {
+      'matematicas': 'Matemáticas',
+      'ciencias': 'Ciencias',
+      'lenguaje': 'Lenguaje',
+      'historia': 'Historia',
+      'arte': 'Arte',
+      'deportes': 'Deportes',
+      'tecnologia': 'Tecnología',
+      'otros': 'Otros'
+    };
+    return categorias[categoria] || categoria;
+  };
 
   return (
     <div className="estudiante-progreso">
@@ -282,25 +313,31 @@ function EstudianteProgreso() {
         <div className="progreso-estadisticas-wrapper">
           <h2 className="progreso-section-title">Estadísticas de aprendizaje</h2>
           <div className="progreso-estadisticas-content">
-            {estadisticasAprendizaje.map((stat, index) => (
-              <div key={index} className="progreso-estadistica-item">
-                <div className="progreso-estadistica-header">
-                  <span className="progreso-estadistica-tema">{stat.tema}</span>
-                  <span className="progreso-estadistica-porcentaje">
-                    {stat.progreso}%
-                  </span>
+            {estadisticasAprendizaje.length > 0 ? (
+              estadisticasAprendizaje.map((stat, index) => (
+                <div key={index} className="progreso-estadistica-item">
+                  <div className="progreso-estadistica-header">
+                    <span className="progreso-estadistica-tema">{capitalizarCategoria(stat.tema)}</span>
+                    <span className="progreso-estadistica-porcentaje">
+                      {stat.progreso}%
+                    </span>
+                  </div>
+                  <div className="progreso-estadistica-bar-bg">
+                    <div
+                      className="progreso-estadistica-bar-fill"
+                      style={{
+                        width: `${stat.progreso}%`,
+                        background: `linear-gradient(90deg, ${stat.color}, ${stat.color}dd)`,
+                      }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="progreso-estadistica-bar-bg">
-                  <div
-                    className="progreso-estadistica-bar-fill"
-                    style={{
-                      width: `${stat.progreso}%`,
-                      background: `linear-gradient(90deg, ${stat.color}, ${stat.color}dd)`,
-                    }}
-                  ></div>
-                </div>
+              ))
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                No hay estadísticas de aprendizaje disponibles aún
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

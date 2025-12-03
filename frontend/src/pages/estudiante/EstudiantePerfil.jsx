@@ -2,29 +2,74 @@
 // Página de perfil del estudiante (solo visualización).
 // Las ediciones se realizan desde la página de Configuración.
 
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import estudianteService from "../../services/estudianteService";
 import "../../styles/estudiantePerfil.css";
 
 function EstudiantePerfil() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [perfil, setPerfil] = useState(null);
 
-  const datosUsuario = {
-    nombre: "Alejandra Torres",
-    correo: "alejandra.torres@inacapmail.cl",
-    rol: "Estudiante",
-    nivel: 5,
-    curso: "Matemáticas Avanzadas",
-    biografia:
-      "Estudiante apasionada por las matemáticas y los desafíos. Me encanta resolver problemas y aprender cosas nuevas cada día.",
-    fechaRegistro: "15 de febrero, 2024",
-    ultimoAcceso: "Hoy a las 14:30",
-    misionesCompletadas: 23,
-    logrosObtenidos: 12,
+  useEffect(() => {
+    cargarPerfil();
+  }, []);
+
+  const cargarPerfil = async () => {
+    try {
+      setLoading(true);
+      const response = await estudianteService.getPerfil();
+      if (response.success) {
+        setPerfil(response.perfil);
+      }
+    } catch (error) {
+      console.error("Error al cargar perfil:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatearFecha = (fecha) => {
+    if (!fecha) return 'No disponible';
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const obtenerIniciales = (nombre) => {
+    if (!nombre) return "U";
+    const palabras = nombre.trim().split(' ');
+    if (palabras.length >= 2) {
+      return (palabras[0][0] + palabras[1][0]).toUpperCase();
+    }
+    return nombre.substring(0, 2).toUpperCase();
   };
 
   const irAConfiguracion = () => {
     navigate("/estudiante/configuracion");
   };
+
+  if (loading) {
+    return (
+      <div className="estudiante-perfil">
+        <h1 className="estudiante-perfil-title">Mi Perfil</h1>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
+
+  if (!perfil) {
+    return (
+      <div className="estudiante-perfil">
+        <h1 className="estudiante-perfil-title">Mi Perfil</h1>
+        <p>No se pudo cargar el perfil</p>
+      </div>
+    );
+  }
 
   return (
     <div className="estudiante-perfil">
@@ -58,16 +103,29 @@ function EstudiantePerfil() {
             {/* Avatar */}
             <div className="estudiante-perfil-avatar-section">
               <div className="estudiante-perfil-avatar">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clipRule="evenodd"
+                {perfil.avatar ? (
+                  <img
+                    src={perfil.avatar}
+                    alt={perfil.nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                   />
-                </svg>
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '3rem',
+                    fontWeight: '700',
+                    color: 'white'
+                  }}>
+                    {obtenerIniciales(perfil.nombre)}
+                  </div>
+                )}
               </div>
               <div className="estudiante-perfil-nivel-badge">
-                Nivel {datosUsuario.nivel}
+                Nivel {perfil.nivel || 1}
               </div>
             </div>
 
@@ -76,30 +134,38 @@ function EstudiantePerfil() {
               <div className="estudiante-perfil-form-row">
                 <div className="estudiante-perfil-form-group">
                   <label>Nombre completo</label>
-                  <p>{datosUsuario.nombre}</p>
+                  <p>{perfil.nombre}</p>
                 </div>
 
                 <div className="estudiante-perfil-form-group">
                   <label>Correo electrónico</label>
-                  <p>{datosUsuario.correo}</p>
+                  <p>{perfil.email}</p>
                 </div>
               </div>
 
               <div className="estudiante-perfil-form-row">
                 <div className="estudiante-perfil-form-group">
                   <label>Rol</label>
-                  <p className="estudiante-perfil-rol-badge">{datosUsuario.rol}</p>
+                  <p className="estudiante-perfil-rol-badge">Estudiante</p>
                 </div>
 
                 <div className="estudiante-perfil-form-group">
-                  <label>Curso actual</label>
-                  <p>{datosUsuario.curso}</p>
+                  <label>Experiencia</label>
+                  <p>{perfil.experiencia || 0} XP</p>
                 </div>
               </div>
 
               <div className="estudiante-perfil-form-group">
-                <label>Biografía</label>
-                <p>{datosUsuario.biografia}</p>
+                <label>Cursos inscritos</label>
+                {perfil.cursos && perfil.cursos.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {perfil.cursos.map((curso, index) => (
+                      <p key={index} style={{ margin: 0 }}>{curso.nombre}</p>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No estás inscrito en ningún curso</p>
+                )}
               </div>
             </div>
           </div>
@@ -124,7 +190,9 @@ function EstudiantePerfil() {
                 </div>
                 <div className="estudiante-perfil-stat-content">
                   <span className="estudiante-perfil-stat-label">Misiones completadas</span>
-                  <span className="estudiante-perfil-stat-value">{datosUsuario.misionesCompletadas}</span>
+                  <span className="estudiante-perfil-stat-value">
+                    {perfil.estadisticas?.completadas || 0} / {perfil.estadisticas?.total_misiones || 0}
+                  </span>
                 </div>
               </div>
 
@@ -136,10 +204,48 @@ function EstudiantePerfil() {
                 </div>
                 <div className="estudiante-perfil-stat-content">
                   <span className="estudiante-perfil-stat-label">Logros obtenidos</span>
-                  <span className="estudiante-perfil-stat-value">{datosUsuario.logrosObtenidos}</span>
+                  <span className="estudiante-perfil-stat-value">
+                    {perfil.logros?.length || 0}
+                  </span>
                 </div>
               </div>
             </div>
+
+            {/* Mostrar logros recientes */}
+            {perfil.logros && perfil.logros.length > 0 && (
+              <div style={{ marginTop: '1.5rem' }}>
+                <h3 style={{ fontSize: '0.875rem', color: '#ffffff', marginBottom: '0.75rem' }}>
+                  Logros recientes
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {perfil.logros.map((logro) => (
+                    <div
+                      key={logro.id}
+                      style={{
+                        padding: '0.75rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: '8px',
+                        borderLeft: '3px solid #00a7d5'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        {logro.icono && <span style={{ fontSize: '1.5rem' }}>{logro.icono}</span>}
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: 0, fontWeight: '600', color: '#ffffff' }}>
+                            {logro.nombre}
+                          </p>
+                          {logro.descripcion && (
+                            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                              {logro.descripcion}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -161,14 +267,14 @@ function EstudiantePerfil() {
               <div className="estudiante-perfil-info-item">
                 <span className="estudiante-perfil-info-label">Fecha de registro</span>
                 <span className="estudiante-perfil-info-value">
-                  {datosUsuario.fechaRegistro}
+                  {formatearFecha(perfil.created_at)}
                 </span>
               </div>
 
               <div className="estudiante-perfil-info-item">
-                <span className="estudiante-perfil-info-label">Último acceso</span>
+                <span className="estudiante-perfil-info-label">Experiencia ganada</span>
                 <span className="estudiante-perfil-info-value">
-                  {datosUsuario.ultimoAcceso}
+                  {perfil.estadisticas?.xp_ganado || 0} XP
                 </span>
               </div>
             </div>

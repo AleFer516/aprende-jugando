@@ -145,10 +145,22 @@ const crearUsuario = async (req, res) => {
       telefono: telefono || null
     });
 
+    // Crear usuario con nivel y experiencia iniciales para estudiantes
     await pool.query(
-      `INSERT INTO usuarios (rut, nombre, email, password, rol, estado, institucion, telefono)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [rut, nombre, correo, hashedPassword, rol.toLowerCase(), estadoValue.toLowerCase(), institucion || null, telefono || null]
+      `INSERT INTO usuarios (rut, nombre, email, password, rol, estado, institucion, telefono, nivel, experiencia)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        rut,
+        nombre,
+        correo,
+        hashedPassword,
+        rol.toLowerCase(),
+        estadoValue.toLowerCase(),
+        institucion || null,
+        telefono || null,
+        rol.toLowerCase() === 'estudiante' ? 1 : null,
+        rol.toLowerCase() === 'estudiante' ? 0 : null
+      ]
     );
 
     console.log('✅ Usuario insertado en la base de datos');

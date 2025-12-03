@@ -3,7 +3,7 @@ const db = require('../db');
 // Obtener todos los logros (desbloqueados y bloqueados)
 const obtenerLogros = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Obtener todos los logros con estado de desbloqueo
     const [logros] = await db.query(
@@ -12,15 +12,15 @@ const obtenerLogros = async (req, res) => {
         l.nombre,
         l.descripcion,
         l.icono,
-        l.requisito_tipo,
-        l.requisito_valor,
-        l.xp_recompensa,
-        el.fecha_desbloqueo,
+        l.condicion as requisito_tipo,
+        l.valor_requerido as requisito_valor,
+        l.puntos_experiencia as xp_recompensa,
+        el.obtenido_at as fecha_desbloqueo,
         CASE WHEN el.id IS NOT NULL THEN 1 ELSE 0 END as desbloqueado
       FROM logros l
-      LEFT JOIN estudiante_logros el ON l.id = el.logro_id AND el.estudiante_id = ?
+      LEFT JOIN estudiante_logros el ON l.id = el.logro_id AND el.estudiante_rut = ?
       ORDER BY desbloqueado DESC, l.id`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     // Obtener estadísticas del estudiante para calcular progreso
@@ -28,39 +28,57 @@ const obtenerLogros = async (req, res) => {
       `SELECT
         u.nivel,
         u.experiencia,
-        COUNT(CASE WHEN em.estado = 'Completada' THEN 1 END) as misiones_completadas
+        u.monedas,
+        COUNT(CASE WHEN em.estado = 'completada' THEN 1 END) as misiones_completadas
       FROM usuarios u
-      LEFT JOIN estudiante_misiones em ON u.id = em.estudiante_id
-      WHERE u.id = ?
-      GROUP BY u.id`,
-      [estudianteId]
+      LEFT JOIN estudiante_misiones em ON u.rut = em.estudiante_rut
+      WHERE u.rut = ?
+      GROUP BY u.rut`,
+      [estudianteRut]
     );
 
-    const stats = estadisticas[0];
+    const stats = estadisticas[0] || { nivel: 1, experiencia: 0, monedas: 0, misiones_completadas: 0 };
 
     // Calcular progreso de cada logro
     const logrosConProgreso = logros.map(logro => {
       let progreso = 0;
+      let progresoActual = 0;
       let requisito = logro.requisito_valor;
 
       switch (logro.requisito_tipo) {
         case 'nivel':
+          progresoActual = stats.nivel;
           progreso = Math.min(100, Math.round((stats.nivel / logro.requisito_valor) * 100));
           break;
-        case 'misiones':
+        case 'misiones_completadas':
+          progresoActual = stats.misiones_completadas;
           progreso = Math.min(100, Math.round((stats.misiones_completadas / logro.requisito_valor) * 100));
           break;
-        case 'xp':
+        case 'experiencia':
+          progresoActual = stats.experiencia;
           progreso = Math.min(100, Math.round((stats.experiencia / logro.requisito_valor) * 100));
+          break;
+        case 'monedas':
+          progresoActual = stats.monedas;
+          progreso = Math.min(100, Math.round((stats.monedas / logro.requisito_valor) * 100));
           break;
         default:
           progreso = logro.desbloqueado ? 100 : 0;
       }
 
       return {
-        ...logro,
+        id: logro.id,
+        nombre: logro.nombre,
+        descripcion: logro.descripcion,
+        icono: logro.icono,
+        requisito_tipo: logro.requisito_tipo,
+        requisito_valor: logro.requisito_valor,
+        xp_recompensa: logro.xp_recompensa,
+        desbloqueado: Boolean(logro.desbloqueado),
+        fecha_desbloqueo: logro.fecha_desbloqueo,
         progreso,
-        requisito: `${logro.requisito_tipo}: ${logro.requisito_valor}`
+        progresoActual,
+        requisito: formatearRequisito(logro.requisito_tipo, logro.requisito_valor)
       };
     });
 
@@ -74,7 +92,7 @@ const obtenerLogros = async (req, res) => {
       estadisticas: {
         total: totalLogros,
         desbloqueados: logrosDesbloqueados,
-        porcentaje: Math.round((logrosDesbloqueados / totalLogros) * 100)
+        porcentaje: totalLogros > 0 ? Math.round((logrosDesbloqueados / totalLogros) * 100) : 0
       }
     });
   } catch (error) {
@@ -87,6 +105,22 @@ const obtenerLogros = async (req, res) => {
   }
 };
 
+// Función auxiliar para formatear requisitos
+function formatearRequisito(tipo, valor) {
+  switch (tipo) {
+    case 'nivel':
+      return `Alcanzar nivel ${valor}`;
+    case 'misiones_completadas':
+      return `Completar ${valor} misión${valor > 1 ? 'es' : ''}`;
+    case 'experiencia':
+      return `Ganar ${valor} XP`;
+    case 'monedas':
+      return `Obtener ${valor} moneda${valor > 1 ? 's' : ''}`;
+    default:
+      return `${tipo}: ${valor}`;
+  }
+}
+
 // Verificar y desbloquear logros automáticamente
 const verificarLogros = async (req, res) => {
   const connection = await db.getConnection();
@@ -94,30 +128,31 @@ const verificarLogros = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Obtener estadísticas del estudiante
     const [estadisticas] = await connection.query(
       `SELECT
         u.nivel,
         u.experiencia,
-        COUNT(CASE WHEN em.estado = 'Completada' THEN 1 END) as misiones_completadas
+        u.monedas,
+        COUNT(CASE WHEN em.estado = 'completada' THEN 1 END) as misiones_completadas
       FROM usuarios u
-      LEFT JOIN estudiante_misiones em ON u.id = em.estudiante_id
-      WHERE u.id = ?
-      GROUP BY u.id`,
-      [estudianteId]
+      LEFT JOIN estudiante_misiones em ON u.rut = em.estudiante_rut
+      WHERE u.rut = ?
+      GROUP BY u.rut`,
+      [estudianteRut]
     );
 
-    const stats = estadisticas[0];
+    const stats = estadisticas[0] || { nivel: 1, experiencia: 0, monedas: 0, misiones_completadas: 0 };
 
     // Obtener logros que aún no ha desbloqueado
     const [logrosPendientes] = await connection.query(
       `SELECT l.*
       FROM logros l
-      LEFT JOIN estudiante_logros el ON l.id = el.logro_id AND el.estudiante_id = ?
+      LEFT JOIN estudiante_logros el ON l.id = el.logro_id AND el.estudiante_rut = ?
       WHERE el.id IS NULL`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     const logrosDesbloqueados = [];
@@ -126,30 +161,41 @@ const verificarLogros = async (req, res) => {
     for (const logro of logrosPendientes) {
       let cumple = false;
 
-      switch (logro.requisito_tipo) {
+      switch (logro.condicion) {
         case 'nivel':
-          cumple = stats.nivel >= logro.requisito_valor;
+          cumple = stats.nivel >= logro.valor_requerido;
           break;
-        case 'misiones':
-          cumple = stats.misiones_completadas >= logro.requisito_valor;
+        case 'misiones_completadas':
+          cumple = stats.misiones_completadas >= logro.valor_requerido;
           break;
-        case 'xp':
-          cumple = stats.experiencia >= logro.requisito_valor;
+        case 'experiencia':
+          cumple = stats.experiencia >= logro.valor_requerido;
+          break;
+        case 'monedas':
+          cumple = stats.monedas >= logro.valor_requerido;
           break;
       }
 
       if (cumple) {
         // Desbloquear logro
         await connection.query(
-          'INSERT INTO estudiante_logros (estudiante_id, logro_id) VALUES (?, ?)',
-          [estudianteId, logro.id]
+          'INSERT INTO estudiante_logros (estudiante_rut, logro_id) VALUES (?, ?)',
+          [estudianteRut, logro.id]
         );
 
         // Otorgar XP de recompensa
-        if (logro.xp_recompensa > 0) {
+        if (logro.puntos_experiencia > 0) {
           await connection.query(
-            'UPDATE usuarios SET experiencia = experiencia + ? WHERE id = ?',
-            [logro.xp_recompensa, estudianteId]
+            'UPDATE usuarios SET experiencia = experiencia + ? WHERE rut = ?',
+            [logro.puntos_experiencia, estudianteRut]
+          );
+        }
+
+        // Otorgar monedas de recompensa
+        if (logro.monedas_recompensa > 0) {
+          await connection.query(
+            'UPDATE usuarios SET monedas = monedas + ? WHERE rut = ?',
+            [logro.monedas_recompensa, estudianteRut]
           );
         }
 

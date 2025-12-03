@@ -2,88 +2,81 @@
 // Página de inicio del panel de estudiante
 // Muestra bienvenida, nivel actual, misiones y actividad reciente
 
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import estudianteService from "../../services/estudianteService";
 import "../../styles/estudianteInicio.css";
 import "../../styles/themes.css";
 
 function EstudianteInicio() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [estudiante, setEstudiante] = useState(null);
+  const [logrosRecientes, setLogrosRecientes] = useState([]);
+  const [tusMisiones, setTusMisiones] = useState([]);
+  const [actividadReciente, setActividadReciente] = useState([]);
 
-  // Datos de ejemplo
-  const estudiante = {
-    nombre: "Alejandra",
-    nivel: 5,
-    tituloNivel: "Explorador del saber",
-    xpActual: 1250,
-    xpSiguienteNivel: 1500,
-    misionesParaDesbloquear: 2,
+  useEffect(() => {
+    cargarDashboard();
+  }, []);
+
+  const cargarDashboard = async () => {
+    try {
+      setLoading(true);
+      const response = await estudianteService.getDashboard();
+      if (response.success) {
+        setEstudiante(response.dashboard.estudiante);
+        setLogrosRecientes(response.dashboard.logrosRecientes || []);
+        setTusMisiones(response.dashboard.tusMisiones || []);
+        setActividadReciente(response.dashboard.actividadReciente || []);
+      }
+    } catch (error) {
+      console.error("Error al cargar dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const xpPercentage = Math.min(
+  const formatearFecha = (fecha) => {
+    if (!fecha) return "";
+    const date = new Date(fecha);
+    const ahora = new Date();
+    const diff = Math.floor((ahora - date) / 1000);
+
+    if (diff < 86400) return "Hoy";
+    if (diff < 172800) return "Ayer";
+    if (diff < 604800) return "Esta semana";
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  };
+
+  const capitalizarEstado = (estado) => {
+    if (!estado) return "";
+    const estados = {
+      'en_progreso': 'En progreso',
+      'no_iniciada': 'Pendiente',
+      'completada': 'Completada'
+    };
+    return estados[estado] || estado;
+  };
+
+  const capitalizarDificultad = (dificultad) => {
+    if (!dificultad) return "";
+    const dificultades = {
+      'facil': 'Baja',
+      'medio': 'Media',
+      'dificil': 'Alta'
+    };
+    return dificultades[dificultad] || dificultad;
+  };
+
+  const xpPercentage = estudiante ? Math.min(
     100,
     Math.round((estudiante.xpActual / estudiante.xpSiguienteNivel) * 100)
-  );
-
-  const logrosRecientes = [
-    {
-      id: 1,
-      titulo: "Primer explorador",
-      descripcion: "Completaste tu primera misión",
-      fecha: "23/04/2025",
-    },
-  ];
-
-  const tusMisiones = [
-    {
-      id: 1,
-      nombre: "Resolver ecuaciones de primer grado",
-      dificultad: "Baja",
-      xp: 150,
-      estado: "En progreso",
-      progreso: 65,
-    },
-    {
-      id: 2,
-      nombre: "Crear módulo de pares e impares en Java",
-      dificultad: "Media",
-      xp: 300,
-      estado: "Pendiente",
-    },
-    {
-      id: 3,
-      nombre: "Crear diagrama de clases",
-      dificultad: "Alta",
-      xp: 600,
-      estado: "Completada",
-    },
-  ];
-
-  const actividadReciente = [
-    {
-      id: 1,
-      tipo: "mision",
-      titulo: "Completaste la misión",
-      descripcion: "Fracciones básicas",
-      fecha: "15/07/2025",
-    },
-    {
-      id: 2,
-      tipo: "asignacion",
-      titulo: "Problemas de porcentaje",
-      descripcion: "El Game Master te asignó una nueva misión",
-      fecha: "Hoy",
-    },
-    {
-      id: 3,
-      tipo: "nivel",
-      titulo: "Subiste al nivel 5",
-      descripcion: "Esta semana",
-    },
-  ];
+  ) : 0;
 
   const handleContinuarMision = () => {
     const misionEnProgreso = tusMisiones.find(
-      (m) => m.estado === "En progreso"
+      (m) => m.estado === "en_progreso"
     );
     if (misionEnProgreso) {
       navigate(`/estudiante/misiones/${misionEnProgreso.id}`);
@@ -105,6 +98,22 @@ function EstudianteInicio() {
   const handleVerTodasLasMisiones = () => {
     navigate("/estudiante/misiones");
   };
+
+  if (loading) {
+    return (
+      <div className="estudiante-inicio" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Cargando dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!estudiante) {
+    return (
+      <div className="estudiante-inicio" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <p style={{ color: 'var(--text-muted)' }}>No se pudo cargar la información del estudiante.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="estudiante-inicio">
@@ -186,7 +195,7 @@ function EstudianteInicio() {
                 <div className="estudiante-logro-info">
                   <h3>{logro.titulo}</h3>
                   <p>{logro.descripcion}</p>
-                  <span className="estudiante-logro-fecha">{logro.fecha}</span>
+                  <span className="estudiante-logro-fecha">{formatearFecha(logro.fecha)}</span>
                 </div>
               </div>
             ))}
@@ -226,7 +235,7 @@ function EstudianteInicio() {
                   <div className="estudiante-mision-main">
                     <div className="estudiante-mision-icon">
                       <svg viewBox="0 0 20 20" fill="currentColor">
-                        {mision.estado === "Completada" ? (
+                        {mision.estado === "completada" ? (
                           <path
                             fillRule="evenodd"
                             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -248,15 +257,15 @@ function EstudianteInicio() {
                       </h3>
                       <div className="estudiante-mision-meta">
                         <span
-                          className={`estudiante-mision-dificultad dificultad-${mision.dificultad.toLowerCase()}`}
+                          className={`estudiante-mision-dificultad dificultad-${mision.dificultad}`}
                         >
-                          Dificultad: {mision.dificultad}
+                          Dificultad: {capitalizarDificultad(mision.dificultad)}
                         </span>
                         <span className="estudiante-mision-xp">
                           +{mision.xp} xp
                         </span>
                       </div>
-                      {mision.estado === "En progreso" && (
+                      {mision.estado === "en_progreso" && (
                         <div className="estudiante-mision-progress">
                           <div className="estudiante-mision-progress-bg">
                             <div
@@ -274,14 +283,12 @@ function EstudianteInicio() {
 
                   <div className="estudiante-mision-acciones">
                     <span
-                      className={`estudiante-mision-estado-pill estado-${mision.estado
-                        .toLowerCase()
-                        .replace(" ", "-")}`}
+                      className={`estudiante-mision-estado-pill estado-${mision.estado.replace("_", "-")}`}
                     >
-                      {mision.estado}
+                      {capitalizarEstado(mision.estado)}
                     </span>
 
-                    {mision.estado === "En progreso" && (
+                    {mision.estado === "en_progreso" && (
                       <button
                         className="estudiante-mision-btn btn-reanudar"
                         onClick={() => handleEmpezarMision(mision.id)}
@@ -289,7 +296,7 @@ function EstudianteInicio() {
                         Reanudar
                       </button>
                     )}
-                    {mision.estado === "Pendiente" && (
+                    {mision.estado === "no_iniciada" && (
                       <button
                         className="estudiante-mision-btn btn-empezar"
                         onClick={() => handleEmpezarMision(mision.id)}
@@ -297,7 +304,7 @@ function EstudianteInicio() {
                         Empezar
                       </button>
                     )}
-                    {mision.estado === "Completada" && (
+                    {mision.estado === "completada" && (
                       <button
                         className="estudiante-mision-btn btn-detalles"
                         onClick={() => handleVerDetalles(mision.id)}
@@ -363,7 +370,7 @@ function EstudianteInicio() {
                     {actividad.descripcion && <p>{actividad.descripcion}</p>}
                     {actividad.fecha && (
                       <span className="estudiante-actividad-fecha">
-                        {actividad.fecha}
+                        {formatearFecha(actividad.fecha)}
                       </span>
                     )}
                   </div>

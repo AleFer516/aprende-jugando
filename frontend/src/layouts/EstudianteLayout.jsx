@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
 import useSystemConfig from "../hooks/useSystemConfig";
+import authService from "../services/authService";
+import notificacionesService from "../services/notificacionesService";
 import "../styles/estudianteLayout.css";
 import "../styles/themes.css";
 
@@ -15,9 +17,13 @@ function EstudianteLayout() {
   // Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Usuario
+  const [usuario, setUsuario] = useState(null);
+
   // Notificaciones
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [hasNewNotifications, setHasNewNotifications] = useState(true);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [totalNoLeidas, setTotalNoLeidas] = useState(0);
 
   // Menú de usuario
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -27,14 +33,114 @@ function EstudianteLayout() {
 
   const navigate = useNavigate();
 
+  // Cargar información del usuario al montar
+  useEffect(() => {
+    cargarUsuario();
+    cargarNotificaciones();
+
+    // Actualizar notificaciones cada 30 segundos
+    const interval = setInterval(() => {
+      cargarNotificaciones();
+    }, 30000);
+
+    // Escuchar eventos de actualización de perfil
+    const handleProfileUpdate = () => {
+      cargarUsuario();
+    };
+
+    window.addEventListener('perfilActualizado', handleProfileUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('perfilActualizado', handleProfileUpdate);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cargarUsuario = async () => {
+    try {
+      // Obtener datos actualizados del servidor
+      const response = await fetch('http://localhost:4000/api/estudiante/perfil', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Actualizar el usuario con los datos del servidor
+          const updatedUser = {
+            ...authService.getCurrentUser(),
+            avatar: data.perfil.avatar,
+            nombre: data.perfil.nombre,
+            email: data.perfil.email
+          };
+          setUsuario(updatedUser);
+        }
+      } else {
+        // Si falla, usar los datos del localStorage
+        const user = authService.getCurrentUser();
+        setUsuario(user);
+      }
+    } catch (error) {
+      console.error('Error al cargar usuario:', error);
+      // Si falla, usar los datos del localStorage
+      const user = authService.getCurrentUser();
+      setUsuario(user);
+    }
+  };
+
+  const cargarNotificaciones = async () => {
+    try {
+      const response = await notificacionesService.getNotificaciones({ limit: 10 });
+      if (response.success) {
+        setNotificaciones(response.notificaciones);
+        setTotalNoLeidas(response.totalNoLeidas);
+      }
+    } catch (error) {
+      console.error("Error al cargar notificaciones:", error);
+    }
+  };
+
+  const formatearTiempo = (fecha) => {
+    const ahora = new Date();
+    const fechaNotif = new Date(fecha);
+    const diff = Math.floor((ahora - fechaNotif) / 1000);
+
+    if (diff < 60) return 'Hace un momento';
+    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} minuto${Math.floor(diff / 60) > 1 ? 's' : ''}`;
+    if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} hora${Math.floor(diff / 3600) > 1 ? 's' : ''}`;
+    if (diff < 604800) return `Hace ${Math.floor(diff / 86400)} día${Math.floor(diff / 86400) > 1 ? 's' : ''}`;
+    return fechaNotif.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  };
+
+  const handleMarcarComoLeida = async (notificacionId) => {
+    try {
+      await notificacionesService.marcarComoLeida(notificacionId);
+      await cargarNotificaciones();
+    } catch (error) {
+      console.error("Error al marcar notificación como leída:", error);
+    }
+  };
+
+  const handleMarcarTodasLeidas = async () => {
+    try {
+      await notificacionesService.marcarTodasComoLeidas();
+      await cargarNotificaciones();
+    } catch (error) {
+      console.error("Error al marcar todas como leídas:", error);
+    }
+  };
+
   const cerrarSidebar = () => setSidebarOpen(false);
   const abrirSidebar = () => setSidebarOpen(true);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  const toggleNotifications = () => {
+  const toggleNotifications = async () => {
     setNotificationsOpen((prev) => !prev);
     if (!notificationsOpen) {
-      setHasNewNotifications(false);
+      await cargarNotificaciones();
     }
   };
 
@@ -53,8 +159,17 @@ function EstudianteLayout() {
 
   const confirmarLogout = () => {
     setLogoutModalOpen(false);
-    alert("Sesión cerrada correctamente.");
+    authService.logout();
     navigate("/");
+  };
+
+  const obtenerIniciales = (nombre) => {
+    if (!nombre) return "U";
+    const palabras = nombre.trim().split(' ');
+    if (palabras.length >= 2) {
+      return (palabras[0][0] + palabras[1][0]).toUpperCase();
+    }
+    return nombre.substring(0, 2).toUpperCase();
   };
 
   // Cerrar dropdowns al hacer clic fuera
@@ -238,8 +353,8 @@ function EstudianteLayout() {
                     <path d="M10 2a4 4 0 00-4 4v1.528c0 .434-.14.857-.4 1.204L4.1 10.2A1 1 0 005 11.8h10a1 1 0 00.9-1.6l-1.5-1.968A2 2 0 0114 7.528V6a4 4 0 00-4-4z" />
                     <path d="M8 14a2 2 0 104 0H8z" />
                   </svg>
-                  {hasNewNotifications && (
-                    <span className="notification-badge"></span>
+                  {totalNoLeidas > 0 && (
+                    <span className="notification-badge">{totalNoLeidas}</span>
                   )}
                 </button>
 
@@ -248,34 +363,72 @@ function EstudianteLayout() {
                   <div className="estudiante-notifications-dropdown">
                     <div className="notifications-header">
                       <h3>Notificaciones</h3>
+                      {totalNoLeidas > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleMarcarTodasLeidas}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--primary-color)',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            padding: '0.25rem 0.5rem'
+                          }}
+                        >
+                          Marcar todas como leídas
+                        </button>
+                      )}
                     </div>
                     <div className="notifications-list">
-                      <div className="notification-item">
-                        <div className="notification-icon">
-                          <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                          </svg>
+                      {notificaciones.length === 0 ? (
+                        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          No tienes notificaciones
                         </div>
-                        <div className="notification-content">
-                          <p className="notification-title">
-                            Nueva misión asignada
-                          </p>
-                          <p className="notification-time">Hace 1 hora</p>
-                        </div>
-                      </div>
-                      <div className="notification-item">
-                        <div className="notification-icon">
-                          <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        </div>
-                        <div className="notification-content">
-                          <p className="notification-title">
-                            ¡Nuevo logro desbloqueado!
-                          </p>
-                          <p className="notification-time">Hace 3 horas</p>
-                        </div>
-                      </div>
+                      ) : (
+                        notificaciones.map((notif) => (
+                          <div
+                            key={notif.id}
+                            className={`notification-item ${!notif.leida ? 'unread' : ''}`}
+                            onClick={() => {
+                              if (!notif.leida) {
+                                handleMarcarComoLeida(notif.id);
+                              }
+                              if (notif.link) {
+                                navigate(notif.link);
+                                setNotificationsOpen(false);
+                              }
+                            }}
+                            style={{ cursor: notif.link ? 'pointer' : 'default' }}
+                          >
+                            <div className="notification-icon">
+                              <svg viewBox="0 0 20 20" fill="currentColor">
+                                {notif.tipo === 'mision' && (
+                                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                )}
+                                {notif.tipo === 'logro' && (
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                )}
+                                {notif.tipo === 'nivel' && (
+                                  <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                                )}
+                                {notif.tipo === 'sistema' && (
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                )}
+                              </svg>
+                            </div>
+                            <div className="notification-content">
+                              <p className="notification-title">{notif.titulo}</p>
+                              {notif.mensaje && (
+                                <p className="notification-message">{notif.mensaje}</p>
+                              )}
+                              <p className="notification-time">
+                                {formatearTiempo(notif.created_at)}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}
@@ -290,9 +443,17 @@ function EstudianteLayout() {
                   aria-label="Menú de usuario"
                 >
                   <div className="estudiante-avatar">
-                    <span>AL</span>
+                    {usuario?.avatar ? (
+                      <img
+                        src={`http://localhost:4000${usuario.avatar}`}
+                        alt={usuario.nombre}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                      />
+                    ) : (
+                      <span>{obtenerIniciales(usuario?.nombre)}</span>
+                    )}
                   </div>
-                  <span className="estudiante-username">Alejandra</span>
+                  <span className="estudiante-username">{usuario?.nombre || 'Usuario'}</span>
                   <svg
                     className="estudiante-user-caret"
                     viewBox="0 0 20 20"
@@ -306,12 +467,20 @@ function EstudianteLayout() {
                   <div className="estudiante-user-dropdown">
                     <div className="estudiante-user-dropdown-header">
                       <div className="estudiante-user-dropdown-avatar">
-                        <span>AL</span>
+                        {usuario?.avatar ? (
+                          <img
+                            src={`http://localhost:4000${usuario.avatar}`}
+                            alt={usuario.nombre}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                          />
+                        ) : (
+                          <span>{obtenerIniciales(usuario?.nombre)}</span>
+                        )}
                       </div>
                       <div>
-                        <p className="estudiante-user-dropdown-name">Alejandra</p>
+                        <p className="estudiante-user-dropdown-name">{usuario?.nombre || 'Usuario'}</p>
                         <p className="estudiante-user-dropdown-email">
-                          alejandra@estudiante.com
+                          {usuario?.email || 'No disponible'}
                         </p>
                       </div>
                     </div>

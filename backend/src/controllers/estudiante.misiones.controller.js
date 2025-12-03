@@ -3,32 +3,33 @@ const db = require('../db');
 // Obtener todas las misiones del estudiante
 const obtenerMisiones = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
     const { curso, busqueda } = req.query;
 
     let query = `
       SELECT
         m.id,
-        m.nombre,
+        m.titulo as nombre,
         m.dificultad,
-        m.xp_recompensa as xp,
+        m.puntos_experiencia as xp,
         em.estado,
         em.progreso,
-        c.nombre as curso
+        c.nombre as curso,
+        c.id as curso_id
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
       INNER JOIN cursos c ON m.curso_id = c.id
-      WHERE em.estudiante_id = ?`;
+      WHERE em.estudiante_rut = ?`;
 
-    const params = [estudianteId];
+    const params = [estudianteRut];
 
     if (curso) {
-      query += ' AND c.nombre = ?';
+      query += ' AND c.id = ?';
       params.push(curso);
     }
 
     if (busqueda) {
-      query += ' AND m.nombre LIKE ?';
+      query += ' AND m.titulo LIKE ?';
       params.push(`%${busqueda}%`);
     }
 
@@ -36,9 +37,20 @@ const obtenerMisiones = async (req, res) => {
 
     const [misiones] = await db.query(query, params);
 
+    // Obtener lista de cursos del estudiante
+    const [cursos] = await db.query(
+      `SELECT DISTINCT c.id, c.nombre
+       FROM cursos c
+       INNER JOIN curso_estudiantes ce ON c.id = ce.curso_id
+       WHERE ce.estudiante_rut = ?
+       ORDER BY c.nombre`,
+      [estudianteRut]
+    );
+
     res.json({
       success: true,
-      misiones
+      misiones,
+      cursos
     });
   } catch (error) {
     console.error('Error al obtener misiones:', error);
@@ -54,7 +66,7 @@ const obtenerMisiones = async (req, res) => {
 const obtenerMisionPorId = async (req, res) => {
   try {
     const { id } = req.params;
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Obtener datos de la misión
     const [misiones] = await db.query(
@@ -62,13 +74,13 @@ const obtenerMisionPorId = async (req, res) => {
         m.*,
         em.estado,
         em.progreso,
-        em.xp_ganado,
+        em.puntuacion,
         em.fecha_inicio,
         em.fecha_completado
       FROM misiones m
       INNER JOIN estudiante_misiones em ON m.id = em.mision_id
-      WHERE m.id = ? AND em.estudiante_id = ?`,
-      [id, estudianteId]
+      WHERE m.id = ? AND em.estudiante_rut = ?`,
+      [id, estudianteRut]
     );
 
     if (misiones.length === 0) {
@@ -82,13 +94,17 @@ const obtenerMisionPorId = async (req, res) => {
 
     // Obtener competencias
     const [competencias] = await db.query(
-      'SELECT descripcion FROM mision_competencias WHERE mision_id = ? ORDER BY orden',
+      `SELECT c.nombre, c.descripcion
+       FROM mision_competencias mc
+       INNER JOIN competencias c ON mc.competencia_id = c.id
+       WHERE mc.mision_id = ?
+       ORDER BY c.nombre`,
       [id]
     );
 
     // Obtener pistas
     const [pistas] = await db.query(
-      'SELECT descripcion FROM mision_pistas WHERE mision_id = ? ORDER BY orden',
+      'SELECT texto FROM mision_pistas WHERE mision_id = ? ORDER BY orden',
       [id]
     );
 
@@ -96,8 +112,8 @@ const obtenerMisionPorId = async (req, res) => {
       success: true,
       mision: {
         ...mision,
-        competencias: competencias.map(c => c.descripcion),
-        pistas: pistas.map(p => p.descripcion)
+        competencias: competencias.map(c => c.descripcion || c.nombre),
+        pistas: pistas.map(p => p.texto)
       }
     });
   } catch (error) {
@@ -114,12 +130,12 @@ const obtenerMisionPorId = async (req, res) => {
 const obtenerActividades = async (req, res) => {
   try {
     const { id } = req.params;
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Verificar que el estudiante tiene acceso a esta misión
     const [acceso] = await db.query(
-      'SELECT id FROM estudiante_misiones WHERE estudiante_id = ? AND mision_id = ?',
-      [estudianteId, id]
+      'SELECT id FROM estudiante_misiones WHERE estudiante_rut = ? AND mision_id = ?',
+      [estudianteRut, id]
     );
 
     if (acceso.length === 0) {
@@ -176,7 +192,7 @@ const responderActividad = async (req, res) => {
     await connection.beginTransaction();
 
     const { actividadId } = req.params;
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
     const { respuesta, tiempoRespuesta } = req.body;
 
     // Obtener datos de la actividad
@@ -206,8 +222,8 @@ const responderActividad = async (req, res) => {
 
     // Verificar si ya respondió esta actividad antes
     const [respuestasAnteriores] = await connection.query(
-      'SELECT COUNT(*) as intentos FROM estudiante_respuestas WHERE estudiante_id = ? AND actividad_id = ?',
-      [estudianteId, actividadId]
+      'SELECT COUNT(*) as intentos FROM estudiante_respuestas WHERE estudiante_rut = ? AND actividad_id = ?',
+      [estudianteRut, actividadId]
     );
 
     const intentos = respuestasAnteriores[0].intentos + 1;
@@ -215,9 +231,9 @@ const responderActividad = async (req, res) => {
     // Guardar respuesta
     await connection.query(
       `INSERT INTO estudiante_respuestas
-        (estudiante_id, actividad_id, respuesta, es_correcta, intentos, tiempo_respuesta)
+        (estudiante_rut, actividad_id, respuesta, es_correcta, intentos, tiempo_respuesta)
       VALUES (?, ?, ?, ?, ?, ?)`,
-      [estudianteId, actividadId, respuesta, esCorrecta, intentos, tiempoRespuesta || 0]
+      [estudianteRut, actividadId, respuesta, esCorrecta, intentos, tiempoRespuesta || 0]
     );
 
     // Si es correcta, actualizar progreso de la misión
@@ -233,8 +249,8 @@ const responderActividad = async (req, res) => {
         `SELECT COUNT(DISTINCT er.actividad_id) as correctas
         FROM estudiante_respuestas er
         INNER JOIN actividades a ON er.actividad_id = a.id
-        WHERE er.estudiante_id = ? AND a.mision_id = ? AND er.es_correcta = 1`,
-        [estudianteId, actividad.mision_id]
+        WHERE er.estudiante_rut = ? AND a.mision_id = ? AND er.es_correcta = 1`,
+        [estudianteRut, actividad.mision_id]
       );
 
       const progreso = Math.round((respuestasCorrectas[0].correctas / totalActividades[0].total) * 100);
@@ -250,32 +266,32 @@ const responderActividad = async (req, res) => {
             ELSE 'no_iniciada'
           END,
           fecha_completado = CASE WHEN ? = 100 THEN NOW() ELSE fecha_completado END
-        WHERE estudiante_id = ? AND mision_id = ?`,
-        [progreso, progreso, progreso, estudianteId, actividad.mision_id]
+        WHERE estudiante_rut = ? AND mision_id = ?`,
+        [progreso, progreso, progreso, estudianteRut, actividad.mision_id]
       );
 
       // Si completó la misión, otorgar XP
       if (progreso === 100) {
         await connection.query(
-          'UPDATE usuarios SET experiencia = experiencia + ? WHERE id = ?',
-          [actividad.xp_recompensa, estudianteId]
+          'UPDATE usuarios SET experiencia = experiencia + ? WHERE rut = ?',
+          [actividad.puntos_experiencia, estudianteRut]
         );
 
         await connection.query(
-          'UPDATE estudiante_misiones SET xp_ganado = ? WHERE estudiante_id = ? AND mision_id = ?',
-          [actividad.xp_recompensa, estudianteId, actividad.mision_id]
+          'UPDATE estudiante_misiones SET puntuacion = ? WHERE estudiante_rut = ? AND mision_id = ?',
+          [100, estudianteRut, actividad.mision_id]
         );
 
         // Crear evaluación pendiente para el GM
         const [gmId] = await connection.query(
-          'SELECT gm_id FROM misiones WHERE id = ?',
+          'SELECT creador_rut FROM misiones WHERE id = ?',
           [actividad.mision_id]
         );
 
         if (gmId.length > 0) {
           await connection.query(
-            'INSERT INTO evaluaciones (gm_id, estudiante_id, mision_id, estado) VALUES (?, ?, ?, ?)',
-            [gmId[0].gm_id, estudianteId, actividad.mision_id, 'pendiente']
+            'INSERT INTO evaluaciones (gm_rut, estudiante_rut, mision_id, estado) VALUES (?, ?, ?, ?)',
+            [gmId[0].creador_rut, estudianteRut, actividad.mision_id, 'pendiente']
           );
         }
       }
@@ -306,13 +322,13 @@ const responderActividad = async (req, res) => {
 const iniciarMision = async (req, res) => {
   try {
     const { id } = req.params;
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     await db.query(
       `UPDATE estudiante_misiones
       SET estado = 'en_progreso', fecha_inicio = NOW()
-      WHERE estudiante_id = ? AND mision_id = ? AND estado = 'no_iniciada'`,
-      [estudianteId, id]
+      WHERE estudiante_rut = ? AND mision_id = ? AND estado = 'no_iniciada'`,
+      [estudianteRut, id]
     );
 
     res.json({

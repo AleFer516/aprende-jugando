@@ -1,23 +1,24 @@
 // src/pages/estudiante/EstudianteConfiguracion.jsx
 // Página de configuración del panel de estudiantes
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import estudianteService from "../../services/estudianteService";
 import "../../styles/estudianteConfiguracion.css";
 
 function EstudianteConfiguracion() {
   const { theme, setTheme } = useTheme();
+  const [loading, setLoading] = useState(true);
 
   const [infoPersonal, setInfoPersonal] = useState({
-    nombre: "Estudiante",
-    email: "estudiante@inacapmail.cl",
+    nombre: "",
+    email: "",
     avatar: null,
   });
 
   const [preferencias, setPreferencias] = useState({
     tema: theme,
     notificaciones: true,
-    idioma: "Español",
   });
 
   const [seguridad, setSeguridad] = useState({
@@ -29,6 +30,41 @@ function EstudianteConfiguracion() {
   const [mensajeToast, setMensajeToast] = useState("");
   const [tipoToast, setTipoToast] = useState("success");
 
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        setLoading(true);
+        const [perfilResponse, configResponse] = await Promise.all([
+          estudianteService.getPerfil(),
+          estudianteService.getConfiguracion()
+        ]);
+
+        if (perfilResponse.success) {
+          setInfoPersonal({
+            nombre: perfilResponse.perfil.nombre,
+            email: perfilResponse.perfil.email,
+            avatar: perfilResponse.perfil.avatar
+          });
+        }
+
+        if (configResponse.success) {
+          setPreferencias({
+            tema: theme,
+            notificaciones: configResponse.configuracion.notificaciones
+          });
+        }
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+        mostrarToast("Error al cargar la configuración", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarDatos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const mostrarToast = (mensaje, tipo = "success") => {
     setMensajeToast(mensaje);
     setTipoToast(tipo);
@@ -37,21 +73,47 @@ function EstudianteConfiguracion() {
     }, 2500);
   };
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setInfoPersonal({ ...infoPersonal, avatar: reader.result });
-        mostrarToast("Avatar actualizado correctamente");
+      reader.onloadend = async () => {
+        try {
+          const response = await estudianteService.actualizarPerfil({
+            avatar: reader.result
+          });
+
+          if (response.success) {
+            setInfoPersonal({ ...infoPersonal, avatar: reader.result });
+            mostrarToast("Avatar actualizado correctamente");
+            // Emitir evento para actualizar el layout
+            window.dispatchEvent(new Event('perfilActualizado'));
+          }
+        } catch (error) {
+          console.error("Error al actualizar avatar:", error);
+          mostrarToast("Error al actualizar avatar", "error");
+        }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleInfoPersonalChange = (e) => {
-    const { name, value } = e.target;
-    setInfoPersonal({ ...infoPersonal, [name]: value });
+  const handleEliminarAvatar = async () => {
+    try {
+      const response = await estudianteService.actualizarPerfil({
+        avatar: null
+      });
+
+      if (response.success) {
+        setInfoPersonal({ ...infoPersonal, avatar: null });
+        mostrarToast("Avatar eliminado correctamente");
+        // Emitir evento para actualizar el layout
+        window.dispatchEvent(new Event('perfilActualizado'));
+      }
+    } catch (error) {
+      console.error("Error al eliminar avatar:", error);
+      mostrarToast("Error al eliminar avatar", "error");
+    }
   };
 
   const handlePreferenciasChange = (e) => {
@@ -114,17 +176,23 @@ function EstudianteConfiguracion() {
     return errores;
   };
 
-  const handleGuardarInfoPersonal = (e) => {
+  const handleGuardarPreferencias = async (e) => {
     e.preventDefault();
-    mostrarToast("Información personal actualizada correctamente");
+    try {
+      const response = await estudianteService.actualizarConfiguracion({
+        notificaciones: preferencias.notificaciones
+      });
+
+      if (response.success) {
+        mostrarToast("Preferencias guardadas correctamente");
+      }
+    } catch (error) {
+      console.error("Error al guardar preferencias:", error);
+      mostrarToast("Error al guardar preferencias", "error");
+    }
   };
 
-  const handleGuardarPreferencias = (e) => {
-    e.preventDefault();
-    mostrarToast("Preferencias guardadas correctamente");
-  };
-
-  const handleCambiarPassword = (e) => {
+  const handleCambiarPassword = async (e) => {
     e.preventDefault();
 
     const errores = validarPassword();
@@ -134,14 +202,35 @@ function EstudianteConfiguracion() {
       return;
     }
 
-    // Aquí iría la lógica para cambiar la contraseña
-    mostrarToast("Contraseña cambiada correctamente");
-    setSeguridad({
-      passwordActual: "",
-      passwordNueva: "",
-      passwordConfirmar: "",
-    });
+    try {
+      const response = await estudianteService.cambiarContrasena(
+        seguridad.passwordActual,
+        seguridad.passwordNueva
+      );
+
+      if (response.success) {
+        mostrarToast("Contraseña cambiada correctamente");
+        setSeguridad({
+          passwordActual: "",
+          passwordNueva: "",
+          passwordConfirmar: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error al cambiar contraseña:", error);
+      const mensaje = error.response?.data?.message || "Error al cambiar contraseña";
+      mostrarToast(mensaje, "error");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="estudiante-config-perfil">
+        <h1 className="estudiante-config-perfil-title">Configuración</h1>
+        <p>Cargando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="estudiante-config-perfil">
@@ -171,9 +260,21 @@ function EstudianteConfiguracion() {
                   </div>
                 )}
               </div>
-              <label htmlFor="avatar-upload" className="config-avatar-btn">
-                Cambiar avatar
-              </label>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <label htmlFor="avatar-upload" className="config-avatar-btn">
+                  {infoPersonal.avatar ? 'Cambiar avatar' : 'Subir avatar'}
+                </label>
+                {infoPersonal.avatar && (
+                  <button
+                    type="button"
+                    onClick={handleEliminarAvatar}
+                    className="config-avatar-btn"
+                    style={{ backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+                  >
+                    Eliminar avatar
+                  </button>
+                )}
+              </div>
               <input
                 type="file"
                 id="avatar-upload"
@@ -183,7 +284,7 @@ function EstudianteConfiguracion() {
               />
             </div>
 
-            <form onSubmit={handleGuardarInfoPersonal}>
+            <div>
               <div className="config-form-group">
                 <label htmlFor="nombre" className="config-label">
                   Nombre completo
@@ -193,9 +294,13 @@ function EstudianteConfiguracion() {
                   id="nombre"
                   name="nombre"
                   value={infoPersonal.nombre}
-                  onChange={handleInfoPersonalChange}
                   className="config-input"
+                  disabled
+                  style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
                 />
+                <p className="config-help-text">
+                  El nombre no puede ser modificado. Contacta al administrador.
+                </p>
               </div>
 
               <div className="config-form-group">
@@ -207,15 +312,15 @@ function EstudianteConfiguracion() {
                   id="email"
                   name="email"
                   value={infoPersonal.email}
-                  onChange={handleInfoPersonalChange}
                   className="config-input"
+                  disabled
+                  style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed' }}
                 />
+                <p className="config-help-text">
+                  El correo no puede ser modificado. Contacta al administrador.
+                </p>
               </div>
-
-              <button type="submit" className="config-btn config-btn-primary">
-                Guardar cambios
-              </button>
-            </form>
+            </div>
           </div>
         </article>
 
@@ -272,23 +377,6 @@ function EstudianteConfiguracion() {
                     <span className="config-switch-slider"></span>
                   </label>
                 </div>
-              </div>
-
-              <div className="config-form-group">
-                <label htmlFor="idioma" className="config-label">
-                  Idioma
-                </label>
-                <select
-                  id="idioma"
-                  name="idioma"
-                  value={preferencias.idioma}
-                  onChange={handlePreferenciasChange}
-                  className="config-select"
-                >
-                  <option value="Español">Español</option>
-                  <option value="English">English</option>
-                  <option value="Português">Português</option>
-                </select>
               </div>
 
               <button type="submit" className="config-btn config-btn-primary">

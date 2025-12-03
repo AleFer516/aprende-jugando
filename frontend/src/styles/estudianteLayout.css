@@ -465,6 +465,31 @@
   color: #64748b;
 }
 
+.notification-message {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.notification-item.unread {
+  background-color: #eff6ff;
+  border-left: 3px solid #3b82f6;
+  position: relative;
+}
+
+.notification-item.unread::before {
+  content: '';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+}
+
 /* Usuario */
 
 .estudiante-user-wrapper {

@@ -8,12 +8,12 @@ const estudianteService = {
   },
 
   // Misiones
-  getMisiones: async (cursoId = null, busqueda = null) => {
+  getMisiones: async (params = {}) => {
     let url = '/estudiante/misiones';
-    const params = new URLSearchParams();
-    if (cursoId) params.append('curso', cursoId);
-    if (busqueda) params.append('busqueda', busqueda);
-    if (params.toString()) url += `?${params.toString()}`;
+    const queryParams = new URLSearchParams();
+    if (params.curso) queryParams.append('curso', params.curso);
+    if (params.busqueda) queryParams.append('busqueda', params.busqueda);
+    if (queryParams.toString()) url += `?${queryParams.toString()}`;
 
     const response = await api.get(url);
     return response.data;

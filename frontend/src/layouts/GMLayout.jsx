@@ -7,6 +7,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "../context/ThemeContext";
 import useSystemConfig from "../hooks/useSystemConfig";
 import authService from "../services/authService";
+import notificacionesService from "../services/notificacionesService";
 import "../styles/gmLayout.css";
 import "../styles/adminUsuarios.css";
 import "../styles/themes.css";
@@ -19,7 +20,8 @@ function GMLayout() {
 
   // Notificaciones
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [hasNewNotifications, setHasNewNotifications] = useState(true);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [totalNoLeidas, setTotalNoLeidas] = useState(0);
 
   // Menú de usuario
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -36,10 +38,52 @@ function GMLayout() {
   const abrirSidebar = () => setSidebarOpen(true);
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  const toggleNotifications = () => {
+  const formatearTiempo = (fecha) => {
+    const ahora = new Date();
+    const fechaNotif = new Date(fecha);
+    const diff = Math.floor((ahora - fechaNotif) / 1000); // diferencia en segundos
+
+    if (diff < 60) return 'Hace un momento';
+    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} minuto${Math.floor(diff / 60) > 1 ? 's' : ''}`;
+    if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} hora${Math.floor(diff / 3600) > 1 ? 's' : ''}`;
+    if (diff < 604800) return `Hace ${Math.floor(diff / 86400)} día${Math.floor(diff / 86400) > 1 ? 's' : ''}`;
+    return fechaNotif.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  };
+
+  const cargarNotificaciones = async () => {
+    try {
+      const response = await notificacionesService.getNotificaciones({ limit: 10 });
+      if (response.success) {
+        setNotificaciones(response.notificaciones);
+        setTotalNoLeidas(response.totalNoLeidas);
+      }
+    } catch (error) {
+      console.error("Error al cargar notificaciones:", error);
+    }
+  };
+
+  const toggleNotifications = async () => {
     setNotificationsOpen((prev) => !prev);
     if (!notificationsOpen) {
-      setHasNewNotifications(false);
+      await cargarNotificaciones();
+    }
+  };
+
+  const handleMarcarComoLeida = async (notificacionId) => {
+    try {
+      await notificacionesService.marcarComoLeida(notificacionId);
+      await cargarNotificaciones();
+    } catch (error) {
+      console.error("Error al marcar notificación como leída:", error);
+    }
+  };
+
+  const handleMarcarTodasLeidas = async () => {
+    try {
+      await notificacionesService.marcarTodasComoLeidas();
+      await cargarNotificaciones();
+    } catch (error) {
+      console.error("Error al marcar todas como leídas:", error);
     }
   };
 
@@ -70,6 +114,19 @@ function GMLayout() {
 
     window.addEventListener('userUpdated', handleUserUpdated);
     return () => window.removeEventListener('userUpdated', handleUserUpdated);
+  }, []);
+
+  // Cargar notificaciones al montar y periódicamente
+  useEffect(() => {
+    cargarNotificaciones();
+
+    // Actualizar notificaciones cada 30 segundos
+    const interval = setInterval(() => {
+      cargarNotificaciones();
+    }, 30000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Cerrar dropdowns al hacer clic fuera
@@ -239,8 +296,8 @@ function GMLayout() {
                   <path d="M10 2a4 4 0 00-4 4v1.528c0 .434-.14.857-.4 1.204L4.1 10.2A1 1 0 005 11.8h10a1 1 0 00.9-1.6l-1.5-1.968A2 2 0 0114 7.528V6a4 4 0 00-4-4z" />
                   <path d="M8 14a2 2 0 104 0H8z" />
                 </svg>
-                {hasNewNotifications && (
-                  <span className="notification-badge"></span>
+                {totalNoLeidas > 0 && (
+                  <span className="notification-badge">{totalNoLeidas}</span>
                 )}
               </button>
 
@@ -249,39 +306,74 @@ function GMLayout() {
                 <div className="gm-notifications-dropdown">
                   <div className="notifications-header">
                     <h3>Notificaciones</h3>
+                    {totalNoLeidas > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleMarcarTodasLeidas}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--primary-color)',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          padding: '0.25rem 0.5rem'
+                        }}
+                      >
+                        Marcar todas como leídas
+                      </button>
+                    )}
                   </div>
                   <div className="notifications-list">
-                    <div className="notification-item">
-                      <div className="notification-icon">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M5 12a4 4 0 018 0v1H5v-1zm-2 3a2 2 0 012-2h8a2 2 0 012 2v1H3v-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
+                    {notificaciones.length === 0 ? (
+                      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        No tienes notificaciones
                       </div>
-                      <div className="notification-content">
-                        <p className="notification-title">
-                          Nuevo estudiante inscrito
-                        </p>
-                        <p className="notification-time">Hace 10 minutos</p>
-                      </div>
-                    </div>
-                    <div className="notification-item">
-                      <div className="notification-icon">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-                        </svg>
-                      </div>
-                      <div className="notification-content">
-                        <p className="notification-title">
-                          8 misiones pendientes de revisión
-                        </p>
-                        <p className="notification-time">Hace 1 hora</p>
-                      </div>
-                    </div>
+                    ) : (
+                      notificaciones.map((notif) => (
+                        <div
+                          key={notif.id}
+                          className={`notification-item ${!notif.leida ? 'unread' : ''}`}
+                          onClick={() => {
+                            if (!notif.leida) {
+                              handleMarcarComoLeida(notif.id);
+                            }
+                            if (notif.link) {
+                              navigate(notif.link);
+                              setNotificationsOpen(false);
+                            }
+                          }}
+                          style={{ cursor: notif.link ? 'pointer' : 'default' }}
+                        >
+                          <div className="notification-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                              {notif.tipo === 'estudiante' && (
+                                <>
+                                  <path d="M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path fillRule="evenodd" d="M5 12a4 4 0 018 0v1H5v-1zm-2 3a2 2 0 012-2h8a2 2 0 012 2v1H3v-1z" clipRule="evenodd" />
+                                </>
+                              )}
+                              {notif.tipo === 'mision' && (
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                              )}
+                              {(!notif.tipo || (notif.tipo !== 'estudiante' && notif.tipo !== 'mision')) && (
+                                <path d="M10 2a4 4 0 00-4 4v1.528c0 .434-.14.857-.4 1.204L4.1 10.2A1 1 0 005 11.8h10a1 1 0 00.9-1.6l-1.5-1.968A2 2 0 0114 7.528V6a4 4 0 00-4-4z" />
+                              )}
+                            </svg>
+                          </div>
+                          <div className="notification-content">
+                            <p className="notification-title">{notif.titulo}</p>
+                            {notif.mensaje && (
+                              <p className="notification-message" style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                                {notif.mensaje}
+                              </p>
+                            )}
+                            <p className="notification-time">
+                              {formatearTiempo(notif.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

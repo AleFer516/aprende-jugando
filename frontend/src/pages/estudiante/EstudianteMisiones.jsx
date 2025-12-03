@@ -1,80 +1,47 @@
 // src/pages/estudiante/EstudianteMisiones.jsx
 // Página de misiones del panel de estudiantes
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import estudianteService from "../../services/estudianteService";
 import "../../styles/estudianteMisiones.css";
 
 function EstudianteMisiones() {
   const navigate = useNavigate();
-  const [cursoSeleccionado, setCursoSeleccionado] = useState("Curso A");
+  const [loading, setLoading] = useState(true);
+  const [misiones, setMisiones] = useState([]);
+  const [cursos, setCursos] = useState([]);
+  const [cursoSeleccionado, setCursoSeleccionado] = useState("");
   const [busqueda, setBusqueda] = useState("");
 
-  // Datos de ejemplo de misiones
-  const misiones = [
-    {
-      id: 1,
-      nombre: "Resolver ecuaciones de primer grado",
-      xp: 150,
-      dificultad: "Baja",
-      estado: "En progreso",
-      progreso: 60,
-      curso: "Curso A",
-    },
-    {
-      id: 2,
-      nombre: "Introducción a las fracciones",
-      xp: 300,
-      dificultad: "Media",
-      estado: "Pendiente",
-      progreso: 0,
-      curso: "Curso A",
-    },
-    {
-      id: 3,
-      nombre: "Datos gráficos y estadísticos",
-      xp: 450,
-      dificultad: "Alta",
-      estado: "Completada",
-      progreso: 100,
-      curso: "Curso A",
-    },
-    {
-      id: 4,
-      nombre: "Problemas de geometría",
-      xp: 200,
-      dificultad: "Baja",
-      estado: "En progreso",
-      progreso: 10,
-      curso: "Curso A",
-    },
-    {
-      id: 5,
-      nombre: "Introducción a POO con Java",
-      xp: 350,
-      dificultad: "Media",
-      estado: "Completada",
-      progreso: 100,
-      curso: "Curso A",
-    },
-    {
-      id: 6,
-      nombre: "Datos gráficos y estadísticos",
-      xp: 450,
-      dificultad: "Alta",
-      estado: "En progreso",
-      progreso: 27,
-      curso: "Curso A",
-    },
-  ];
+  useEffect(() => {
+    const cargarMisiones = async () => {
+      try {
+        setLoading(true);
+        const params = {};
+        if (cursoSeleccionado) params.curso = cursoSeleccionado;
+        if (busqueda) params.busqueda = busqueda;
 
-  const cursos = ["Curso A", "Curso B", "Curso C"];
+        const response = await estudianteService.getMisiones(params);
+        if (response.success) {
+          setMisiones(response.misiones || []);
+          // Solo actualizar cursos si no hay uno seleccionado
+          if (response.cursos && response.cursos.length > 0 && !cursoSeleccionado) {
+            setCursos(response.cursos);
+            setCursoSeleccionado(response.cursos[0].id);
+          } else if (response.cursos && cursos.length === 0) {
+            setCursos(response.cursos);
+          }
+        }
+      } catch (error) {
+        console.error("Error al cargar misiones:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const misionesFiltradas = misiones.filter(
-    (mision) =>
-      mision.curso === cursoSeleccionado &&
-      mision.nombre.toLowerCase().includes(busqueda.toLowerCase())
-  );
+    cargarMisiones();
+  }, [cursoSeleccionado, busqueda]);
 
   const handleVerDetalles = (misionId) => {
     navigate(`/estudiante/misiones/${misionId}`);
@@ -93,8 +60,36 @@ function EstudianteMisiones() {
   };
 
   const getEstadoClass = (estado) => {
-    return `estado-${estado.toLowerCase().replace(" ", "-")}`;
+    return `estado-${estado.toLowerCase().replace(" ", "-").replace("_", "-")}`;
   };
+
+  const capitalizarEstado = (estado) => {
+    if (!estado) return "";
+    const estados = {
+      'en_progreso': 'En progreso',
+      'no_iniciada': 'Pendiente',
+      'completada': 'Completada'
+    };
+    return estados[estado] || estado;
+  };
+
+  const capitalizarDificultad = (dificultad) => {
+    if (!dificultad) return "";
+    const dificultades = {
+      'facil': 'Baja',
+      'medio': 'Media',
+      'dificil': 'Alta'
+    };
+    return dificultades[dificultad] || dificultad;
+  };
+
+  if (loading) {
+    return (
+      <div className="estudiante-misiones" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <p style={{ color: 'var(--text-muted)' }}>Cargando misiones...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="estudiante-misiones">
@@ -114,8 +109,8 @@ function EstudianteMisiones() {
             className="curso-select"
           >
             {cursos.map((curso) => (
-              <option key={curso} value={curso}>
-                {curso}
+              <option key={curso.id} value={curso.id}>
+                {curso.nombre}
               </option>
             ))}
           </select>
@@ -155,24 +150,24 @@ function EstudianteMisiones() {
 
       {/* Grid de misiones */}
       <div className="misiones-grid">
-        {misionesFiltradas.map((mision) => (
+        {misiones.map((mision) => (
           <div key={mision.id} className="mision-card">
             <div className="mision-card-header">
               <h3 className="mision-card-title">{mision.nombre}</h3>
               <span className={`xp-badge ${getDificultadClass(mision.dificultad)}`}>
-                {mision.dificultad} XP
+                {capitalizarDificultad(mision.dificultad)} XP
               </span>
             </div>
 
             <div className="mision-card-body">
               <div className="mision-info-row">
                 <span className={`estado-badge ${getEstadoClass(mision.estado)}`}>
-                  {mision.estado}
+                  {capitalizarEstado(mision.estado)}
                 </span>
                 <span className="xp-text">+{mision.xp} XP</span>
               </div>
 
-              {mision.estado !== "Pendiente" && (
+              {mision.estado !== "no_iniciada" && (
                 <div className="progreso-wrapper">
                   <div className="progreso-bar-bg">
                     <div
@@ -186,7 +181,7 @@ function EstudianteMisiones() {
             </div>
 
             <div className="mision-card-footer">
-              {mision.estado === "En progreso" && (
+              {mision.estado === "en_progreso" && (
                 <>
                   <button
                     className="mision-btn btn-primary"
@@ -202,7 +197,7 @@ function EstudianteMisiones() {
                   </button>
                 </>
               )}
-              {mision.estado === "Pendiente" && (
+              {mision.estado === "no_iniciada" && (
                 <>
                   <button
                     className="mision-btn btn-primary"
@@ -218,7 +213,7 @@ function EstudianteMisiones() {
                   </button>
                 </>
               )}
-              {mision.estado === "Completada" && (
+              {mision.estado === "completada" && (
                 <button
                   className="mision-btn btn-secondary btn-full"
                   onClick={() => handleVerDetalles(mision.id)}
@@ -231,7 +226,7 @@ function EstudianteMisiones() {
         ))}
       </div>
 
-      {misionesFiltradas.length === 0 && (
+      {misiones.length === 0 && (
         <div className="misiones-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path

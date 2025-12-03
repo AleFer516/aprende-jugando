@@ -3,12 +3,12 @@ const db = require('../db');
 // Obtener progreso completo del estudiante
 const obtenerProgreso = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Información del estudiante
     const [estudiantes] = await db.query(
-      'SELECT id, nombre, nivel, experiencia FROM usuarios WHERE id = ?',
-      [estudianteId]
+      'SELECT rut, nombre, nivel, experiencia FROM usuarios WHERE rut = ?',
+      [estudianteRut]
     );
 
     if (estudiantes.length === 0) {
@@ -30,21 +30,21 @@ const obtenerProgreso = async (req, res) => {
         COUNT(CASE WHEN estado = 'no_iniciada' THEN 1 END) as pendientes,
         COUNT(*) as total
       FROM estudiante_misiones
-      WHERE estudiante_id = ?`,
-      [estudianteId]
+      WHERE estudiante_rut = ?`,
+      [estudianteRut]
     );
 
     // Métricas generales
     const [metricas] = await db.query(
       `SELECT
-        SUM(CASE WHEN em.estado = 'Completada' THEN m.xp_recompensa ELSE 0 END) as xpGanado,
-        SUM(CASE WHEN er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN er.tiempo_respuesta ELSE 0 END) / 3600 as horasSemanales
+        SUM(CASE WHEN em.estado = 'completada' THEN m.puntos_experiencia ELSE 0 END) as xpGanado,
+        COALESCE(SUM(CASE WHEN er.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN er.tiempo_respuesta ELSE 0 END) / 3600, 0) as horasSemanales
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
       LEFT JOIN actividades a ON m.id = a.mision_id
-      LEFT JOIN estudiante_respuestas er ON a.id = er.actividad_id AND er.estudiante_id = em.estudiante_id
-      WHERE em.estudiante_id = ?`,
-      [estudianteId]
+      LEFT JOIN estudiante_respuestas er ON a.id = er.actividad_id AND er.estudiante_rut = em.estudiante_rut
+      WHERE em.estudiante_rut = ?`,
+      [estudianteRut]
     );
 
     // Estadísticas de aprendizaje por tema (basado en categorías)
@@ -54,11 +54,11 @@ const obtenerProgreso = async (req, res) => {
         AVG(em.progreso) as progreso
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
-      WHERE em.estudiante_id = ? AND m.categoria IS NOT NULL
+      WHERE em.estudiante_rut = ? AND m.categoria IS NOT NULL
       GROUP BY m.categoria
       ORDER BY progreso DESC
       LIMIT 5`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     // Colores para las estadísticas
@@ -72,14 +72,15 @@ const obtenerProgreso = async (req, res) => {
     // Historial de progreso mensual (últimos 6 meses)
     const [historialProgreso] = await db.query(
       `SELECT
-        DATE_FORMAT(fecha_completado, '%Y-%m') as mes,
+        DATE_FORMAT(em.fecha_completado, '%Y-%m') as mes,
         COUNT(*) as misiones_completadas,
-        SUM(xp_ganado) as xp_ganado
-      FROM estudiante_misiones
-      WHERE estudiante_id = ? AND estado = 'Completada' AND fecha_completado >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-      GROUP BY DATE_FORMAT(fecha_completado, '%Y-%m')
+        SUM(m.puntos_experiencia) as xp_ganado
+      FROM estudiante_misiones em
+      INNER JOIN misiones m ON em.mision_id = m.id
+      WHERE em.estudiante_rut = ? AND em.estado = 'completada' AND em.fecha_completado >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+      GROUP BY DATE_FORMAT(em.fecha_completado, '%Y-%m')
       ORDER BY mes`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     res.json({
@@ -95,7 +96,7 @@ const obtenerProgreso = async (req, res) => {
         metricas: {
           totalMisiones: estadoMisiones[0].total,
           misionesCompletadas: estadoMisiones[0].completadas,
-          tiempoEstudio: `${metricas[0].horasSemanales.toFixed(1)}h`,
+          tiempoEstudio: `${Number(metricas[0].horasSemanales || 0).toFixed(1)}h`,
           xpGanado: metricas[0].xpGanado || 0
         },
         estadisticasAprendizaje: estadisticasConColor,
@@ -115,29 +116,29 @@ const obtenerProgreso = async (req, res) => {
 // Obtener ranking del estudiante
 const obtenerRanking = async (req, res) => {
   try {
-    const estudianteId = req.usuario.id;
+    const estudianteRut = req.usuario.rut;
 
     // Obtener ranking general por experiencia
     const [ranking] = await db.query(
       `SELECT
-        u.id,
+        u.rut,
         u.nombre,
         u.nivel,
         u.experiencia,
         RANK() OVER (ORDER BY u.experiencia DESC) as posicion
       FROM usuarios u
-      INNER JOIN curso_estudiantes ce ON u.id = ce.estudiante_id
+      INNER JOIN curso_estudiantes ce ON u.rut = ce.estudiante_rut
       WHERE u.rol = 'estudiante'
         AND ce.curso_id IN (
-          SELECT curso_id FROM curso_estudiantes WHERE estudiante_id = ?
+          SELECT curso_id FROM curso_estudiantes WHERE estudiante_rut = ?
         )
       ORDER BY u.experiencia DESC
       LIMIT 10`,
-      [estudianteId]
+      [estudianteRut]
     );
 
     // Encontrar la posición del estudiante actual
-    const posicionEstudiante = ranking.findIndex(r => r.id === estudianteId);
+    const posicionEstudiante = ranking.findIndex(r => r.rut === estudianteRut);
 
     res.json({
       success: true,
