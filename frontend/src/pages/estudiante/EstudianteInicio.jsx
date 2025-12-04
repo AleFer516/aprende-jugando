@@ -43,10 +43,16 @@ function EstudianteInicio() {
     const ahora = new Date();
     const diff = Math.floor((ahora - date) / 1000);
 
-    if (diff < 86400) return "Hoy";
-    if (diff < 172800) return "Ayer";
-    if (diff < 604800) return "Esta semana";
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    // Formatear hora
+    const hora = date.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    if (diff < 86400) return `Hoy a las ${hora}`;
+    if (diff < 172800) return `Ayer a las ${hora}`;
+    if (diff < 604800) return `${date.toLocaleDateString('es-ES', { weekday: 'long' })} a las ${hora}`;
+    return `${date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} a las ${hora}`;
   };
 
   const capitalizarEstado = (estado) => {
@@ -75,27 +81,40 @@ function EstudianteInicio() {
   ) : 0;
 
   const handleContinuarMision = () => {
+    // Buscar misión en progreso o no iniciada
     const misionEnProgreso = tusMisiones.find(
       (m) => m.estado === "en_progreso"
     );
-    if (misionEnProgreso) {
-      navigate(`/estudiante/misiones/${misionEnProgreso.id}`);
+    const misionPendiente = tusMisiones.find(
+      (m) => m.estado === "no_iniciada"
+    );
+
+    const misionSeleccionada = misionEnProgreso || misionPendiente;
+
+    if (misionSeleccionada) {
+      // Ir directamente a la actividad
+      navigate(`/estudiante/misiones/${misionSeleccionada.id}/actividad`);
     }
   };
 
   const handleEmpezarMision = (misionId) => {
-    navigate(`/estudiante/misiones/${misionId}`);
+    console.log('handleEmpezarMision llamado con ID:', misionId);
+    // Ir directamente a la actividad
+    navigate(`/estudiante/misiones/${misionId}/actividad`);
   };
 
   const handleVerDetalles = (misionId) => {
+    console.log('handleVerDetalles llamado con ID:', misionId);
     navigate(`/estudiante/misiones/${misionId}`);
   };
 
   const handleVerMas = () => {
+    console.log('handleVerMas llamado');
     navigate("/estudiante/logros");
   };
 
   const handleVerTodasLasMisiones = () => {
+    console.log('handleVerTodasLasMisiones llamado');
     navigate("/estudiante/misiones");
   };
 
@@ -185,20 +204,26 @@ function EstudianteInicio() {
           </div>
 
           <div className="estudiante-logros-lista">
-            {logrosRecientes.map((logro) => (
-              <div key={logro.id} className="estudiante-logro-item">
-                <div className="estudiante-logro-icon">
-                  <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
+            {logrosRecientes && logrosRecientes.length > 0 ? (
+              logrosRecientes.map((logro, index) => (
+                <div key={logro.id || `logro-${index}`} className="estudiante-logro-item">
+                  <div className="estudiante-logro-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </div>
+                  <div className="estudiante-logro-info">
+                    <h3>{logro.titulo}</h3>
+                    <p>{logro.descripcion}</p>
+                    <span className="estudiante-logro-fecha">{formatearFecha(logro.fecha)}</span>
+                  </div>
                 </div>
-                <div className="estudiante-logro-info">
-                  <h3>{logro.titulo}</h3>
-                  <p>{logro.descripcion}</p>
-                  <span className="estudiante-logro-fecha">{formatearFecha(logro.fecha)}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
+                Aún no has desbloqueado logros
+              </p>
+            )}
           </div>
 
           <button className="estudiante-ver-mas-btn" onClick={handleVerMas}>
@@ -216,7 +241,12 @@ function EstudianteInicio() {
               <h2>Tus misiones</h2>
               <button
                 className="estudiante-ver-todas-btn"
-                onClick={handleVerTodasLasMisiones}
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('Click en Ver todas las misiones');
+                  handleVerTodasLasMisiones();
+                }}
+                style={{ cursor: 'pointer' }}
               >
                 Ver todas las misiones
                 <svg viewBox="0 0 20 20" fill="currentColor">
@@ -230,9 +260,17 @@ function EstudianteInicio() {
             </div>
 
             <div className="estudiante-misiones-lista">
-              {tusMisiones.map((mision) => (
-                <div key={mision.id} className="estudiante-mision-card">
-                  <div className="estudiante-mision-main">
+              {tusMisiones && tusMisiones.length > 0 ? (
+                tusMisiones.map((mision, index) => (
+                  <div
+                    key={mision.id || `mision-${index}`}
+                    className="estudiante-mision-card"
+                  >
+                  <div
+                    className="estudiante-mision-main"
+                    onClick={() => handleEmpezarMision(mision.id)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="estudiante-mision-icon">
                       <svg viewBox="0 0 20 20" fill="currentColor">
                         {mision.estado === "completada" ? (
@@ -281,7 +319,7 @@ function EstudianteInicio() {
                     </div>
                   </div>
 
-                  <div className="estudiante-mision-acciones">
+                  <div className="estudiante-mision-acciones" style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}>
                     <span
                       className={`estudiante-mision-estado-pill estado-${mision.estado.replace("_", "-")}`}
                     >
@@ -291,7 +329,13 @@ function EstudianteInicio() {
                     {mision.estado === "en_progreso" && (
                       <button
                         className="estudiante-mision-btn btn-reanudar"
-                        onClick={() => handleEmpezarMision(mision.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Click en Reanudar, ID:', mision.id);
+                          handleEmpezarMision(mision.id);
+                        }}
+                        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                       >
                         Reanudar
                       </button>
@@ -299,7 +343,13 @@ function EstudianteInicio() {
                     {mision.estado === "no_iniciada" && (
                       <button
                         className="estudiante-mision-btn btn-empezar"
-                        onClick={() => handleEmpezarMision(mision.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Click en Empezar, ID:', mision.id);
+                          handleEmpezarMision(mision.id);
+                        }}
+                        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                       >
                         Empezar
                       </button>
@@ -307,14 +357,25 @@ function EstudianteInicio() {
                     {mision.estado === "completada" && (
                       <button
                         className="estudiante-mision-btn btn-detalles"
-                        onClick={() => handleVerDetalles(mision.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Click en Ver detalles, ID:', mision.id);
+                          handleVerDetalles(mision.id);
+                        }}
+                        style={{ pointerEvents: 'auto', cursor: 'pointer' }}
                       >
                         Ver detalles
                       </button>
                     )}
                   </div>
                 </div>
-              ))}
+              ))
+              ) : (
+                <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
+                  No tienes misiones asignadas
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -327,11 +388,12 @@ function EstudianteInicio() {
             </div>
 
             <div className="estudiante-actividad-lista">
-              {actividadReciente.map((actividad) => (
-                <div
-                  key={actividad.id}
-                  className="estudiante-actividad-item"
-                >
+              {actividadReciente && actividadReciente.length > 0 ? (
+                actividadReciente.map((actividad, index) => (
+                  <div
+                    key={`actividad-${actividad.tipo}-${index}`}
+                    className="estudiante-actividad-item"
+                  >
                   <div
                     className={`estudiante-actividad-icon tipo-${actividad.tipo}`}
                   >
@@ -375,7 +437,12 @@ function EstudianteInicio() {
                     )}
                   </div>
                 </div>
-              ))}
+              ))
+              ) : (
+                <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
+                  No hay actividad reciente
+                </p>
+              )}
             </div>
           </div>
         </div>

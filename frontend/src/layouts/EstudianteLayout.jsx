@@ -445,7 +445,9 @@ function EstudianteLayout() {
                   <div className="estudiante-avatar">
                     {usuario?.avatar ? (
                       <img
-                        src={`http://localhost:4000${usuario.avatar}`}
+                        src={usuario.avatar.startsWith('data:') || usuario.avatar.startsWith('http')
+                          ? usuario.avatar
+                          : `http://localhost:4000${usuario.avatar}`}
                         alt={usuario.nombre}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                       />
@@ -469,7 +471,9 @@ function EstudianteLayout() {
                       <div className="estudiante-user-dropdown-avatar">
                         {usuario?.avatar ? (
                           <img
-                            src={`http://localhost:4000${usuario.avatar}`}
+                            src={usuario.avatar.startsWith('data:') || usuario.avatar.startsWith('http')
+                              ? usuario.avatar
+                              : `http://localhost:4000${usuario.avatar}`}
                             alt={usuario.nombre}
                             style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                           />

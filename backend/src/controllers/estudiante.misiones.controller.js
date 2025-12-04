@@ -1,5 +1,95 @@
 const db = require('../db');
 
+// Función auxiliar para verificar y desbloquear logros automáticamente
+async function verificarYDesbloquearLogros(connection, estudianteRut) {
+  try {
+    console.log('🏆 Verificando logros para estudiante:', estudianteRut);
+
+    // Obtener estadísticas del estudiante
+    const [estadisticas] = await connection.query(
+      `SELECT
+        u.nivel,
+        u.experiencia,
+        u.monedas,
+        COUNT(CASE WHEN em.estado = 'completada' THEN 1 END) as misiones_completadas
+      FROM usuarios u
+      LEFT JOIN estudiante_misiones em ON u.rut = em.estudiante_rut
+      WHERE u.rut = ?
+      GROUP BY u.rut`,
+      [estudianteRut]
+    );
+
+    const stats = estadisticas[0] || { nivel: 1, experiencia: 0, monedas: 0, misiones_completadas: 0 };
+    console.log('📊 Estadísticas del estudiante:', stats);
+
+    // Obtener logros que aún no ha desbloqueado el estudiante
+    const [logrosPendientes] = await connection.query(
+      `SELECT l.*
+      FROM logros l
+      LEFT JOIN estudiante_logros el ON l.id = el.logro_id AND el.estudiante_rut = ?
+      WHERE el.id IS NULL`,
+      [estudianteRut]
+    );
+
+    console.log('📋 Logros pendientes encontrados:', logrosPendientes.length);
+
+    // Verificar cada logro pendiente
+    for (const logro of logrosPendientes) {
+      let cumple = false;
+
+      console.log(`🔍 Verificando logro: ${logro.titulo} (${logro.condicion}: ${logro.valor_requerido})`);
+
+      switch (logro.condicion) {
+        case 'nivel':
+          cumple = stats.nivel >= logro.valor_requerido;
+          break;
+        case 'misiones_completadas':
+          cumple = stats.misiones_completadas >= logro.valor_requerido;
+          break;
+        case 'experiencia':
+          cumple = stats.experiencia >= logro.valor_requerido;
+          break;
+        case 'monedas':
+          cumple = stats.monedas >= logro.valor_requerido;
+          break;
+      }
+
+      console.log(`   ${cumple ? '✅' : '❌'} Cumple condición:`, cumple);
+
+      if (cumple) {
+        console.log(`   🎉 ¡Desbloqueando logro: ${logro.titulo}!`);
+
+        // Desbloquear el logro
+        await connection.query(
+          'INSERT INTO estudiante_logros (estudiante_rut, logro_id) VALUES (?, ?)',
+          [estudianteRut, logro.id]
+        );
+
+        // Otorgar recompensa de XP si la tiene
+        if (logro.puntos_experiencia > 0) {
+          await connection.query(
+            'UPDATE usuarios SET experiencia = experiencia + ? WHERE rut = ?',
+            [logro.puntos_experiencia, estudianteRut]
+          );
+          console.log(`   💫 XP otorgado: +${logro.puntos_experiencia}`);
+        }
+
+        // Otorgar recompensa de monedas si la tiene
+        if (logro.monedas_recompensa > 0) {
+          await connection.query(
+            'UPDATE usuarios SET monedas = monedas + ? WHERE rut = ?',
+            [logro.monedas_recompensa, estudianteRut]
+          );
+          console.log(`   💰 Monedas otorgadas: +${logro.monedas_recompensa}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error al verificar logros:', error);
+    // No lanzamos el error para no interrumpir el flujo principal
+  }
+}
+
 // Obtener todas las misiones del estudiante
 const obtenerMisiones = async (req, res) => {
   try {
@@ -14,6 +104,8 @@ const obtenerMisiones = async (req, res) => {
         m.puntos_experiencia as xp,
         em.estado,
         em.progreso,
+        em.puntuacion,
+        em.retroalimentacion,
         c.nombre as curso,
         c.id as curso_id
       FROM estudiante_misiones em
@@ -75,6 +167,7 @@ const obtenerMisionPorId = async (req, res) => {
         em.estado,
         em.progreso,
         em.puntuacion,
+        em.retroalimentacion,
         em.fecha_inicio,
         em.fecha_completado
       FROM misiones m
@@ -149,25 +242,38 @@ const obtenerActividades = async (req, res) => {
     const [actividades] = await db.query(
       `SELECT
         a.id,
-        a.titulo,
-        a.enunciado,
+        a.tipo,
         a.pregunta,
-        a.tipo_pregunta,
-        a.consejo,
-        a.orden
+        a.orden,
+        a.puntos,
+        a.imagen,
+        a.explicacion
       FROM actividades a
       WHERE a.mision_id = ?
       ORDER BY a.orden`,
       [id]
     );
 
-    // Para cada actividad, obtener sus opciones
+    // Para cada actividad, obtener sus opciones y respuestas del estudiante
     for (let actividad of actividades) {
       const [opciones] = await db.query(
-        'SELECT id, valor, orden FROM actividad_opciones WHERE actividad_id = ? ORDER BY orden',
+        'SELECT id, texto, es_correcta, orden FROM actividad_opciones WHERE actividad_id = ? ORDER BY orden',
         [actividad.id]
       );
       actividad.opciones = opciones;
+
+      // Obtener si el estudiante ya respondió esta actividad correctamente
+      const [respuestas] = await db.query(
+        `SELECT es_correcta, respuesta, intentos
+         FROM estudiante_respuestas
+         WHERE estudiante_rut = ? AND actividad_id = ? AND es_correcta = 1
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [estudianteRut, actividad.id]
+      );
+
+      actividad.respondida = respuestas.length > 0;
+      actividad.respuesta_correcta = respuestas.length > 0 ? respuestas[0].respuesta : null;
     }
 
     res.json({
@@ -200,7 +306,7 @@ const responderActividad = async (req, res) => {
       `SELECT
         a.*,
         m.id as mision_id,
-        m.xp_recompensa
+        m.puntos_experiencia as xp_recompensa
       FROM actividades a
       INNER JOIN misiones m ON a.mision_id = m.id
       WHERE a.id = ?`,
@@ -217,8 +323,21 @@ const responderActividad = async (req, res) => {
 
     const actividad = actividades[0];
 
-    // Verificar si la respuesta es correcta
-    const esCorrecta = respuesta.toString() === actividad.respuesta_correcta.toString();
+    // Verificar si la respuesta es correcta consultando las opciones
+    const [opcionSeleccionada] = await connection.query(
+      'SELECT es_correcta FROM actividad_opciones WHERE id = ?',
+      [respuesta]
+    );
+
+    if (opcionSeleccionada.length === 0) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        message: 'Opción de respuesta no válida'
+      });
+    }
+
+    const esCorrecta = opcionSeleccionada[0].es_correcta === 1;
 
     // Verificar si ya respondió esta actividad antes
     const [respuestasAnteriores] = await connection.query(
@@ -270,17 +389,43 @@ const responderActividad = async (req, res) => {
         [progreso, progreso, progreso, estudianteRut, actividad.mision_id]
       );
 
-      // Si completó la misión, otorgar XP
+      // Si completó la misión, otorgar XP y verificar logros
       if (progreso === 100) {
+        console.log('🎯 Misión completada al 100%');
+
+        // Obtener los puntos de experiencia y monedas de la misión completa
+        const [misionData] = await connection.query(
+          'SELECT puntos_experiencia, monedas_recompensa FROM misiones WHERE id = ?',
+          [actividad.mision_id]
+        );
+
+        const xpMision = misionData[0]?.puntos_experiencia || 0;
+        const monedasMision = misionData[0]?.monedas_recompensa || 0;
+
+        console.log(`💫 Otorgando XP de misión: ${xpMision}`);
+        console.log(`💰 Otorgando monedas de misión: ${monedasMision}`);
+
+        // Otorgar XP de la misión
         await connection.query(
           'UPDATE usuarios SET experiencia = experiencia + ? WHERE rut = ?',
-          [actividad.puntos_experiencia, estudianteRut]
+          [xpMision, estudianteRut]
         );
+
+        // Otorgar monedas de la misión
+        if (monedasMision > 0) {
+          await connection.query(
+            'UPDATE usuarios SET monedas = monedas + ? WHERE rut = ?',
+            [monedasMision, estudianteRut]
+          );
+        }
 
         await connection.query(
           'UPDATE estudiante_misiones SET puntuacion = ? WHERE estudiante_rut = ? AND mision_id = ?',
           [100, estudianteRut, actividad.mision_id]
         );
+
+        // Verificar y desbloquear logros automáticamente
+        await verificarYDesbloquearLogros(connection, estudianteRut);
 
         // Crear evaluación pendiente para el GM
         const [gmId] = await connection.query(

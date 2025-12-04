@@ -68,7 +68,10 @@ function EstudianteMisiones() {
     const estados = {
       'en_progreso': 'En progreso',
       'no_iniciada': 'Pendiente',
-      'completada': 'Completada'
+      'completada': 'Completada',
+      'aprobada': 'Aprobada ✓',
+      'rechazada': 'Rechazada ✗',
+      'revisando': 'En revisión'
     };
     return estados[estado] || estado;
   };
@@ -167,7 +170,25 @@ function EstudianteMisiones() {
                 <span className="xp-text">+{mision.xp} XP</span>
               </div>
 
-              {mision.estado !== "no_iniciada" && (
+              {/* Mostrar puntuación si está aprobada o rechazada */}
+              {(mision.estado === 'aprobada' || mision.estado === 'rechazada') && mision.puntuacion && (
+                <div style={{
+                  backgroundColor: mision.estado === 'aprobada' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  marginTop: '0.5rem',
+                  textAlign: 'center'
+                }}>
+                  <span style={{
+                    fontWeight: 'bold',
+                    color: mision.estado === 'aprobada' ? '#22c55e' : '#ef4444'
+                  }}>
+                    Puntuación: {mision.puntuacion}/100
+                  </span>
+                </div>
+              )}
+
+              {mision.estado !== "no_iniciada" && mision.estado !== 'aprobada' && mision.estado !== 'rechazada' && (
                 <div className="progreso-wrapper">
                   <div className="progreso-bar-bg">
                     <div
@@ -213,7 +234,7 @@ function EstudianteMisiones() {
                   </button>
                 </>
               )}
-              {mision.estado === "completada" && (
+              {(mision.estado === "completada" || mision.estado === "aprobada" || mision.estado === "rechazada") && (
                 <button
                   className="mision-btn btn-secondary btn-full"
                   onClick={() => handleVerDetalles(mision.id)}

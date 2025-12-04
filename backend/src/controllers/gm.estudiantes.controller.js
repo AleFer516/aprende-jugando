@@ -198,13 +198,36 @@ const obtenerProgresoMision = async (req, res) => {
       });
     }
 
-    // Obtener respuestas del estudiante en las actividades
+    // Obtener actividades de la misión con el progreso del estudiante
+    const [actividades] = await db.query(
+      `SELECT
+        a.id,
+        a.tipo,
+        a.pregunta,
+        a.orden,
+        a.puntos,
+        (SELECT COUNT(*) FROM estudiante_respuestas er
+         WHERE er.actividad_id = a.id
+         AND er.estudiante_rut = ?
+         AND er.es_correcta = 1) as completada,
+        (SELECT MAX(created_at) FROM estudiante_respuestas er
+         WHERE er.actividad_id = a.id
+         AND er.estudiante_rut = ?) as fecha_respuesta
+      FROM actividades a
+      WHERE a.mision_id = ?
+      ORDER BY a.orden`,
+      [estudianteId, estudianteId, misionId]
+    );
+
+    // Obtener respuestas incorrectas del estudiante
     const [respuestas] = await db.query(
       `SELECT
-        er.*,
-        a.titulo as actividad_titulo,
-        a.pregunta,
-        a.respuesta_correcta
+        er.actividad_id,
+        er.respuesta,
+        er.es_correcta,
+        er.intentos,
+        er.created_at,
+        a.pregunta
       FROM estudiante_respuestas er
       INNER JOIN actividades a ON er.actividad_id = a.id
       WHERE er.estudiante_rut = ? AND a.mision_id = ?
@@ -216,6 +239,7 @@ const obtenerProgresoMision = async (req, res) => {
       success: true,
       progreso: {
         ...progreso[0],
+        actividades,
         respuestas
       }
     });

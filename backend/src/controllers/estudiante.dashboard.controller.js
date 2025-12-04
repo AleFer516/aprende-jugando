@@ -33,7 +33,7 @@ const obtenerDashboard = async (req, res) => {
       [estudiante.nivel * 2, estudianteRut]
     );
 
-    // Obtener logros recientes (últimos 3)
+    // Obtener logros recientes (últimos 2)
     const [logrosRecientes] = await db.query(
       `SELECT
         l.id,
@@ -44,11 +44,11 @@ const obtenerDashboard = async (req, res) => {
       INNER JOIN logros l ON el.logro_id = l.id
       WHERE el.estudiante_rut = ?
       ORDER BY el.obtenido_at DESC
-      LIMIT 3`,
+      LIMIT 2`,
       [estudianteRut]
     );
 
-    // Obtener misiones del estudiante
+    // Obtener misiones del estudiante (máximo 3)
     const [tusMisiones] = await db.query(
       `SELECT
         m.id,
@@ -67,7 +67,7 @@ const obtenerDashboard = async (req, res) => {
           WHEN 'completada' THEN 3
         END,
         em.updated_at DESC
-      LIMIT 6`,
+      LIMIT 3`,
       [estudianteRut]
     );
 

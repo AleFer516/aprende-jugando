@@ -7,6 +7,7 @@ import "../../styles/estudianteProgreso.css";
 
 function EstudianteProgreso() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [estudiante, setEstudiante] = useState(null);
   const [estadoMisiones, setEstadoMisiones] = useState(null);
   const [metricas, setMetricas] = useState(null);
@@ -19,15 +20,36 @@ function EstudianteProgreso() {
   const cargarProgreso = async () => {
     try {
       setLoading(true);
+      setError(null);
+      console.log("Cargando progreso...");
       const response = await estudianteService.getProgreso();
-      if (response.success) {
+      console.log("Respuesta del servidor:", response);
+
+      if (response && response.success && response.progreso) {
+        console.log("Estructura de progreso:", response.progreso);
+
+        if (!response.progreso.estudiante || !response.progreso.estadoMisiones || !response.progreso.metricas) {
+          const errorMsg = "Datos incompletos del servidor. Verifica que tengas misiones asignadas.";
+          console.error(errorMsg, response.progreso);
+          setError(errorMsg);
+          return;
+        }
+
         setEstudiante(response.progreso.estudiante);
         setEstadoMisiones(response.progreso.estadoMisiones);
         setMetricas(response.progreso.metricas);
         setEstadisticasAprendizaje(response.progreso.estadisticasAprendizaje || []);
+        console.log("Datos cargados correctamente");
+      } else {
+        const errorMsg = response?.message || "La respuesta del servidor no fue exitosa";
+        console.error(errorMsg, response);
+        setError(errorMsg);
       }
-    } catch (error) {
-      console.error("Error al cargar progreso:", error);
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || "Error al cargar el progreso";
+      console.error("Error al cargar progreso:", err);
+      console.error("Detalles del error:", err.response?.data || err.message);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -37,6 +59,28 @@ function EstudianteProgreso() {
     return (
       <div className="estudiante-progreso" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
         <p style={{ color: 'var(--text-muted)' }}>Cargando progreso...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="estudiante-progreso" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '400px', gap: '1rem' }}>
+        <p style={{ color: '#ef4444', fontSize: '1.1rem', fontWeight: 'bold' }}>Error al cargar el progreso</p>
+        <p style={{ color: 'var(--text-muted)' }}>{error}</p>
+        <button
+          onClick={cargarProgreso}
+          style={{
+            padding: '0.5rem 1rem',
+            backgroundColor: 'var(--primary-color)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0.5rem',
+            cursor: 'pointer'
+          }}
+        >
+          Intentar de nuevo
+        </button>
       </div>
     );
   }
@@ -51,7 +95,7 @@ function EstudianteProgreso() {
 
   const xpPercentage = Math.min(
     100,
-    Math.round((estudiante.xpActual / estudiante.xpSiguienteNivel) * 100)
+    Math.round(((estudiante.xpActual || 0) / (estudiante.xpSiguienteNivel || 1)) * 100)
   );
 
   const totalMisiones = estadoMisiones.total || 0;
@@ -141,10 +185,10 @@ function EstudianteProgreso() {
                   </div>
                   <div className="progreso-xp-text">
                     <span className="progreso-xp-actual">
-                      {estudiante.xpActual.toLocaleString()} XP
+                      {(estudiante.xpActual || 0).toLocaleString()} XP
                     </span>
                     <span className="progreso-xp-siguiente">
-                      / {estudiante.xpSiguienteNivel.toLocaleString()} XP
+                      / {(estudiante.xpSiguienteNivel || 300).toLocaleString()} XP
                     </span>
                   </div>
                 </div>
@@ -152,7 +196,7 @@ function EstudianteProgreso() {
                   Te faltan{" "}
                   <span className="progreso-xp-faltante">
                     {(
-                      estudiante.xpSiguienteNivel - estudiante.xpActual
+                      (estudiante.xpSiguienteNivel || 300) - (estudiante.xpActual || 0)
                     ).toLocaleString()}{" "}
                     XP
                   </span>{" "}

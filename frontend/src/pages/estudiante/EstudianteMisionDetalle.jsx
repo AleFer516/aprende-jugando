@@ -184,6 +184,72 @@ function EstudianteMisionDetalle() {
           </div>
         )}
 
+        {/* Estado de evaluación - Aprobada/Rechazada */}
+        {(mision.estado === 'aprobada' || mision.estado === 'rechazada') && (
+          <div className="mision-detalle-seccion" style={{
+            backgroundColor: mision.estado === 'aprobada' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            border: `2px solid ${mision.estado === 'aprobada' ? '#22c55e' : '#ef4444'}`,
+            borderRadius: '12px',
+            padding: '1.5rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: mision.estado === 'aprobada' ? '#22c55e' : '#ef4444',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px'
+              }}>
+                {mision.estado === 'aprobada' ? '✓' : '✗'}
+              </div>
+              <div>
+                <h2 className="seccion-titulo" style={{
+                  margin: 0,
+                  color: mision.estado === 'aprobada' ? '#22c55e' : '#ef4444'
+                }}>
+                  {mision.estado === 'aprobada' ? 'Misión Aprobada' : 'Misión Rechazada'}
+                </h2>
+                {mision.puntuacion && (
+                  <p style={{
+                    margin: '0.25rem 0 0 0',
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    color: 'var(--text-color)'
+                  }}>
+                    Puntuación: {mision.puntuacion}/100
+                  </p>
+                )}
+              </div>
+            </div>
+            {mision.retroalimentacion && (
+              <div style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                padding: '1rem',
+                borderRadius: '8px',
+                borderLeft: `4px solid ${mision.estado === 'aprobada' ? '#22c55e' : '#ef4444'}`
+              }}>
+                <p style={{
+                  fontWeight: 'bold',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-color)'
+                }}>
+                  Retroalimentación del profesor:
+                </p>
+                <p style={{
+                  margin: 0,
+                  lineHeight: '1.6',
+                  color: 'var(--text-muted)'
+                }}>
+                  {mision.retroalimentacion}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Información de progreso si la misión está en progreso o completada */}
         {(mision.estado === 'en_progreso' || mision.estado === 'completada') && (
           <div className="mision-detalle-seccion">

@@ -5,7 +5,14 @@
       "Bash(findstr:*)",
       "Bash(mysql:*)",
       "Bash(where:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run query:*)",
+      "Bash(node verificar_estructura.js:*)",
+      "Bash(node ejecutar_migracion.js:*)",
+      "Bash(del verificar_estructura.js ejecutar_migracion.js)",
+      "Bash(node --version:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

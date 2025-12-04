@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import adminService from '../services/adminService';
+import authService from '../services/authService';
 
 /**
  * Hook para obtener la configuración del sistema
@@ -7,7 +8,7 @@ import adminService from '../services/adminService';
  */
 export const useSystemConfig = () => {
   const [config, setConfig] = useState({
-    nombreSistema: 'Luminia',
+    nombreSistema: 'Aprende Jugando',
     logoUrl: null,
     loading: true,
     error: null
@@ -15,23 +16,37 @@ export const useSystemConfig = () => {
 
   useEffect(() => {
     const cargarConfiguracion = async () => {
+      // Solo intentar cargar configuración si el usuario es admin
+      const usuario = authService.getCurrentUser();
+
+      if (usuario?.rol !== 'admin') {
+        // Para usuarios no admin, usar valores por defecto
+        setConfig({
+          nombreSistema: 'Aprende Jugando',
+          logoUrl: null,
+          loading: false,
+          error: null
+        });
+        return;
+      }
+
       try {
         const response = await adminService.getConfiguracion();
         if (response.success) {
           setConfig({
-            nombreSistema: response.data.nombreSistema || 'Luminia',
+            nombreSistema: response.data.nombreSistema || 'Aprende Jugando',
             logoUrl: response.data.logoUrl || null,
             loading: false,
             error: null
           });
         }
       } catch (error) {
-        // Si hay error (por ejemplo, sin permisos), usar valores por defecto
+        // Si hay error, usar valores por defecto
         setConfig({
-          nombreSistema: 'Luminia',
+          nombreSistema: 'Aprende Jugando',
           logoUrl: null,
           loading: false,
-          error: error.message
+          error: null
         });
       }
     };

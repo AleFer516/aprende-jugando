@@ -89,15 +89,16 @@ const obtenerProgreso = async (req, res) => {
         estudiante: {
           ...estudiante,
           tituloNivel,
-          xpActual: estudiante.experiencia,
-          xpSiguienteNivel
+          xpActual: estudiante.experiencia || 0,
+          xpSiguienteNivel,
+          nivel: estudiante.nivel || 1
         },
         estadoMisiones: estadoMisiones[0],
         metricas: {
-          totalMisiones: estadoMisiones[0].total,
-          misionesCompletadas: estadoMisiones[0].completadas,
-          tiempoEstudio: `${Number(metricas[0].horasSemanales || 0).toFixed(1)}h`,
-          xpGanado: metricas[0].xpGanado || 0
+          totalMisiones: estadoMisiones[0].total || 0,
+          misionesCompletadas: estadoMisiones[0].completadas || 0,
+          tiempoEstudio: `${Number(metricas[0]?.horasSemanales || 0).toFixed(1)}h`,
+          xpGanado: metricas[0]?.xpGanado || 0
         },
         estadisticasAprendizaje: estadisticasConColor,
         historialProgreso

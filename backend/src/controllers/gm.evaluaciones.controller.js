@@ -229,12 +229,12 @@ const evaluarMision = async (req, res) => {
       });
     }
 
-    // Actualizar estado de la misión del estudiante
+    // Actualizar estado de la misión del estudiante con retroalimentación
     await connection.query(
       `UPDATE estudiante_misiones
-      SET estado = ?, puntuacion = ?
+      SET estado = ?, puntuacion = ?, retroalimentacion = ?
       WHERE id = ?`,
-      [estado, puntuacion || null, id]
+      [estado, puntuacion || null, retroalimentacion || null, id]
     );
 
     // Crear o actualizar notificación para el estudiante

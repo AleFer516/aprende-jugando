@@ -277,6 +277,7 @@ CREATE TABLE estudiante_misiones (
   estudiante_rut VARCHAR(12) NOT NULL,
   estado ENUM('no_iniciada', 'en_progreso', 'completada', 'revisando', 'aprobada', 'rechazada', 'abandonada') DEFAULT 'no_iniciada',
   puntuacion DECIMAL(5,2),
+  retroalimentacion TEXT,
   intentos INT DEFAULT 0,
   progreso INT DEFAULT 0,
   fecha_inicio TIMESTAMP NULL,
@@ -324,19 +325,18 @@ CREATE TABLE actividad_opciones (
 -- Respuestas de estudiantes a actividades
 CREATE TABLE estudiante_respuestas (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  actividad_id INT NOT NULL,
   estudiante_rut VARCHAR(12) NOT NULL,
+  actividad_id INT NOT NULL,
   respuesta TEXT,
-  opcion_id INT,
-  es_correcta BOOLEAN,
-  puntos_obtenidos INT DEFAULT 0,
-  retroalimentacion TEXT,
+  es_correcta BOOLEAN DEFAULT FALSE,
+  intentos INT DEFAULT 1,
+  tiempo_respuesta INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (actividad_id) REFERENCES actividades(id) ON DELETE CASCADE,
   FOREIGN KEY (estudiante_rut) REFERENCES usuarios(rut) ON DELETE CASCADE,
-  FOREIGN KEY (opcion_id) REFERENCES actividad_opciones(id) ON DELETE SET NULL,
+  FOREIGN KEY (actividad_id) REFERENCES actividades(id) ON DELETE CASCADE,
+  INDEX idx_estudiante (estudiante_rut),
   INDEX idx_actividad (actividad_id),
-  INDEX idx_estudiante (estudiante_rut)
+  INDEX idx_fecha (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==========================================
@@ -765,6 +765,213 @@ INSERT INTO misiones (curso_id, titulo, descripcion, tipo, dificultad, puntos_ex
   true,
   '98.765.432-1'
 );
+
+-- ==========================================
+-- DATOS INICIALES - ACTIVIDADES DE MISIONES
+-- ==========================================
+
+-- Actividades para Misión 1: Introducción a los Números
+INSERT INTO actividades (mision_id, tipo, pregunta, orden, puntos, imagen, explicacion) VALUES
+(1, 'opcion_multiple', '¿Cuántos dedos tienes en una mano?', 1, 10, '/images/mision1.jpg', 'Cuenta los dedos de tu mano para encontrar la respuesta correcta.'),
+(1, 'opcion_multiple', '¿Qué número viene después del 5?', 2, 10, '/images/mision1.jpg', 'Piensa en la secuencia numérica: 1, 2, 3, 4, 5...'),
+(1, 'verdadero_falso', 'El número 3 es mayor que el número 7', 3, 10, '/images/mision1.jpg', 'Compara los dos números para determinar cuál es mayor.'),
+(1, 'opcion_multiple', '¿Cuántos elementos hay en el grupo: 🍎🍎🍎?', 4, 10, '/images/mision1.jpg', 'Cuenta las manzanas una por una.'),
+(1, 'opcion_multiple', '¿Qué número está entre el 4 y el 6?', 5, 10, '/images/mision1.jpg', 'Piensa en la secuencia: 4, ?, 6');
+
+-- Opciones para actividad 1 (¿Cuántos dedos?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(1, '3', false, 1),
+(1, '5', true, 2),
+(1, '7', false, 3),
+(1, '10', false, 4);
+
+-- Opciones para actividad 2 (¿Qué número viene después del 5?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(2, '4', false, 1),
+(2, '6', true, 2),
+(2, '7', false, 3),
+(2, '3', false, 4);
+
+-- Opciones para actividad 3 (Verdadero/Falso - 3 > 7)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(3, 'Verdadero', false, 1),
+(3, 'Falso', true, 2);
+
+-- Opciones para actividad 4 (¿Cuántas manzanas?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(4, '2', false, 1),
+(4, '3', true, 2),
+(4, '4', false, 3),
+(4, '5', false, 4);
+
+-- Opciones para actividad 5 (¿Qué número está entre 4 y 6?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(5, '3', false, 1),
+(5, '5', true, 2),
+(5, '7', false, 3),
+(5, '4', false, 4);
+
+-- Actividades para Misión 2: Suma y Resta Básica
+INSERT INTO actividades (mision_id, tipo, pregunta, orden, puntos, imagen, explicacion) VALUES
+(2, 'opcion_multiple', '¿Cuánto es 5 + 3?', 1, 10, '/images/mision1.jpg', 'Suma los dos números para encontrar el resultado.'),
+(2, 'opcion_multiple', '¿Cuánto es 10 - 4?', 2, 10, '/images/mision1.jpg', 'Resta 4 de 10 para obtener la respuesta.'),
+(2, 'opcion_multiple', 'Si tienes 7 manzanas y te dan 5 más, ¿cuántas tienes en total?', 3, 10, '/images/mision1.jpg', 'Suma las manzanas que tenías con las que te dieron.'),
+(2, 'opcion_multiple', '¿Cuánto es 15 - 8?', 4, 10, '/images/mision1.jpg', 'Resta 8 de 15.'),
+(2, 'verdadero_falso', '6 + 6 = 12', 5, 10, '/images/mision1.jpg', 'Verifica si la suma es correcta.');
+
+-- Opciones para actividad 6 (5 + 3)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(6, '7', false, 1),
+(6, '8', true, 2),
+(6, '9', false, 3),
+(6, '6', false, 4);
+
+-- Opciones para actividad 7 (10 - 4)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(7, '5', false, 1),
+(7, '6', true, 2),
+(7, '7', false, 3),
+(7, '4', false, 4);
+
+-- Opciones para actividad 8 (7 + 5 manzanas)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(8, '11', false, 1),
+(8, '12', true, 2),
+(8, '13', false, 3),
+(8, '10', false, 4);
+
+-- Opciones para actividad 9 (15 - 8)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(9, '6', false, 1),
+(9, '7', true, 2),
+(9, '8', false, 3),
+(9, '9', false, 4);
+
+-- Opciones para actividad 10 (6 + 6 = 12)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(10, 'Verdadero', true, 1),
+(10, 'Falso', false, 2);
+
+-- Actividades para Misión 3: Examen de Matemáticas Básicas
+INSERT INTO actividades (mision_id, tipo, pregunta, orden, puntos, imagen, explicacion) VALUES
+(3, 'opcion_multiple', '¿Cuánto es 12 + 8?', 1, 20, '/images/mision1.jpg', 'Suma 12 + 8 para obtener el resultado.'),
+(3, 'opcion_multiple', '¿Cuánto es 20 - 13?', 2, 20, '/images/mision1.jpg', 'Resta 13 de 20.'),
+(3, 'opcion_multiple', 'Si tienes 15 caramelos y le das 6 a tu amigo, ¿cuántos te quedan?', 3, 20, '/images/mision1.jpg', 'Resta los caramelos que diste de los que tenías.'),
+(3, 'opcion_multiple', '¿Qué operación da como resultado 10? ', 4, 20, '/images/mision1.jpg', 'Encuentra la operación correcta.'),
+(3, 'verdadero_falso', '18 - 9 = 9', 5, 20, '/images/mision1.jpg', 'Verifica si la resta es correcta.');
+
+-- Opciones para actividad 11 (12 + 8)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(11, '19', false, 1),
+(11, '20', true, 2),
+(11, '21', false, 3),
+(11, '18', false, 4);
+
+-- Opciones para actividad 12 (20 - 13)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(12, '6', false, 1),
+(12, '7', true, 2),
+(12, '8', false, 3),
+(12, '9', false, 4);
+
+-- Opciones para actividad 13 (15 - 6 caramelos)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(13, '8', false, 1),
+(13, '9', true, 2),
+(13, '10', false, 3),
+(13, '11', false, 4);
+
+-- Opciones para actividad 14 (¿Qué da 10?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(14, '5 + 4', false, 1),
+(14, '7 + 3', true, 2),
+(14, '6 + 5', false, 3),
+(14, '8 + 3', false, 4);
+
+-- Opciones para actividad 15 (18 - 9 = 9)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(15, 'Verdadero', true, 1),
+(15, 'Falso', false, 2);
+
+-- Actividades para Misión 4: El Sistema Solar
+INSERT INTO actividades (mision_id, tipo, pregunta, orden, puntos, imagen, explicacion) VALUES
+(4, 'opcion_multiple', '¿Cuál es el planeta más cercano al Sol?', 1, 10, '/images/mision1.jpg', 'El planeta más cercano al Sol es el primero en el orden del sistema solar.'),
+(4, 'opcion_multiple', '¿Cuántos planetas tiene nuestro sistema solar?', 2, 10, '/images/mision1.jpg', 'Cuenta los planetas desde Mercurio hasta Neptuno.'),
+(4, 'verdadero_falso', 'El Sol es una estrella', 3, 10, '/images/mision1.jpg', 'Piensa en qué tipo de objeto celeste es el Sol.'),
+(4, 'opcion_multiple', '¿Cuál es el planeta más grande del sistema solar?', 4, 10, '/images/mision1.jpg', 'Este planeta es conocido por ser gigantesco y tener muchas lunas.'),
+(4, 'opcion_multiple', '¿En qué planeta vivimos?', 5, 10, '/images/mision1.jpg', 'Este es nuestro hogar en el universo.');
+
+-- Opciones para actividad 16 (planeta más cercano al Sol)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(16, 'Mercurio', true, 1),
+(16, 'Venus', false, 2),
+(16, 'Tierra', false, 3),
+(16, 'Marte', false, 4);
+
+-- Opciones para actividad 17 (¿cuántos planetas?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(17, '7', false, 1),
+(17, '8', true, 2),
+(17, '9', false, 3),
+(17, '10', false, 4);
+
+-- Opciones para actividad 18 (El Sol es una estrella)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(18, 'Verdadero', true, 1),
+(18, 'Falso', false, 2);
+
+-- Opciones para actividad 19 (planeta más grande)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(19, 'Saturno', false, 1),
+(19, 'Júpiter', true, 2),
+(19, 'Neptuno', false, 3),
+(19, 'Urano', false, 4);
+
+-- Opciones para actividad 20 (¿en qué planeta vivimos?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(20, 'Marte', false, 1),
+(20, 'Tierra', true, 2),
+(20, 'Venus', false, 3),
+(20, 'Júpiter', false, 4);
+
+-- Actividades para Misión 5: Los Seres Vivos
+INSERT INTO actividades (mision_id, tipo, pregunta, orden, puntos, imagen, explicacion) VALUES
+(5, 'opcion_multiple', '¿Cuál de estos es un ser vivo?', 1, 10, '/images/mision1.jpg', 'Los seres vivos nacen, crecen, se reproducen y mueren.'),
+(5, 'verdadero_falso', 'Las plantas son seres vivos', 2, 10, '/images/mision1.jpg', 'Piensa si las plantas cumplen con las características de los seres vivos.'),
+(5, 'opcion_multiple', '¿Qué necesitan todos los seres vivos para sobrevivir?', 3, 10, '/images/mision1.jpg', 'Todos los seres vivos necesitan esto para mantenerse con vida.'),
+(5, 'opcion_multiple', '¿Cuál de estos NO es un ser vivo?', 4, 10, '/images/mision1.jpg', 'Identifica qué objeto no cumple con las características de los seres vivos.'),
+(5, 'verdadero_falso', 'Los animales necesitan respirar para vivir', 5, 10, '/images/mision1.jpg', 'Piensa en una de las necesidades básicas de los animales.');
+
+-- Opciones para actividad 21 (¿cuál es un ser vivo?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(21, 'Una roca', false, 1),
+(21, 'Un perro', true, 2),
+(21, 'Una pelota', false, 3),
+(21, 'Una silla', false, 4);
+
+-- Opciones para actividad 22 (Las plantas son seres vivos)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(22, 'Verdadero', true, 1),
+(22, 'Falso', false, 2);
+
+-- Opciones para actividad 23 (¿qué necesitan los seres vivos?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(23, 'Juguetes', false, 1),
+(23, 'Agua y alimento', true, 2),
+(23, 'Dinero', false, 3),
+(23, 'Libros', false, 4);
+
+-- Opciones para actividad 24 (¿cuál NO es un ser vivo?)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(24, 'Un gato', false, 1),
+(24, 'Una flor', false, 2),
+(24, 'Una piedra', true, 3),
+(24, 'Un árbol', false, 4);
+
+-- Opciones para actividad 25 (Los animales necesitan respirar)
+INSERT INTO actividad_opciones (actividad_id, texto, es_correcta, orden) VALUES
+(25, 'Verdadero', true, 1),
+(25, 'Falso', false, 2);
 
 -- ==========================================
 -- DATOS DE PRUEBA - PROGRESO DE ESTUDIANTES
