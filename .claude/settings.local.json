@@ -12,7 +12,9 @@
       "Bash(node ejecutar_migracion.js:*)",
       "Bash(del verificar_estructura.js ejecutar_migracion.js)",
       "Bash(node --version:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(node recalcular_xp.js:*)",
+      "Bash(del recalcular_xp.js)"
     ],
     "deny": [],
     "ask": []

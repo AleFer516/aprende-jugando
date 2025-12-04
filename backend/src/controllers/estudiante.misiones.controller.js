@@ -82,6 +82,24 @@ async function verificarYDesbloquearLogros(connection, estudianteRut) {
           );
           console.log(`   💰 Monedas otorgadas: +${logro.monedas_recompensa}`);
         }
+
+        // Actualizar nivel basado en el XP total después de otorgar el logro
+        if (logro.puntos_experiencia > 0) {
+          const [usuarioActualizado] = await connection.query(
+            'SELECT experiencia FROM usuarios WHERE rut = ?',
+            [estudianteRut]
+          );
+
+          const xpTotal = usuarioActualizado[0].experiencia;
+          const nuevoNivel = Math.floor(xpTotal / 300) + 1;
+
+          await connection.query(
+            'UPDATE usuarios SET nivel = ? WHERE rut = ?',
+            [nuevoNivel, estudianteRut]
+          );
+
+          console.log(`   📊 Nivel actualizado: ${nuevoNivel} (XP total: ${xpTotal})`);
+        }
       }
     }
   } catch (error) {
@@ -418,6 +436,22 @@ const responderActividad = async (req, res) => {
             [monedasMision, estudianteRut]
           );
         }
+
+        // Actualizar nivel basado en el XP total
+        const [usuarioActualizado] = await connection.query(
+          'SELECT experiencia FROM usuarios WHERE rut = ?',
+          [estudianteRut]
+        );
+
+        const xpTotal = usuarioActualizado[0].experiencia;
+        const nuevoNivel = Math.floor(xpTotal / 300) + 1;
+
+        await connection.query(
+          'UPDATE usuarios SET nivel = ? WHERE rut = ?',
+          [nuevoNivel, estudianteRut]
+        );
+
+        console.log(`📊 Nivel actualizado: ${nuevoNivel} (XP total: ${xpTotal})`);
 
         await connection.query(
           'UPDATE estudiante_misiones SET puntuacion = ? WHERE estudiante_rut = ? AND mision_id = ?',
