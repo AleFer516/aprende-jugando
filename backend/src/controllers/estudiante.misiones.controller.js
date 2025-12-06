@@ -182,10 +182,12 @@ const obtenerMisionPorId = async (req, res) => {
     const [misiones] = await db.query(
       `SELECT
         m.*,
+        m.puntos_experiencia as xp_recompensa,
+        m.fecha_limite as fecha_fin,
         em.estado,
         em.progreso,
         em.puntuacion,
-        em.retroalimentacion,
+        em.retroalimentacion as retroalimentacion_gm,
         em.fecha_inicio,
         em.fecha_completado
       FROM misiones m
@@ -407,59 +409,9 @@ const responderActividad = async (req, res) => {
         [progreso, progreso, progreso, estudianteRut, actividad.mision_id]
       );
 
-      // Si completó la misión, otorgar XP y verificar logros
+      // Si completó la misión, crear evaluación para el GM (sin otorgar XP todavía)
       if (progreso === 100) {
-        console.log('🎯 Misión completada al 100%');
-
-        // Obtener los puntos de experiencia y monedas de la misión completa
-        const [misionData] = await connection.query(
-          'SELECT puntos_experiencia, monedas_recompensa FROM misiones WHERE id = ?',
-          [actividad.mision_id]
-        );
-
-        const xpMision = misionData[0]?.puntos_experiencia || 0;
-        const monedasMision = misionData[0]?.monedas_recompensa || 0;
-
-        console.log(`💫 Otorgando XP de misión: ${xpMision}`);
-        console.log(`💰 Otorgando monedas de misión: ${monedasMision}`);
-
-        // Otorgar XP de la misión
-        await connection.query(
-          'UPDATE usuarios SET experiencia = experiencia + ? WHERE rut = ?',
-          [xpMision, estudianteRut]
-        );
-
-        // Otorgar monedas de la misión
-        if (monedasMision > 0) {
-          await connection.query(
-            'UPDATE usuarios SET monedas = monedas + ? WHERE rut = ?',
-            [monedasMision, estudianteRut]
-          );
-        }
-
-        // Actualizar nivel basado en el XP total
-        const [usuarioActualizado] = await connection.query(
-          'SELECT experiencia FROM usuarios WHERE rut = ?',
-          [estudianteRut]
-        );
-
-        const xpTotal = usuarioActualizado[0].experiencia;
-        const nuevoNivel = Math.floor(xpTotal / 300) + 1;
-
-        await connection.query(
-          'UPDATE usuarios SET nivel = ? WHERE rut = ?',
-          [nuevoNivel, estudianteRut]
-        );
-
-        console.log(`📊 Nivel actualizado: ${nuevoNivel} (XP total: ${xpTotal})`);
-
-        await connection.query(
-          'UPDATE estudiante_misiones SET puntuacion = ? WHERE estudiante_rut = ? AND mision_id = ?',
-          [100, estudianteRut, actividad.mision_id]
-        );
-
-        // Verificar y desbloquear logros automáticamente
-        await verificarYDesbloquearLogros(connection, estudianteRut);
+        console.log('🎯 Misión completada al 100% - Enviando a revisión del GM');
 
         // Crear evaluación pendiente para el GM
         const [gmId] = await connection.query(
@@ -497,30 +449,75 @@ const responderActividad = async (req, res) => {
   }
 };
 
-// Iniciar una misión
+// Iniciar una misión (o reiniciar si fue rechazada)
 const iniciarMision = async (req, res) => {
+  const connection = await db.getConnection();
+
   try {
+    await connection.beginTransaction();
+
     const { id } = req.params;
     const estudianteRut = req.usuario.rut;
 
-    await db.query(
-      `UPDATE estudiante_misiones
-      SET estado = 'en_progreso', fecha_inicio = NOW()
-      WHERE estudiante_rut = ? AND mision_id = ? AND estado = 'no_iniciada'`,
+    // Verificar el estado actual de la misión
+    const [misionEstado] = await connection.query(
+      `SELECT estado FROM estudiante_misiones
+       WHERE estudiante_rut = ? AND mision_id = ?`,
       [estudianteRut, id]
     );
 
+    if (misionEstado.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({
+        success: false,
+        message: 'Misión no encontrada'
+      });
+    }
+
+    const estadoActual = misionEstado[0].estado;
+
+    // Si la misión fue rechazada, limpiar respuestas anteriores
+    if (estadoActual === 'rechazada') {
+      await connection.query(
+        `DELETE FROM estudiante_respuestas
+         WHERE estudiante_rut = ? AND actividad_id IN (
+           SELECT id FROM actividad WHERE mision_id = ?
+         )`,
+        [estudianteRut, id]
+      );
+    }
+
+    // Iniciar o reiniciar la misión
+    await connection.query(
+      `UPDATE estudiante_misiones
+       SET estado = 'en_progreso',
+           fecha_inicio = NOW(),
+           progreso = 0,
+           fecha_completado = NULL,
+           retroalimentacion = NULL
+       WHERE estudiante_rut = ? AND mision_id = ?
+         AND (estado = 'no_iniciada' OR estado = 'rechazada')`,
+      [estudianteRut, id]
+    );
+
+    await connection.commit();
+
     res.json({
       success: true,
-      message: 'Misión iniciada exitosamente'
+      message: estadoActual === 'rechazada'
+        ? 'Misión reiniciada exitosamente'
+        : 'Misión iniciada exitosamente'
     });
   } catch (error) {
+    await connection.rollback();
     console.error('Error al iniciar misión:', error);
     res.status(500).json({
       success: false,
       message: 'Error al iniciar misión',
       error: error.message
     });
+  } finally {
+    connection.release();
   }
 };
 

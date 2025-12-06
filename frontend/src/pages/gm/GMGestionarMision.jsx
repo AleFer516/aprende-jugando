@@ -58,12 +58,14 @@ function GMGestionarMision() {
           titulo: misionData.titulo,
           dificultad: capitalizeFirst(misionData.dificultad),
           categoria: capitalizeFirst(misionData.categoria),
-          objetivoAprendizaje: misionData.descripcion || 'Sin objetivo especificado',
+          objetivoAprendizaje: misionData.objetivo_aprendizaje || 'Sin objetivo especificado',
           competencias: misionData.competencias || [],
           pistas: misionData.pistas || [],
           descripcion: misionData.descripcion || 'Sin descripción',
           competenciasDescripcion: 'Competencias asociadas a esta misión',
-          retroalimentacion: 'Se proporcionará retroalimentación al completar la misión',
+          retroalimentacion: misionData.retroalimentacion || 'Se proporcionará retroalimentación al completar la misión',
+          xp_recompensa: misionData.puntos_experiencia || 100,
+          curso_id: misionData.curso_id,
           curso_nombre: misionData.curso_nombre,
           estadisticas: misionData.estadisticas || {}
         });
@@ -177,16 +179,41 @@ function GMGestionarMision() {
     }));
   };
 
-  const handleGuardarEdicion = (e) => {
+  const handleGuardarEdicion = async (e) => {
     e.preventDefault();
-    console.log("Guardar cambios de misión:", formDataEdicion);
-    setMensajeExitoEdicion(true);
 
-    // Cerrar el modal después de 2 segundos
-    setTimeout(() => {
-      cerrarModalEditar();
-      // En producción, aquí actualizarías el estado de la misión con los nuevos datos
-    }, 2000);
+    try {
+      // Preparar los datos para enviar al backend
+      const datosActualizacion = {
+        titulo: formDataEdicion.titulo,
+        descripcion: formDataEdicion.descripcion,
+        objetivo_aprendizaje: formDataEdicion.objetivoAprendizaje,
+        retroalimentacion: formDataEdicion.retroalimentacion,
+        dificultad: formDataEdicion.dificultad.toLowerCase(),
+        categoria: formDataEdicion.categoria.toLowerCase(),
+        xp_recompensa: mision.xp_recompensa || 100,
+        estado: 'activa',
+        competencias: formDataEdicion.competencias.filter(c => c && c.trim().length > 0),
+        pistas: formDataEdicion.pistas.filter(p => p && p.trim().length > 0)
+      };
+
+      const response = await api.put(`/gm/misiones/${id}`, datosActualizacion);
+
+      if (response.data.success) {
+        setMensajeExitoEdicion(true);
+
+        // Recargar los datos de la misión
+        await cargarMision();
+
+        // Cerrar el modal después de 2 segundos
+        setTimeout(() => {
+          cerrarModalEditar();
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Error al actualizar misión:', err);
+      alert('Error al actualizar la misión. Por favor intente nuevamente.');
+    }
   };
 
   const handleVerProgreso = () => {
@@ -204,14 +231,55 @@ function GMGestionarMision() {
     setCursoSeleccionado(null);
   };
 
-  const handleAsignarACurso = (curso) => {
-    console.log(`Asignando misión "${mision.titulo}" al curso ${curso.nombre}`);
-    setMensajeExito(true);
+  const handleAsignarACurso = async (curso) => {
+    try {
+      const response = await api.post(`/gm/misiones/${id}/asignar/${curso.id}`);
 
-    // Cerrar el modal después de 2 segundos
-    setTimeout(() => {
-      cerrarModalAsignar();
-    }, 2000);
+      if (response.data.success) {
+        setMensajeExito(true);
+
+        // Recargar los datos de la misión
+        await cargarMision();
+
+        // Cerrar el modal después de 2 segundos
+        setTimeout(() => {
+          cerrarModalAsignar();
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Error al asignar misión:', err);
+      // Mostrar mensaje de error
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(err.response.data.message);
+      } else {
+        alert('Error al asignar la misión. Por favor intente nuevamente.');
+      }
+    }
+  };
+
+  const handleEliminarAsignacion = async (curso) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar la asignación de esta misión del curso "${curso.nombre}"? Se eliminará el progreso de todos los estudiantes.`)) {
+      return;
+    }
+
+    try {
+      const response = await api.delete(`/gm/misiones/${id}/asignar/${curso.id}`);
+
+      if (response.data.success) {
+        alert('Asignación eliminada exitosamente');
+
+        // Recargar los datos de la misión
+        await cargarMision();
+      }
+    } catch (err) {
+      console.error('Error al eliminar asignación:', err);
+      // Mostrar mensaje de error
+      if (err.response && err.response.data && err.response.data.message) {
+        alert(err.response.data.message);
+      } else {
+        alert('Error al eliminar la asignación. Por favor intente nuevamente.');
+      }
+    }
   };
 
   const handleVerProgresoCurso = async (curso) => {
@@ -219,9 +287,8 @@ function GMGestionarMision() {
 
     // Cargar estudiantes del curso con progreso en esta misión
     try {
-      const response = await api.get(`/gm/estudiantes`);
+      const response = await api.get(`/gm/misiones/${id}/progreso/${curso.id}`);
       if (response.data.success) {
-        // Filtrar estudiantes por curso (esto debería mejorarse en el backend)
         setEstudiantes(response.data.estudiantes || []);
       }
     } catch (err) {
@@ -410,32 +477,56 @@ function GMGestionarMision() {
                         <th>Curso</th>
                         <th>Código</th>
                         <th>Categoría</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {cursos.length === 0 ? (
                         <tr>
-                          <td colSpan="4" style={{ textAlign: 'center', padding: '2rem' }}>
+                          <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>
                             No hay cursos disponibles
                           </td>
                         </tr>
                       ) : (
-                        cursos.map((curso) => (
-                          <tr key={curso.id}>
-                            <td className="gm-asignar-curso-nombre">{curso.nombre}</td>
-                            <td className="gm-asignar-curso-codigo">{curso.id}</td>
-                            <td className="gm-asignar-curso-categoria">{curso.nombre}</td>
-                            <td>
-                              <button
-                                className="gm-asignar-btn-curso"
-                                onClick={() => handleAsignarACurso(curso)}
-                              >
-                                Asignar
-                              </button>
-                            </td>
-                          </tr>
-                        ))
+                        cursos.map((curso) => {
+                          const estaAsignado = mision.curso_id && curso.id === mision.curso_id;
+                          return (
+                            <tr key={curso.id}>
+                              <td className="gm-asignar-curso-nombre">{curso.nombre}</td>
+                              <td className="gm-asignar-curso-codigo">{curso.id}</td>
+                              <td className="gm-asignar-curso-categoria">{curso.nombre}</td>
+                              <td>
+                                {estaAsignado ? (
+                                  <span style={{ color: '#10b981', fontWeight: '500' }}>✓ Asignada</span>
+                                ) : (
+                                  <span style={{ color: '#6b7280' }}>No asignada</span>
+                                )}
+                              </td>
+                              <td>
+                                {!estaAsignado ? (
+                                  <button
+                                    className="gm-asignar-btn-curso"
+                                    onClick={() => handleAsignarACurso(curso)}
+                                  >
+                                    Asignar
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="gm-asignar-btn-curso"
+                                    onClick={() => handleEliminarAsignacion(curso)}
+                                    style={{
+                                      backgroundColor: '#ef4444',
+                                      borderColor: '#ef4444'
+                                    }}
+                                  >
+                                    Eliminar asignación
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>

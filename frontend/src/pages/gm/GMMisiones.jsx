@@ -29,7 +29,9 @@ function GMMisiones() {
     competencias: [""],
     pistas: [""],
     descripcion: "",
-    competenciasDescripcion: ""
+    competenciasDescripcion: "",
+    fechaEntrega: "",
+    xpRecompensa: 100
   });
   const [errores, setErrores] = useState({});
   const [mensajeExitoCreacion, setMensajeExitoCreacion] = useState(false);
@@ -124,7 +126,9 @@ function GMMisiones() {
       competencias: [""],
       pistas: [""],
       descripcion: "",
-      competenciasDescripcion: ""
+      competenciasDescripcion: "",
+      fechaEntrega: "",
+      xpRecompensa: 100
     });
     setErrores({});
     setModalCrearAbierto(true);
@@ -141,7 +145,9 @@ function GMMisiones() {
       competencias: [""],
       pistas: [""],
       descripcion: "",
-      competenciasDescripcion: ""
+      competenciasDescripcion: "",
+      fechaEntrega: "",
+      xpRecompensa: 100
     });
     setErrores({});
   };
@@ -281,7 +287,9 @@ function GMMisiones() {
         categoria: categoriaMap[formData.categoria] || 'otros',
         curso_id: parseInt(formData.cursoId),
         competencias: formData.competencias.filter(c => c.trim().length > 0),
-        pistas: formData.pistas.filter(p => p.trim().length > 0)
+        pistas: formData.pistas.filter(p => p.trim().length > 0),
+        fecha_fin: formData.fechaEntrega || null,
+        xp_recompensa: parseInt(formData.xpRecompensa) || 100
       });
 
       if (response.data.success) {
@@ -523,8 +531,8 @@ function GMMisiones() {
                 </div>
               </div>
 
-              {/* Fila: Dificultad, Categoría */}
-              <div className="gm-mision-form-row-dual" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {/* Fila: Dificultad, Categoría, Fecha de Entrega, XP */}
+              <div className="gm-mision-form-row-quad" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem' }}>
                 <div className="admin-usuarios-form-group">
                   <label>Dificultad</label>
                   <select
@@ -551,6 +559,36 @@ function GMMisiones() {
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
+                </div>
+
+                <div className="admin-usuarios-form-group">
+                  <label>Fecha de entrega</label>
+                  <input
+                    type="date"
+                    name="fechaEntrega"
+                    value={formData.fechaEntrega}
+                    onChange={handleInputChange}
+                    placeholder="Fecha de entrega"
+                  />
+                </div>
+
+                <div className="admin-usuarios-form-group">
+                  <label>XP Recompensa</label>
+                  <input
+                    type="number"
+                    name="xpRecompensa"
+                    value={formData.xpRecompensa}
+                    onChange={handleInputChange}
+                    min="0"
+                    max="1000"
+                    placeholder="XP"
+                    required
+                  />
+                  <div className="gm-mision-field-hint">
+                    <span className={formData.xpRecompensa > 0 ? "valid" : ""}>
+                      XP que ganará el estudiante
+                    </span>
+                  </div>
                 </div>
               </div>
 

@@ -72,6 +72,22 @@ function GMInicio() {
     }
   };
 
+  // Función para formatear fecha
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return '-';
+    const fecha = new Date(fechaISO);
+    const dia = fecha.getDate().toString().padStart(2, '0');
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const año = fecha.getFullYear();
+    return `${dia}/${mes}/${año}`;
+  };
+
+  // Función para formatear porcentaje
+  const formatearPorcentaje = (valor) => {
+    if (valor === null || valor === undefined) return '0';
+    return Math.round(parseFloat(valor)).toString();
+  };
+
   // Funciones de manejo de eventos
   const handleRevisarMision = (evaluacionId) => {
     navigate(`/gm/evaluaciones/${evaluacionId}`);
@@ -178,7 +194,7 @@ function GMInicio() {
                       <tr key={item.id}>
                         <td className="gm-student-name">{item.estudiante}</td>
                         <td className="gm-mission-desc">{item.mision}</td>
-                        <td className="gm-mission-date">{item.fechaEntrega}</td>
+                        <td className="gm-mission-date">{formatearFecha(item.fechaEntrega)}</td>
                         <td>
                           <button
                             className="gm-mission-action-btn"
@@ -214,20 +230,23 @@ function GMInicio() {
             <div className="gm-panel-body">
               {estadoAvanceCursos.length > 0 ? (
                 <div className="gm-progress-list">
-                  {estadoAvanceCursos.map((curso, index) => (
-                    <div key={index} className="gm-progress-item">
-                      <div className="gm-progress-header">
-                        <span className="gm-progress-name">{curso.nombre}</span>
-                        <span className="gm-progress-percent">{curso.progreso}%</span>
+                  {estadoAvanceCursos.map((curso, index) => {
+                    const progreso = formatearPorcentaje(curso.progreso);
+                    return (
+                      <div key={index} className="gm-progress-item">
+                        <div className="gm-progress-header">
+                          <span className="gm-progress-name">{curso.nombre}</span>
+                          <span className="gm-progress-percent">{progreso}%</span>
+                        </div>
+                        <div className="gm-progress-bar-bg">
+                          <div
+                            className="gm-progress-bar-fill"
+                            style={{ width: `${progreso}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="gm-progress-bar-bg">
-                        <div
-                          className="gm-progress-bar-fill"
-                          style={{ width: `${curso.progreso}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">

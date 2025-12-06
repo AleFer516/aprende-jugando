@@ -100,13 +100,25 @@ function EstudianteMisionDetalle() {
       <div className="mision-detalle-overlay">
         {/* Header con nombre de la misión */}
         <div className="mision-detalle-header">
-        <h1 className="mision-detalle-title">{mision.titulo}</h1>
+        <h1 className="mision-detalle-title">{mision.titulo || mision.nombre}</h1>
         <div className="mision-detalle-badges">
           <span className={`badge-dificultad ${getDificultadClass(mision.dificultad)}`}>
             Dificultad: {capitalizarDificultad(mision.dificultad)}
           </span>
           {mision.categoria && (
             <span className="badge-categoria">Categoría: {mision.categoria}</span>
+          )}
+          {mision.xp_recompensa && (
+            <span className="badge-xp">+{mision.xp_recompensa} XP</span>
+          )}
+          {mision.fecha_fin && (
+            <span className="badge-fecha">
+              Entrega: {new Date(mision.fecha_fin).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              })}
+            </span>
           )}
         </div>
       </div>
@@ -174,11 +186,11 @@ function EstudianteMisionDetalle() {
               </div>
             )}
 
-            {/* Retroalimentación */}
-            {mision.retroalimentacion && (
+            {/* Retroalimentación del GM (si la misión fue evaluada) */}
+            {mision.retroalimentacion_gm && (mision.estado === 'aprobada' || mision.estado === 'rechazada') && (
               <div className="mision-detalle-card">
-                <h2 className="card-titulo">Retroalimentación</h2>
-                <p className="card-texto">{mision.retroalimentacion}</p>
+                <h2 className="card-titulo">Retroalimentación del GM</h2>
+                <p className="card-texto">{mision.retroalimentacion_gm}</p>
               </div>
             )}
           </div>
@@ -224,7 +236,7 @@ function EstudianteMisionDetalle() {
                 )}
               </div>
             </div>
-            {mision.retroalimentacion && (
+            {mision.retroalimentacion_gm && (
               <div style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 padding: '1rem',
@@ -243,7 +255,7 @@ function EstudianteMisionDetalle() {
                   lineHeight: '1.6',
                   color: 'var(--text-muted)'
                 }}>
-                  {mision.retroalimentacion}
+                  {mision.retroalimentacion_gm}
                 </p>
               </div>
             )}

@@ -1,5 +1,12 @@
 const pool = require('../db');
 const { registrarActividad } = require('../utils/actividadLogger');
+const { exec } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const util = require('util');
+
+// Convertir exec a promesa
+const execPromise = util.promisify(exec);
 
 // Obtener configuración general
 const getConfiguracion = async (req, res) => {
@@ -14,6 +21,7 @@ const getConfiguracion = async (req, res) => {
         politicas_password,
         autenticacion,
         respaldo_automatico,
+        frecuencia_respaldo,
         ultimo_respaldo,
         tamano_backup
       FROM configuracion_sistema
@@ -99,6 +107,7 @@ const getConfiguracion = async (req, res) => {
         politicasPassword: politicasPassword,
         autenticacion: autenticacion,
         respaldoAutomatico: configData.respaldo_automatico,
+        frecuenciaRespaldo: configData.frecuencia_respaldo || 'diaria',
         ultimoRespaldo: configData.ultimo_respaldo || 'Nunca',
         tamanoBackup: configData.tamano_backup || '0 MB'
       }
@@ -216,24 +225,139 @@ const actualizarAutenticacion = async (req, res) => {
 // Generar respaldo de base de datos
 const generarRespaldo = async (req, res) => {
   try {
-    // Aquí iría la lógica real de respaldo
-    // Por ahora solo actualizamos la fecha del último respaldo
+    console.log('🔵 Iniciando generación de respaldo...');
 
+    // Crear nombre de archivo con fecha y hora
+    const fecha = new Date();
+    const nombreArchivo = `backup_${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}_${String(fecha.getHours()).padStart(2, '0')}-${String(fecha.getMinutes()).padStart(2, '0')}-${String(fecha.getSeconds()).padStart(2, '0')}.sql`;
+
+    // Ruta del directorio de backups
+    const dirBackups = path.join(__dirname, '../../backups');
+    const rutaBackup = path.join(dirBackups, nombreArchivo);
+
+    console.log('📁 Ruta del backup:', rutaBackup);
+
+    // Asegurar que existe el directorio
+    if (!fs.existsSync(dirBackups)) {
+      console.log('📂 Creando directorio de backups...');
+      fs.mkdirSync(dirBackups, { recursive: true });
+    }
+
+    // Obtener credenciales de la base de datos desde variables de entorno
+    const dbHost = process.env.DB_HOST || 'localhost';
+    const dbUser = process.env.DB_USER || 'root';
+    const dbPassword = process.env.DB_PASSWORD || '';
+    const dbName = process.env.DB_NAME || 'aprende_jugando';
+    const dbPort = process.env.DB_PORT || '3306';
+
+    console.log('🔑 Configuración DB:', { dbHost, dbUser, dbName, dbPort });
+
+    // Construir comando mysqldump
+    // Nota: En Windows, mysqldump debe estar en el PATH o usar ruta completa
+    // Intentar encontrar mysqldump en rutas comunes si no está en PATH
+    let mysqldumpPath = 'mysqldump';
+
+    // Rutas comunes de MySQL/MariaDB en Windows
+    // Intentar primero con MySQL de WAMP antes que MariaDB para evitar problemas de plugins
+    const rutasComunes = [
+      'D:\\wamp64\\bin\\mysql\\mysql8.0.27\\bin\\mysqldump.exe',
+      'D:\\wamp64\\bin\\mysql\\mysql8.3.0\\bin\\mysqldump.exe',
+      'D:\\wamp64\\bin\\mysql\\mysql5.7.36\\bin\\mysqldump.exe',
+      'C:\\wamp64\\bin\\mysql\\mysql8.0.27\\bin\\mysqldump.exe',
+      'C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe',
+      'C:\\Program Files\\MySQL\\MySQL Server 5.7\\bin\\mysqldump.exe',
+      'D:\\wamp64\\bin\\mariadb\\mariadb11.3.2\\bin\\mysqldump.exe',
+      'C:\\xampp\\mysql\\bin\\mysqldump.exe'
+    ];
+
+    // Intentar encontrar mysqldump en rutas comunes
+    for (const ruta of rutasComunes) {
+      if (fs.existsSync(ruta)) {
+        mysqldumpPath = `"${ruta}"`;
+        console.log(`✅ mysqldump encontrado en: ${ruta}`);
+        break;
+      }
+    }
+
+    let comando;
+    if (dbPassword) {
+      comando = `${mysqldumpPath} --default-auth=mysql_native_password -h ${dbHost} -P ${dbPort} -u ${dbUser} -p${dbPassword} ${dbName} > "${rutaBackup}"`;
+    } else {
+      comando = `${mysqldumpPath} --default-auth=mysql_native_password -h ${dbHost} -P ${dbPort} -u ${dbUser} ${dbName} > "${rutaBackup}"`;
+    }
+
+    console.log('⚙️ Ejecutando mysqldump...');
+
+    // Ejecutar mysqldump
+    await execPromise(comando);
+
+    console.log('✅ Backup generado exitosamente');
+
+    // Verificar que el archivo se creó y obtener su tamaño
+    if (!fs.existsSync(rutaBackup)) {
+      throw new Error('El archivo de respaldo no se generó correctamente');
+    }
+
+    const stats = fs.statSync(rutaBackup);
+    const tamanoMB = (stats.size / (1024 * 1024)).toFixed(2);
+
+    console.log(`📊 Tamaño del backup: ${tamanoMB} MB`);
+
+    // Actualizar configuración en la base de datos
     await pool.query(`
       UPDATE configuracion_sistema
-      SET ultimo_respaldo = NOW()
+      SET ultimo_respaldo = NOW(),
+          tamano_backup = ?
       WHERE id = 1
-    `);
+    `, [`${tamanoMB} MB`]);
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Admin';
+    await registrarActividad(
+      `Respaldo de base de datos generado: ${nombreArchivo} (${tamanoMB} MB)`,
+      usuario,
+      'sistema'
+    );
+
+    // Limpiar backups antiguos (mantener solo los últimos 10)
+    const archivos = fs.readdirSync(dirBackups)
+      .filter(file => file.endsWith('.sql'))
+      .map(file => ({
+        nombre: file,
+        ruta: path.join(dirBackups, file),
+        fecha: fs.statSync(path.join(dirBackups, file)).mtime
+      }))
+      .sort((a, b) => b.fecha - a.fecha);
+
+    // Eliminar backups antiguos si hay más de 10
+    if (archivos.length > 10) {
+      const porEliminar = archivos.slice(10);
+      porEliminar.forEach(archivo => {
+        fs.unlinkSync(archivo.ruta);
+        console.log(`🗑️ Backup antiguo eliminado: ${archivo.nombre}`);
+      });
+    }
 
     res.json({
       success: true,
-      message: 'Respaldo generado exitosamente'
+      message: 'Respaldo generado exitosamente',
+      nombreArchivo,
+      tamano: `${tamanoMB} MB`
     });
   } catch (error) {
-    console.error('Error al generar respaldo:', error);
+    console.error('❌ Error al generar respaldo:', error);
+
+    // Mensaje de error más específico
+    let mensaje = 'Error al generar respaldo';
+    if (error.message.includes('mysqldump')) {
+      mensaje = 'Error: mysqldump no encontrado. Asegúrate de que MySQL esté instalado y en el PATH del sistema.';
+    } else if (error.message.includes('Access denied')) {
+      mensaje = 'Error: Credenciales de base de datos incorrectas.';
+    }
+
     res.status(500).json({
       success: false,
-      message: 'Error al generar respaldo',
+      message: mensaje,
       error: error.message
     });
   }
@@ -242,13 +366,40 @@ const generarRespaldo = async (req, res) => {
 // Actualizar configuración de respaldo automático
 const actualizarRespaldoAutomatico = async (req, res) => {
   try {
-    const { respaldoAutomatico } = req.body;
+    const { respaldoAutomatico, frecuenciaRespaldo } = req.body;
 
-    await pool.query(`
-      UPDATE configuracion_sistema
-      SET respaldo_automatico = ?
-      WHERE id = 1
-    `, [respaldoAutomatico]);
+    // Construir query dinámicamente según los campos recibidos
+    let query = 'UPDATE configuracion_sistema SET ';
+    const params = [];
+    const updates = [];
+
+    if (respaldoAutomatico !== undefined) {
+      updates.push('respaldo_automatico = ?');
+      params.push(respaldoAutomatico);
+    }
+
+    if (frecuenciaRespaldo !== undefined) {
+      updates.push('frecuencia_respaldo = ?');
+      params.push(frecuenciaRespaldo);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se proporcionaron datos para actualizar'
+      });
+    }
+
+    query += updates.join(', ') + ' WHERE id = 1';
+    await pool.query(query, params);
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Admin';
+    await registrarActividad(
+      `Configuración de respaldo actualizada: ${respaldoAutomatico ? 'activado' : 'desactivado'}${frecuenciaRespaldo ? `, frecuencia: ${frecuenciaRespaldo}` : ''}`,
+      usuario,
+      'configuracion'
+    );
 
     res.json({
       success: true,
@@ -538,6 +689,249 @@ const eliminarRol = async (req, res) => {
   }
 };
 
+// Ejecutar diagnóstico del sistema
+const ejecutarDiagnostico = async (req, res) => {
+  try {
+    console.log('🔍 Iniciando diagnóstico del sistema...');
+
+    const resultados = {
+      baseDatos: { estado: 'ok', mensaje: '', detalles: [] },
+      rendimiento: { estado: 'ok', mensaje: '', detalles: [] },
+      mantenimiento: { estado: 'ok', mensaje: '', detalles: [] },
+      seguridad: { estado: 'ok', mensaje: '', detalles: [] }
+    };
+
+    // 1. DIAGNÓSTICO DE BASE DE DATOS
+    try {
+      // Verificar conexión
+      const [dbTest] = await pool.query('SELECT 1 as test');
+      resultados.baseDatos.detalles.push({ tipo: 'ok', mensaje: 'Conexión a base de datos: OK' });
+
+      // Tamaño de la base de datos
+      const [dbSize] = await pool.query(`
+        SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as tamano_mb
+        FROM information_schema.TABLES
+        WHERE table_schema = ?
+      `, [process.env.DB_NAME || 'aprende_jugando']);
+
+      const tamanoMB = dbSize[0].tamano_mb;
+      resultados.baseDatos.detalles.push({
+        tipo: tamanoMB > 500 ? 'warning' : 'ok',
+        mensaje: `Tamaño de BD: ${tamanoMB} MB ${tamanoMB > 500 ? '(considerar optimización)' : ''}`
+      });
+
+      // Contar tablas
+      const [tablas] = await pool.query(`
+        SELECT COUNT(*) as total
+        FROM information_schema.TABLES
+        WHERE table_schema = ?
+      `, [process.env.DB_NAME || 'aprende_jugando']);
+      resultados.baseDatos.detalles.push({ tipo: 'ok', mensaje: `Tablas en la BD: ${tablas[0].total}` });
+
+      resultados.baseDatos.mensaje = 'Base de datos operativa';
+    } catch (error) {
+      resultados.baseDatos.estado = 'error';
+      resultados.baseDatos.mensaje = 'Error en conexión a base de datos';
+      resultados.baseDatos.detalles.push({ tipo: 'error', mensaje: error.message });
+    }
+
+    // 2. DIAGNÓSTICO DE RENDIMIENTO
+    try {
+      // Contar usuarios totales
+      const [usuarios] = await pool.query('SELECT COUNT(*) as total FROM usuarios');
+      resultados.rendimiento.detalles.push({ tipo: 'ok', mensaje: `Usuarios totales: ${usuarios[0].total}` });
+
+      // Usuarios activos (últimos 30 días)
+      const [usuariosActivos] = await pool.query(`
+        SELECT COUNT(*) as total
+        FROM usuarios
+        WHERE ultimo_acceso >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      `);
+      const porcentajeActivos = ((usuariosActivos[0].total / usuarios[0].total) * 100).toFixed(1);
+      resultados.rendimiento.detalles.push({
+        tipo: porcentajeActivos > 20 ? 'ok' : 'warning',
+        mensaje: `Usuarios activos (30d): ${usuariosActivos[0].total} (${porcentajeActivos}%)`
+      });
+
+      // Misiones totales
+      const [misiones] = await pool.query('SELECT COUNT(*) as total FROM misiones');
+      resultados.rendimiento.detalles.push({ tipo: 'ok', mensaje: `Misiones creadas: ${misiones[0].total}` });
+
+      // Progreso de misiones
+      const [progresoMisiones] = await pool.query(`
+        SELECT COUNT(*) as total FROM estudiante_misiones WHERE progreso > 0
+      `);
+      resultados.rendimiento.detalles.push({ tipo: 'ok', mensaje: `Misiones en progreso: ${progresoMisiones[0].total}` });
+
+      resultados.rendimiento.mensaje = 'Rendimiento del sistema óptimo';
+    } catch (error) {
+      resultados.rendimiento.estado = 'warning';
+      resultados.rendimiento.mensaje = 'Error al analizar rendimiento';
+      resultados.rendimiento.detalles.push({ tipo: 'error', mensaje: error.message });
+    }
+
+    // 3. DIAGNÓSTICO DE MANTENIMIENTO
+    try {
+      // Logs antiguos (más de 90 días)
+      const [logsAntiguos] = await pool.query(`
+        SELECT COUNT(*) as total
+        FROM actividad_admin
+        WHERE fecha < DATE_SUB(NOW(), INTERVAL 90 DAY)
+      `);
+
+      if (logsAntiguos[0].total > 0) {
+        resultados.mantenimiento.estado = 'warning';
+        resultados.mantenimiento.detalles.push({
+          tipo: 'warning',
+          mensaje: `${logsAntiguos[0].total} logs antiguos (>90 días) - Considerar limpieza`
+        });
+      } else {
+        resultados.mantenimiento.detalles.push({ tipo: 'ok', mensaje: 'No hay logs antiguos que limpiar' });
+      }
+
+      // Cuentas inactivas (sin acceso en 6 meses)
+      const [cuentasInactivas] = await pool.query(`
+        SELECT COUNT(*) as total
+        FROM usuarios
+        WHERE ultimo_acceso < DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        OR ultimo_acceso IS NULL
+      `);
+
+      if (cuentasInactivas[0].total > 0) {
+        resultados.mantenimiento.detalles.push({
+          tipo: 'info',
+          mensaje: `${cuentasInactivas[0].total} cuentas inactivas (>6 meses)`
+        });
+      } else {
+        resultados.mantenimiento.detalles.push({ tipo: 'ok', mensaje: 'No hay cuentas inactivas' });
+      }
+
+      // Misiones sin actividad (creadas hace más de 1 año sin estudiantes)
+      const [misionesInactivas] = await pool.query(`
+        SELECT COUNT(*) as total
+        FROM misiones m
+        LEFT JOIN estudiante_misiones em ON m.id = em.mision_id
+        WHERE m.created_at < DATE_SUB(NOW(), INTERVAL 1 YEAR)
+        AND em.id IS NULL
+      `);
+
+      if (misionesInactivas[0].total > 0) {
+        resultados.mantenimiento.detalles.push({
+          tipo: 'info',
+          mensaje: `${misionesInactivas[0].total} misiones sin uso (>1 año)`
+        });
+      } else {
+        resultados.mantenimiento.detalles.push({ tipo: 'ok', mensaje: 'No hay misiones inactivas' });
+      }
+
+      if (resultados.mantenimiento.estado === 'ok') {
+        resultados.mantenimiento.mensaje = 'Sistema limpio y optimizado';
+      } else {
+        resultados.mantenimiento.mensaje = 'Se recomienda mantenimiento';
+      }
+    } catch (error) {
+      resultados.mantenimiento.estado = 'warning';
+      resultados.mantenimiento.mensaje = 'Error al analizar mantenimiento';
+      resultados.mantenimiento.detalles.push({ tipo: 'error', mensaje: error.message });
+    }
+
+    // 4. DIAGNÓSTICO DE SEGURIDAD Y RESPALDOS
+    try {
+      // Verificar último respaldo
+      const [configRespaldo] = await pool.query(`
+        SELECT ultimo_respaldo, respaldo_automatico, frecuencia_respaldo
+        FROM configuracion_sistema
+        WHERE id = 1
+      `);
+
+      if (configRespaldo[0] && configRespaldo[0].ultimo_respaldo) {
+        const diasDesdeRespaldo = Math.floor((new Date() - new Date(configRespaldo[0].ultimo_respaldo)) / (1000 * 60 * 60 * 24));
+
+        if (diasDesdeRespaldo > 7) {
+          resultados.seguridad.estado = 'warning';
+          resultados.seguridad.detalles.push({
+            tipo: 'warning',
+            mensaje: `Último respaldo hace ${diasDesdeRespaldo} días - Generar nuevo respaldo`
+          });
+        } else {
+          resultados.seguridad.detalles.push({
+            tipo: 'ok',
+            mensaje: `Último respaldo hace ${diasDesdeRespaldo} día(s)`
+          });
+        }
+
+        if (configRespaldo[0].respaldo_automatico) {
+          resultados.seguridad.detalles.push({
+            tipo: 'ok',
+            mensaje: `Respaldo automático: Activo (${configRespaldo[0].frecuencia_respaldo})`
+          });
+        } else {
+          resultados.seguridad.estado = 'warning';
+          resultados.seguridad.detalles.push({
+            tipo: 'warning',
+            mensaje: 'Respaldo automático: Desactivado'
+          });
+        }
+      } else {
+        resultados.seguridad.estado = 'error';
+        resultados.seguridad.detalles.push({ tipo: 'error', mensaje: 'No se ha generado ningún respaldo' });
+      }
+
+      // Contar admins
+      const [admins] = await pool.query(`
+        SELECT COUNT(*) as total FROM usuarios WHERE rol = 'admin'
+      `);
+      resultados.seguridad.detalles.push({
+        tipo: admins[0].total > 0 ? 'ok' : 'error',
+        mensaje: `Administradores: ${admins[0].total}`
+      });
+
+      if (resultados.seguridad.estado === 'ok') {
+        resultados.seguridad.mensaje = 'Seguridad y respaldos configurados correctamente';
+      } else if (resultados.seguridad.estado === 'warning') {
+        resultados.seguridad.mensaje = 'Advertencias de seguridad detectadas';
+      } else {
+        resultados.seguridad.mensaje = 'Problemas críticos de seguridad';
+      }
+    } catch (error) {
+      resultados.seguridad.estado = 'error';
+      resultados.seguridad.mensaje = 'Error al verificar seguridad';
+      resultados.seguridad.detalles.push({ tipo: 'error', mensaje: error.message });
+    }
+
+    // Determinar estado general
+    let estadoGeneral = 'ok';
+    if (Object.values(resultados).some(r => r.estado === 'error')) {
+      estadoGeneral = 'error';
+    } else if (Object.values(resultados).some(r => r.estado === 'warning')) {
+      estadoGeneral = 'warning';
+    }
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Admin';
+    await registrarActividad(
+      `Diagnóstico del sistema ejecutado - Estado: ${estadoGeneral}`,
+      usuario,
+      'sistema'
+    );
+
+    console.log('✅ Diagnóstico completado');
+
+    res.json({
+      success: true,
+      estadoGeneral,
+      resultados
+    });
+  } catch (error) {
+    console.error('❌ Error al ejecutar diagnóstico:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al ejecutar diagnóstico del sistema',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getConfiguracion,
   actualizarConfiguracion,
@@ -545,6 +939,7 @@ module.exports = {
   actualizarAutenticacion,
   generarRespaldo,
   actualizarRespaldoAutomatico,
+  ejecutarDiagnostico,
   subirLogo,
   getRoles,
   crearRol,

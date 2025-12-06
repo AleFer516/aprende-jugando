@@ -105,7 +105,7 @@ const obtenerMisionPorId = async (req, res) => {
     // Para cada actividad, obtener sus opciones
     for (let actividad of actividades) {
       const [opciones] = await db.query(
-        'SELECT id, valor, es_correcta, orden FROM actividad_opciones WHERE actividad_id = ? ORDER BY orden',
+        'SELECT id, texto, es_correcta, orden FROM actividad_opciones WHERE actividad_id = ? ORDER BY orden',
         [actividad.id]
       );
       actividad.opciones = opciones;
@@ -114,7 +114,6 @@ const obtenerMisionPorId = async (req, res) => {
     // Obtener estadísticas de estudiantes
     const [estadisticas] = await db.query(
       `SELECT
-        COUNT(DISTINCT em.estudiante_rut) as total_estudiantes,
         COUNT(DISTINCT em.estudiante_rut) as total_estudiantes,
         COUNT(DISTINCT CASE WHEN em.estado = 'completada' THEN em.estudiante_rut END) as completados,
         COUNT(DISTINCT CASE WHEN em.estado = 'en_progreso' THEN em.estudiante_rut END) as en_progreso,
@@ -437,10 +436,245 @@ const eliminarMision = async (req, res) => {
   }
 };
 
+// Obtener progreso de estudiantes en una misión específica por curso
+const obtenerProgresoEstudiantes = async (req, res) => {
+  try {
+    const { id, cursoId } = req.params;
+    const gmRut = req.usuario.rut;
+
+    // Verificar que la misión pertenece al GM
+    const [misiones] = await db.query(
+      'SELECT id FROM misiones WHERE id = ? AND creador_rut = ?',
+      [id, gmRut]
+    );
+
+    if (misiones.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Misión no encontrada'
+      });
+    }
+
+    // Obtener estudiantes del curso con su progreso en esta misión
+    const [estudiantes] = await db.query(
+      `SELECT
+        u.rut,
+        u.nombre,
+        u.nivel,
+        u.experiencia,
+        COALESCE(em.progreso, 0) as progreso,
+        COALESCE(em.estado, 'no_iniciada') as estado
+      FROM curso_estudiantes ce
+      INNER JOIN usuarios u ON ce.estudiante_rut = u.rut
+      LEFT JOIN estudiante_misiones em ON em.estudiante_rut = u.rut AND em.mision_id = ?
+      WHERE ce.curso_id = ?
+      ORDER BY u.nombre ASC`,
+      [id, cursoId]
+    );
+
+    res.json({
+      success: true,
+      estudiantes
+    });
+  } catch (error) {
+    console.error('Error al obtener progreso de estudiantes:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener progreso de estudiantes',
+      error: error.message
+    });
+  }
+};
+
+// Asignar misión a un curso
+const asignarMisionACurso = async (req, res) => {
+  try {
+    const { id, cursoId } = req.params;
+    const gmRut = req.usuario.rut;
+
+    // Verificar que la misión pertenece al GM
+    const [misiones] = await db.query(
+      'SELECT id, titulo, curso_id FROM misiones WHERE id = ? AND creador_rut = ?',
+      [id, gmRut]
+    );
+
+    if (misiones.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Misión no encontrada'
+      });
+    }
+
+    const mision = misiones[0];
+
+    // Verificar si la misión ya está asignada a este curso (NULL significa no asignado)
+    if (mision.curso_id && mision.curso_id == cursoId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Esta misión ya está asignada a este curso'
+      });
+    }
+
+    // Verificar si la misión ya está asignada a otro curso
+    if (mision.curso_id && mision.curso_id != cursoId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Esta misión ya está asignada a otro curso. No se puede asignar a múltiples cursos.'
+      });
+    }
+
+    // Verificar que el curso existe
+    const [cursos] = await db.query(
+      'SELECT id, nombre FROM cursos WHERE id = ?',
+      [cursoId]
+    );
+
+    if (cursos.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Curso no encontrado'
+      });
+    }
+
+    const curso = cursos[0];
+
+    // Actualizar el curso_id de la misión
+    await db.query(
+      'UPDATE misiones SET curso_id = ? WHERE id = ?',
+      [cursoId, id]
+    );
+
+    // Asignar la misión a todos los estudiantes del curso
+    await db.query(
+      `INSERT INTO estudiante_misiones (estudiante_rut, mision_id, estado, progreso)
+      SELECT ce.estudiante_rut, ?, 'no_iniciada', 0
+      FROM curso_estudiantes ce
+      WHERE ce.curso_id = ?
+      ON DUPLICATE KEY UPDATE mision_id = mision_id`,
+      [id, cursoId]
+    );
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Game Master';
+    await registrarActividad(
+      `Misión "${mision.titulo}" asignada al curso ${curso.nombre}`,
+      usuario,
+      'sistema'
+    );
+
+    res.json({
+      success: true,
+      message: 'Misión asignada exitosamente al curso'
+    });
+  } catch (error) {
+    console.error('Error al asignar misión a curso:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al asignar misión a curso',
+      error: error.message
+    });
+  }
+};
+
+// Eliminar asignación de misión a un curso
+const eliminarAsignacionCurso = async (req, res) => {
+  try {
+    const { id, cursoId } = req.params;
+    const gmRut = req.usuario.rut;
+
+    // Verificar que la misión pertenece al GM
+    const [misiones] = await db.query(
+      'SELECT id, titulo, curso_id FROM misiones WHERE id = ? AND creador_rut = ?',
+      [id, gmRut]
+    );
+
+    if (misiones.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Misión no encontrada'
+      });
+    }
+
+    const mision = misiones[0];
+
+    // Verificar si la misión está asignada a este curso (NULL significa no asignado)
+    if (!mision.curso_id || mision.curso_id != cursoId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Esta misión no está asignada a este curso'
+      });
+    }
+
+    // Verificar si algún estudiante del curso ya inició la misión
+    // Se considera "iniciada" si el estado es diferente de 'no_iniciada' O si el progreso es mayor a 0
+    const [estudiantesConProgreso] = await db.query(
+      `SELECT COUNT(*) as total
+      FROM estudiante_misiones em
+      INNER JOIN curso_estudiantes ce ON em.estudiante_rut = ce.estudiante_rut
+      WHERE em.mision_id = ?
+        AND ce.curso_id = ?
+        AND (em.estado != 'no_iniciada' OR em.progreso > 0)`,
+      [id, cursoId]
+    );
+
+    if (estudiantesConProgreso[0].total > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se puede eliminar la asignación porque uno o más estudiantes ya han iniciado esta misión.'
+      });
+    }
+
+    // Obtener nombre del curso antes de eliminar la asignación
+    const [cursos] = await db.query(
+      'SELECT nombre FROM cursos WHERE id = ?',
+      [cursoId]
+    );
+
+    const nombreCurso = cursos.length > 0 ? cursos[0].nombre : 'curso';
+
+    // Eliminar la asignación de la misión a todos los estudiantes del curso
+    await db.query(
+      `DELETE em FROM estudiante_misiones em
+      INNER JOIN curso_estudiantes ce ON em.estudiante_rut = ce.estudiante_rut
+      WHERE em.mision_id = ? AND ce.curso_id = ?`,
+      [id, cursoId]
+    );
+
+    // Actualizar el curso_id de la misión a NULL para desasignarla
+    await db.query(
+      'UPDATE misiones SET curso_id = NULL WHERE id = ?',
+      [id]
+    );
+
+    // Registrar actividad
+    const usuario = req.usuario ? req.usuario.nombre : 'Game Master';
+    await registrarActividad(
+      `Asignación de misión "${mision.titulo}" eliminada del curso ${nombreCurso}`,
+      usuario,
+      'sistema'
+    );
+
+    res.json({
+      success: true,
+      message: 'Asignación de misión eliminada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al eliminar asignación de misión:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar asignación de misión',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   obtenerMisiones,
   obtenerMisionPorId,
   crearMision,
   actualizarMision,
-  eliminarMision
+  eliminarMision,
+  obtenerProgresoEstudiantes,
+  asignarMisionACurso,
+  eliminarAsignacionCurso
 };

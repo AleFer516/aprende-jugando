@@ -9,6 +9,7 @@ const {
   actualizarAutenticacion,
   generarRespaldo,
   actualizarRespaldoAutomatico,
+  ejecutarDiagnostico,
   subirLogo,
   getRoles,
   crearRol,
@@ -55,6 +56,7 @@ router.put('/politicas-password', actualizarPoliticasPassword);
 router.put('/autenticacion', actualizarAutenticacion);
 router.post('/respaldo', generarRespaldo);
 router.put('/respaldo-automatico', actualizarRespaldoAutomatico);
+router.post('/diagnostico', ejecutarDiagnostico);
 router.post('/logo', upload.single('logo'), subirLogo);
 
 // Rutas de roles

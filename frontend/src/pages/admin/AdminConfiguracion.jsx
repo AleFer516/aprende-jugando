@@ -33,6 +33,7 @@ function AdminConfiguracion() {
 
   const [backupConfig, setBackupConfig] = useState({
     respaldoAutomatico: true,
+    frecuenciaRespaldo: 'diaria',
     ultimaEjecucion: "Hace 2 días",
     tamanoActual: "175 MB",
   });
@@ -41,6 +42,8 @@ function AdminConfiguracion() {
   const [ejecutandoDiagnostico, setEjecutandoDiagnostico] = useState(false);
   const [mensajeToast, setMensajeToast] = useState(null);
   const [tipoToast, setTipoToast] = useState("success");
+  const [modalDiagnosticoAbierto, setModalDiagnosticoAbierto] = useState(false);
+  const [resultadosDiagnostico, setResultadosDiagnostico] = useState(null);
 
   // Modal creación de rol
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -104,6 +107,7 @@ function AdminConfiguracion() {
 
           setBackupConfig({
             respaldoAutomatico: config.respaldoAutomatico || true,
+            frecuenciaRespaldo: config.frecuenciaRespaldo || 'diaria',
             ultimaEjecucion: config.ultimoRespaldo || "Nunca",
             tamanoActual: config.tamanoBackup || "0 MB",
           });
@@ -181,11 +185,43 @@ function AdminConfiguracion() {
     setAuthConfig((prev) => ({ ...prev, twoFactor: !prev.twoFactor }));
   };
 
-  const toggleRespAuto = () => {
-    setBackupConfig((prev) => ({
-      ...prev,
-      respaldoAutomatico: !prev.respaldoAutomatico,
-    }));
+  const toggleRespAuto = async () => {
+    try {
+      const nuevoEstado = !backupConfig.respaldoAutomatico;
+
+      const response = await adminService.actualizarRespaldoAutomatico(nuevoEstado);
+
+      if (response.success) {
+        setBackupConfig((prev) => ({
+          ...prev,
+          respaldoAutomatico: nuevoEstado,
+        }));
+        mostrarToast(`Respaldo automático ${nuevoEstado ? 'activado' : 'desactivado'} correctamente.`);
+      }
+    } catch (error) {
+      console.error('Error al actualizar respaldo automático:', error);
+      mostrarToast(error.response?.data?.message || 'Error al actualizar respaldo automático', 'error');
+    }
+  };
+
+  const handleCambiarFrecuencia = async (nuevaFrecuencia) => {
+    try {
+      const response = await adminService.actualizarRespaldoAutomatico(
+        backupConfig.respaldoAutomatico,
+        nuevaFrecuencia
+      );
+
+      if (response.success) {
+        setBackupConfig((prev) => ({
+          ...prev,
+          frecuenciaRespaldo: nuevaFrecuencia,
+        }));
+        mostrarToast(`Frecuencia de respaldo actualizada a: ${nuevaFrecuencia}`);
+      }
+    } catch (error) {
+      console.error('Error al actualizar frecuencia:', error);
+      mostrarToast(error.response?.data?.message || 'Error al actualizar frecuencia', 'error');
+    }
   };
 
   const handleGuardarGeneral = () => {
@@ -196,26 +232,58 @@ function AdminConfiguracion() {
     }, 1200);
   };
 
-  const handleGenerarRespaldo = () => {
-    mostrarToast("Generando respaldo de la base de datos...");
-    setTimeout(() => {
-      setBackupConfig((prev) => ({
-        ...prev,
-        ultimaEjecucion: "Hace unos segundos",
-      }));
-      mostrarToast("Respaldo generado correctamente.");
-    }, 1200);
+  const handleGenerarRespaldo = async () => {
+    try {
+      mostrarToast("Generando respaldo de la base de datos...", "info");
+
+      const response = await adminService.generarRespaldo();
+
+      if (response.success) {
+        setBackupConfig((prev) => ({
+          ...prev,
+          ultimaEjecucion: "Hace unos segundos",
+          tamanoActual: response.tamano || prev.tamanoActual
+        }));
+        mostrarToast(`Respaldo generado correctamente: ${response.nombreArchivo} (${response.tamano})`);
+      }
+    } catch (error) {
+      console.error('Error al generar respaldo:', error);
+      mostrarToast(
+        error.response?.data?.message || 'Error al generar respaldo. Verifica que MySQL esté instalado y configurado.',
+        'error'
+      );
+    }
   };
 
-  const handleDiagnostico = () => {
-    setEjecutandoDiagnostico(true);
-    mostrarToast("Ejecutando diagnóstico del sistema...");
-    setTimeout(() => {
+  const handleDiagnostico = async () => {
+    try {
+      setEjecutandoDiagnostico(true);
+      mostrarToast("Ejecutando diagnóstico del sistema...", "info");
+
+      const response = await adminService.ejecutarDiagnostico();
+
+      if (response.success) {
+        setResultadosDiagnostico(response);
+        setModalDiagnosticoAbierto(true);
+
+        const mensajeEstado = response.estadoGeneral === 'ok'
+          ? 'Diagnóstico completado: Sistema en buen estado'
+          : response.estadoGeneral === 'warning'
+          ? 'Diagnóstico completado: Se encontraron advertencias'
+          : 'Diagnóstico completado: Se encontraron problemas';
+
+        mostrarToast(mensajeEstado, response.estadoGeneral === 'ok' ? 'success' : 'warning');
+      }
+    } catch (error) {
+      console.error('Error al ejecutar diagnóstico:', error);
+      mostrarToast('Error al ejecutar diagnóstico del sistema', 'error');
+    } finally {
       setEjecutandoDiagnostico(false);
-      mostrarToast(
-        "Diagnóstico completado. No se encontraron problemas críticos."
-      );
-    }, 1600);
+    }
+  };
+
+  const cerrarModalDiagnostico = () => {
+    setModalDiagnosticoAbierto(false);
   };
 
   // --- Lógica modal de creación de rol ---
@@ -679,6 +747,23 @@ function AdminConfiguracion() {
                     {backupConfig.tamanoActual}
                   </span>
                 </p>
+                {backupConfig.respaldoAutomatico && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <label className="config-db-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                      Frecuencia de respaldo:
+                    </label>
+                    <select
+                      className="config-select small"
+                      value={backupConfig.frecuenciaRespaldo}
+                      onChange={(e) => handleCambiarFrecuencia(e.target.value)}
+                      style={{ width: '100%' }}
+                    >
+                      <option value="diaria">Diaria</option>
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
           </article>
@@ -816,6 +901,122 @@ function AdminConfiguracion() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de resultados del diagnóstico */}
+      {modalDiagnosticoAbierto && resultadosDiagnostico && (
+        <div className="config-modal-backdrop" onClick={cerrarModalDiagnostico}>
+          <div
+            className="config-modal config-modal-diagnostico"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="config-modal-header">
+              <h2>
+                Resultados del Diagnóstico
+                <span className={`diagnostico-badge diagnostico-badge-${resultadosDiagnostico.estadoGeneral}`}>
+                  {resultadosDiagnostico.estadoGeneral === 'ok' ? '✓ Todo bien' :
+                   resultadosDiagnostico.estadoGeneral === 'warning' ? '⚠ Advertencias' :
+                   '✗ Problemas'}
+                </span>
+              </h2>
+              <button
+                type="button"
+                className="config-modal-close"
+                onClick={cerrarModalDiagnostico}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="config-modal-body config-diagnostico-body">
+              {/* Base de Datos */}
+              <div className="diagnostico-seccion">
+                <h3 className={`diagnostico-titulo diagnostico-titulo-${resultadosDiagnostico.resultados.baseDatos.estado}`}>
+                  <span className="diagnostico-icono">💾</span>
+                  Base de Datos
+                  <span className="diagnostico-estado">{resultadosDiagnostico.resultados.baseDatos.mensaje}</span>
+                </h3>
+                <ul className="diagnostico-lista">
+                  {resultadosDiagnostico.resultados.baseDatos.detalles.map((detalle, index) => (
+                    <li key={index} className={`diagnostico-item diagnostico-item-${detalle.tipo}`}>
+                      <span className="diagnostico-bullet">
+                        {detalle.tipo === 'ok' ? '✓' : detalle.tipo === 'warning' ? '⚠' : '✗'}
+                      </span>
+                      {detalle.mensaje}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Rendimiento */}
+              <div className="diagnostico-seccion">
+                <h3 className={`diagnostico-titulo diagnostico-titulo-${resultadosDiagnostico.resultados.rendimiento.estado}`}>
+                  <span className="diagnostico-icono">⚡</span>
+                  Rendimiento
+                  <span className="diagnostico-estado">{resultadosDiagnostico.resultados.rendimiento.mensaje}</span>
+                </h3>
+                <ul className="diagnostico-lista">
+                  {resultadosDiagnostico.resultados.rendimiento.detalles.map((detalle, index) => (
+                    <li key={index} className={`diagnostico-item diagnostico-item-${detalle.tipo}`}>
+                      <span className="diagnostico-bullet">
+                        {detalle.tipo === 'ok' ? '✓' : detalle.tipo === 'warning' ? '⚠' : '✗'}
+                      </span>
+                      {detalle.mensaje}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Mantenimiento */}
+              <div className="diagnostico-seccion">
+                <h3 className={`diagnostico-titulo diagnostico-titulo-${resultadosDiagnostico.resultados.mantenimiento.estado}`}>
+                  <span className="diagnostico-icono">🔧</span>
+                  Mantenimiento
+                  <span className="diagnostico-estado">{resultadosDiagnostico.resultados.mantenimiento.mensaje}</span>
+                </h3>
+                <ul className="diagnostico-lista">
+                  {resultadosDiagnostico.resultados.mantenimiento.detalles.map((detalle, index) => (
+                    <li key={index} className={`diagnostico-item diagnostico-item-${detalle.tipo}`}>
+                      <span className="diagnostico-bullet">
+                        {detalle.tipo === 'ok' ? '✓' : detalle.tipo === 'warning' ? '⚠' : detalle.tipo === 'info' ? 'ℹ' : '✗'}
+                      </span>
+                      {detalle.mensaje}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Seguridad */}
+              <div className="diagnostico-seccion">
+                <h3 className={`diagnostico-titulo diagnostico-titulo-${resultadosDiagnostico.resultados.seguridad.estado}`}>
+                  <span className="diagnostico-icono">🔒</span>
+                  Seguridad y Respaldos
+                  <span className="diagnostico-estado">{resultadosDiagnostico.resultados.seguridad.mensaje}</span>
+                </h3>
+                <ul className="diagnostico-lista">
+                  {resultadosDiagnostico.resultados.seguridad.detalles.map((detalle, index) => (
+                    <li key={index} className={`diagnostico-item diagnostico-item-${detalle.tipo}`}>
+                      <span className="diagnostico-bullet">
+                        {detalle.tipo === 'ok' ? '✓' : detalle.tipo === 'warning' ? '⚠' : '✗'}
+                      </span>
+                      {detalle.mensaje}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="config-modal-footer">
+              <button
+                type="button"
+                className="config-btn-primary"
+                onClick={cerrarModalDiagnostico}
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

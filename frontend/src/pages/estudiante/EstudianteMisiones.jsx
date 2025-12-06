@@ -14,6 +14,14 @@ function EstudianteMisiones() {
   const [cursoSeleccionado, setCursoSeleccionado] = useState("");
   const [busqueda, setBusqueda] = useState("");
 
+  // Cargar curso guardado desde localStorage al montar el componente
+  useEffect(() => {
+    const cursoGuardado = localStorage.getItem('cursoSeleccionadoEstudiante');
+    if (cursoGuardado) {
+      setCursoSeleccionado(cursoGuardado);
+    }
+  }, []);
+
   useEffect(() => {
     const cargarMisiones = async () => {
       try {
@@ -25,12 +33,20 @@ function EstudianteMisiones() {
         const response = await estudianteService.getMisiones(params);
         if (response.success) {
           setMisiones(response.misiones || []);
-          // Solo actualizar cursos si no hay uno seleccionado
-          if (response.cursos && response.cursos.length > 0 && !cursoSeleccionado) {
+
+          // Actualizar lista de cursos disponibles
+          if (response.cursos && response.cursos.length > 0) {
             setCursos(response.cursos);
-            setCursoSeleccionado(response.cursos[0].id);
-          } else if (response.cursos && cursos.length === 0) {
-            setCursos(response.cursos);
+
+            // Si no hay curso seleccionado, usar el primero o el guardado
+            if (!cursoSeleccionado) {
+              const cursoGuardado = localStorage.getItem('cursoSeleccionadoEstudiante');
+              const cursoInicial = cursoGuardado && response.cursos.find(c => c.id.toString() === cursoGuardado)
+                ? cursoGuardado
+                : response.cursos[0].id.toString();
+              setCursoSeleccionado(cursoInicial);
+              localStorage.setItem('cursoSeleccionadoEstudiante', cursoInicial);
+            }
           }
         }
       } catch (error) {
@@ -42,6 +58,12 @@ function EstudianteMisiones() {
 
     cargarMisiones();
   }, [cursoSeleccionado, busqueda]);
+
+  const handleCambiarCurso = (e) => {
+    const nuevoCurso = e.target.value;
+    setCursoSeleccionado(nuevoCurso);
+    localStorage.setItem('cursoSeleccionadoEstudiante', nuevoCurso);
+  };
 
   const handleVerDetalles = (misionId) => {
     navigate(`/estudiante/misiones/${misionId}`);
@@ -108,7 +130,7 @@ function EstudianteMisiones() {
         <div className="curso-selector">
           <select
             value={cursoSeleccionado}
-            onChange={(e) => setCursoSeleccionado(e.target.value)}
+            onChange={handleCambiarCurso}
             className="curso-select"
           >
             {cursos.map((curso) => (
@@ -234,13 +256,39 @@ function EstudianteMisiones() {
                   </button>
                 </>
               )}
-              {(mision.estado === "completada" || mision.estado === "aprobada" || mision.estado === "rechazada") && (
+              {(mision.estado === "revisando" || mision.estado === "completada") && (
+                <button
+                  className="mision-btn btn-secondary btn-full"
+                  onClick={() => handleVerDetalles(mision.id)}
+                  disabled
+                  style={{ cursor: 'not-allowed', opacity: 0.7 }}
+                >
+                  Pendiente de revisión
+                </button>
+              )}
+              {mision.estado === "aprobada" && (
                 <button
                   className="mision-btn btn-secondary btn-full"
                   onClick={() => handleVerDetalles(mision.id)}
                 >
                   Ver detalles
                 </button>
+              )}
+              {mision.estado === "rechazada" && (
+                <>
+                  <button
+                    className="mision-btn btn-primary"
+                    onClick={() => handleEmpezarMision(mision.id)}
+                  >
+                    Volver a intentar
+                  </button>
+                  <button
+                    className="mision-btn btn-secondary"
+                    onClick={() => handleVerDetalles(mision.id)}
+                  >
+                    Ver detalles
+                  </button>
+                </>
               )}
             </div>
           </div>

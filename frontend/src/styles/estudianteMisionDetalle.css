@@ -76,7 +76,9 @@
 }
 
 .badge-dificultad,
-.badge-categoria {
+.badge-categoria,
+.badge-xp,
+.badge-fecha {
   font-family: "Poppins", "Montserrat", sans-serif;
   padding: 0.5rem 1.25rem;
   border-radius: 999px;
@@ -102,6 +104,16 @@
 
 .badge-categoria {
   background: linear-gradient(135deg, #00a7d5, #0891b2);
+  color: #ffffff;
+}
+
+.badge-xp {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: #ffffff;
+}
+
+.badge-fecha {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
   color: #ffffff;
 }
 

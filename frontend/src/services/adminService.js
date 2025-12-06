@@ -97,10 +97,18 @@ const adminService = {
   },
 
   // Actualizar respaldo automático
-  actualizarRespaldoAutomatico: async (respaldoAutomatico) => {
-    const response = await api.put('/admin/configuracion/respaldo-automatico', {
-      respaldoAutomatico
-    });
+  actualizarRespaldoAutomatico: async (respaldoAutomatico, frecuenciaRespaldo = null) => {
+    const data = { respaldoAutomatico };
+    if (frecuenciaRespaldo) {
+      data.frecuenciaRespaldo = frecuenciaRespaldo;
+    }
+    const response = await api.put('/admin/configuracion/respaldo-automatico', data);
+    return response.data;
+  },
+
+  // Ejecutar diagnóstico del sistema
+  ejecutarDiagnostico: async () => {
+    const response = await api.post('/admin/configuracion/diagnostico');
     return response.data;
   },
 

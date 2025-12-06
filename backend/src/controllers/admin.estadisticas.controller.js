@@ -47,6 +47,18 @@ const getEstadisticasGlobales = async (req, res) => {
       GROUP BY categoria
     `);
 
+    // Actividad semanal (últimos 7 días)
+    const [actividadSemanal] = await pool.query(`
+      SELECT
+        DAYNAME(created_at) as dia_nombre,
+        DATE_FORMAT(created_at, '%a') as dia_corto,
+        COUNT(*) as total
+      FROM usuarios
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+      GROUP BY DATE(created_at), DAYNAME(created_at), DATE_FORMAT(created_at, '%a')
+      ORDER BY DATE(created_at) ASC
+    `);
+
     // Actividad mensual (últimos 6 meses)
     const [actividadMensual] = await pool.query(`
       SELECT
@@ -104,6 +116,10 @@ const getEstadisticasGlobales = async (req, res) => {
         misionesPorCategoria: misionesPorCategoria.map(m => ({
           categoria: m.categoria,
           total: m.cantidad
+        })),
+        actividadSemanal: actividadSemanal.map(a => ({
+          dia: a.dia_corto,
+          total: a.total
         })),
         actividadMensual: actividadMensual.map(a => ({
           mes: a.mes_corto,

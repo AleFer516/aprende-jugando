@@ -5,7 +5,10 @@ const {
   obtenerMisionPorId,
   crearMision,
   actualizarMision,
-  eliminarMision
+  eliminarMision,
+  obtenerProgresoEstudiantes,
+  asignarMisionACurso,
+  eliminarAsignacionCurso
 } = require('../controllers/gm.misiones.controller');
 const { verificarToken, verificarRol } = require('../middlewares/auth.middleware');
 
@@ -18,6 +21,15 @@ router.get('/', obtenerMisiones);
 
 // Obtener una misión específica
 router.get('/:id', obtenerMisionPorId);
+
+// Obtener progreso de estudiantes en una misión
+router.get('/:id/progreso/:cursoId', obtenerProgresoEstudiantes);
+
+// Asignar misión a un curso
+router.post('/:id/asignar/:cursoId', asignarMisionACurso);
+
+// Eliminar asignación de misión a un curso
+router.delete('/:id/asignar/:cursoId', eliminarAsignacionCurso);
 
 // Crear una nueva misión
 router.post('/', crearMision);

@@ -25,6 +25,7 @@ const estudiantePerfilRoutes = require('./routes/estudiante.perfil.routes');
 // Rutas del Admin
 const adminDashboardRoutes = require('./routes/admin.dashboard.routes');
 const adminUsuariosRoutes = require('./routes/admin.usuarios.routes');
+const adminCursosRoutes = require('./routes/admin.cursos.routes');
 const adminConfiguracionRoutes = require('./routes/admin.configuracion.routes');
 const adminPerfilRoutes = require('./routes/admin.perfil.routes');
 const adminEstadisticasRoutes = require('./routes/admin.estadisticas.routes');
@@ -65,6 +66,7 @@ app.use('/api/estudiante/perfil', estudiantePerfilRoutes);
 // Rutas del Admin
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/admin/usuarios', adminUsuariosRoutes);
+app.use('/api/admin/cursos', adminCursosRoutes);
 app.use('/api/admin/configuracion', adminConfiguracionRoutes);
 app.use('/api/admin/perfil', adminPerfilRoutes);
 app.use('/api/admin/estadisticas', adminEstadisticasRoutes);
@@ -84,6 +86,7 @@ app.get('/', (req, res) => {
       admin: {
         dashboard: '/api/admin/dashboard',
         usuarios: '/api/admin/usuarios',
+        cursos: '/api/admin/cursos',
         configuracion: '/api/admin/configuracion',
         perfil: '/api/admin/perfil'
       },

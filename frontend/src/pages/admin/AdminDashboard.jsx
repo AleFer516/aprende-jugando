@@ -17,7 +17,14 @@ function AdminDashboard() {
   const [actividades, setActividades] = useState([]);
   const [estadoSistema, setEstadoSistema] = useState({
     baseDatos: 'Cargando...',
-    respaldos: 'Cargando...'
+    respaldos: 'Cargando...',
+    respaldoAutomatico: false,
+    frecuenciaRespaldo: null,
+    tamanoBackup: '0 MB',
+    tamanoBaseDatos: '0 MB',
+    usuariosActivos7Dias: 0,
+    totalUsuarios: 0,
+    alertas: []
   });
   const [cargando, setCargando] = useState(true);
 
@@ -46,7 +53,7 @@ function AdminDashboard() {
       }
 
       // Cargar actividades
-      const resActividades = await adminService.getRegistroActividad(10);
+      const resActividades = await adminService.getRegistroActividad(5);
       if (resActividades.success) {
         setActividades(resActividades.data);
       }
@@ -109,6 +116,44 @@ function AdminDashboard() {
         );
       default:
         return null;
+    }
+  };
+
+  // Obtener icono según tipo de alerta
+  const getIconoAlerta = (icono) => {
+    switch(icono) {
+      case "backup":
+        return (
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+          </svg>
+        );
+      case "database":
+        return (
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
+            <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
+            <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
+          </svg>
+        );
+      case "users":
+        return (
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+          </svg>
+        );
+      case "info":
+        return (
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+        );
+      default:
+        return (
+          <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+        );
     }
   };
 
@@ -239,17 +284,32 @@ function AdminDashboard() {
                 </span>
               </div>
               <div className="admin-system-row">
-                <span>Respaldos</span>
+                <span>Último respaldo</span>
                 <span className="admin-system-status">
                   {estadoSistema.respaldos}
                 </span>
               </div>
-              <button className="admin-system-button">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
-                </svg>
-                Crear respaldo
-              </button>
+              <div className="admin-system-row">
+                <span>Tamaño BD</span>
+                <span className="admin-system-status">
+                  {estadoSistema.tamanoBaseDatos}
+                </span>
+              </div>
+              <div className="admin-system-row">
+                <span>Usuarios activos (7d)</span>
+                <span className="admin-system-status">
+                  {estadoSistema.usuariosActivos7Dias} / {estadoSistema.totalUsuarios}
+                </span>
+              </div>
+              {estadoSistema.respaldoAutomatico && estadoSistema.frecuenciaRespaldo && (
+                <div className="admin-system-row">
+                  <span>Respaldo automático</span>
+                  <span className="admin-system-status admin-system-status--active">
+                    <span className="status-dot"></span>
+                    {estadoSistema.frecuenciaRespaldo}
+                  </span>
+                </div>
+              )}
             </div>
           </article>
 
@@ -257,14 +317,33 @@ function AdminDashboard() {
           <article className="admin-panel admin-alerts">
             <header className="admin-panel-header">Alertas</header>
             <div className="admin-alerts-content">
-              <div className="admin-alerts-empty-icon">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <p className="admin-alerts-empty">
-                No hay alertas pendientes por ahora.
-              </p>
+              {estadoSistema.alertas && estadoSistema.alertas.length > 0 ? (
+                <div className="admin-alerts-list">
+                  {estadoSistema.alertas.map((alerta, index) => (
+                    <div
+                      key={index}
+                      className={`admin-alert-item admin-alert-item--${alerta.tipo}`}
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <div className="admin-alert-icon">
+                        {getIconoAlerta(alerta.icono)}
+                      </div>
+                      <p className="admin-alert-message">{alerta.mensaje}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <div className="admin-alerts-empty-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <p className="admin-alerts-empty">
+                    No hay alertas pendientes por ahora.
+                  </p>
+                </>
+              )}
             </div>
           </article>
         </div>

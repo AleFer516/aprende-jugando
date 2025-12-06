@@ -16,7 +16,6 @@ function GMEvaluarMision() {
   const [error, setError] = useState(null);
   const [retroalimentacion, setRetroalimentacion] = useState("");
   const [calificacionSeleccionada, setCalificacionSeleccionada] = useState(null);
-  const [puntuacion, setPuntuacion] = useState(0);
   const [guardando, setGuardando] = useState(false);
 
   // Cargar datos de la evaluación
@@ -67,8 +66,7 @@ function GMEvaluarMision() {
 
       const response = await api.put(`/gm/evaluaciones/${id}/evaluar`, {
         estado: calificacionSeleccionada,
-        retroalimentacion,
-        puntuacion
+        retroalimentacion
       });
 
       if (response.data.success) {
@@ -214,29 +212,7 @@ function GMEvaluarMision() {
 
           {/* Formulario de retroalimentación */}
           <div className="gm-evaluar-form">
-            <h3>Retroalimentación y Calificación</h3>
-
-            {/* Campo de puntuación */}
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                Puntuación (0-100):
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={puntuacion}
-                onChange={(e) => setPuntuacion(Math.min(100, Math.max(0, parseInt(e.target.value) || 0)))}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '1rem'
-                }}
-                placeholder="Ingrese la puntuación"
-              />
-            </div>
+            <h3>Retroalimentación</h3>
 
             <textarea
               className="gm-evaluar-textarea"

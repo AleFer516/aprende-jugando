@@ -19,7 +19,7 @@ const getUsuarios = async (req, res) => {
         telefono,
         nivel,
         experiencia,
-        avatar_url,
+        avatar,
         created_at,
         ultimo_acceso
       FROM usuarios

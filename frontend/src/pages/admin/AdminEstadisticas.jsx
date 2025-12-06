@@ -10,7 +10,6 @@ function AdminEstadisticas() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [cardHover, setCardHover] = useState(null);
-  const [barHover, setBarHover] = useState(null);
 
   useEffect(() => {
     cargarEstadisticas();
@@ -45,9 +44,6 @@ function AdminEstadisticas() {
   ] : [];
 
   const categoriasMisiones = estadisticas?.misionesPorCategoria || [];
-
-  const totalMisionesCategorias = categoriasMisiones.reduce((sum, cat) => sum + cat.total, 0);
-  const maxValorCategoria = Math.max(...categoriasMisiones.map(cat => cat.total), 1);
 
   const getIcon = (type) => {
     switch (type) {
@@ -161,36 +157,96 @@ function AdminEstadisticas() {
           </header>
 
           <div className="admin-roles-content">
-            <div className="admin-roles-chart-wrapper">
-              <div className="admin-roles-chart-circle">
-                <div className="admin-roles-chart-inner">
-                  <div className="admin-roles-chart-center">
-                    <span className="admin-roles-total">{estadisticas.totalUsuarios}</span>
-                    <span className="admin-roles-label">Total</span>
+            {/* Gráfico circular mejorado */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem 0' }}>
+              <svg width="200" height="200" viewBox="0 0 200 200">
+                <defs>
+                  <linearGradient id="gradientGM" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#22c55e', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#10b981', stopOpacity: 1 }} />
+                  </linearGradient>
+                  <linearGradient id="gradientEstudiantes" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: '#3b82f6', stopOpacity: 1 }} />
+                    <stop offset="100%" style={{ stopColor: '#2563eb', stopOpacity: 1 }} />
+                  </linearGradient>
+                </defs>
+
+                {/* Círculo de fondo */}
+                <circle cx="100" cy="100" r="70" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="25" />
+
+                {/* Segmento de GM */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#gradientGM)"
+                  strokeWidth="25"
+                  strokeDasharray={`${(estadisticas.distribucionRoles.porcentajeGM / 100) * 440} 440`}
+                  strokeDashoffset="0"
+                  transform="rotate(-90 100 100)"
+                  style={{ transition: 'stroke-dasharray 1s ease' }}
+                />
+
+                {/* Segmento de Estudiantes */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="70"
+                  fill="none"
+                  stroke="url(#gradientEstudiantes)"
+                  strokeWidth="25"
+                  strokeDasharray={`${(estadisticas.distribucionRoles.porcentajeEstudiante / 100) * 440} 440`}
+                  strokeDashoffset={`${-(estadisticas.distribucionRoles.porcentajeGM / 100) * 440}`}
+                  transform="rotate(-90 100 100)"
+                  style={{ transition: 'stroke-dasharray 1s ease' }}
+                />
+
+                {/* Texto central */}
+                <text x="100" y="95" textAnchor="middle" fill="#ffffff" fontSize="36" fontWeight="bold">
+                  {estadisticas.totalUsuarios}
+                </text>
+                <text x="100" y="115" textAnchor="middle" fill="#9ca3af" fontSize="14">
+                  Total
+                </text>
+              </svg>
+            </div>
+
+            {/* Leyenda mejorada */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '4px',
+                  background: 'linear-gradient(135deg, #22c55e, #10b981)'
+                }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.25rem' }}>GM</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#ffffff' }}>
+                    {estadisticas.distribucionRoles.gm} usuarios
+                    <span style={{ fontSize: '0.85rem', color: '#22c55e', marginLeft: '0.5rem' }}>
+                      ({estadisticas.distribucionRoles.porcentajeGM}%)
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="admin-roles-legend">
-              <div className="admin-roles-legend-item">
-                <span className="legend-dot legend-dot-gm" />
-                <div>
-                  <p className="legend-label">GM</p>
-                  <p className="legend-value">
-                    {estadisticas.distribucionRoles.gm} usuarios (
-                    {estadisticas.distribucionRoles.porcentajeGM}%)
-                  </p>
-                </div>
-              </div>
-              <div className="admin-roles-legend-item">
-                <span className="legend-dot legend-dot-estudiantes" />
-                <div>
-                  <p className="legend-label">Estudiantes</p>
-                  <p className="legend-value">
-                    {estadisticas.distribucionRoles.estudiante} usuarios (
-                    {estadisticas.distribucionRoles.porcentajeEstudiante}%)
-                  </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '4px',
+                  background: 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Estudiantes</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#ffffff' }}>
+                    {estadisticas.distribucionRoles.estudiante} usuarios
+                    <span style={{ fontSize: '0.85rem', color: '#3b82f6', marginLeft: '0.5rem' }}>
+                      ({estadisticas.distribucionRoles.porcentajeEstudiante}%)
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -200,40 +256,121 @@ function AdminEstadisticas() {
         {/* Misiones por categoría */}
         <article className="admin-estadisticas-panel admin-misiones-panel">
           <header className="admin-estadisticas-panel-header">
-            <span>Misiones por categoría</span>
-            <span className="admin-panel-total">Total: {totalMisionesCategorias}</span>
+            <span>Misiones completadas por categoría</span>
           </header>
 
-          <div className="admin-misiones-chart">
+          <div className="admin-misiones-chart" style={{ padding: '2.5rem 1.5rem 1.5rem', position: 'relative' }}>
             {categoriasMisiones.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
                 No hay misiones registradas
               </div>
             ) : (
-              categoriasMisiones.map((cat, index) => (
-                <div
-                  key={index}
-                  className="admin-misiones-bar-wrapper"
-                  onMouseEnter={() => setBarHover(index)}
-                  onMouseLeave={() => setBarHover(null)}
-                >
-                  <div
-                    className={`admin-misiones-bar ${barHover === index ? "hovered" : ""}`}
-                    style={{
-                      height: `${(cat.total / maxValorCategoria) * 100}%`,
-                      animationDelay: `${index * 0.08 + 0.1}s`,
-                    }}
-                  >
-                    {barHover === index && (
-                      <span className="admin-misiones-tooltip">
-                        {cat.categoria}: {cat.total}
-                      </span>
-                    )}
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'space-around',
+                height: '200px',
+                gap: '1.5rem',
+                position: 'relative',
+                paddingLeft: '35px',
+                paddingRight: '10px'
+              }}>
+                {/* Líneas de referencia del eje Y */}
+                {[0, 2, 4, 6, 8, 10].map((line, i) => (
+                  <div key={i} style={{
+                    position: 'absolute',
+                    left: '35px',
+                    right: '10px',
+                    bottom: `${(line / 10) * 100}%`,
+                    height: '1px',
+                    background: i === 0 ? 'rgba(100, 150, 255, 0.3)' : 'rgba(100, 150, 255, 0.1)',
+                    zIndex: 0
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      left: '-30px',
+                      top: '-10px',
+                      fontSize: '0.75rem',
+                      color: '#8b9dc3',
+                      fontWeight: '400'
+                    }}>
+                      {line}
+                    </span>
                   </div>
-                  <span className="admin-misiones-bar-label">{cat.categoria}</span>
-                  <span className="admin-misiones-bar-value">{cat.total}</span>
-                </div>
-              ))
+                ))}
+
+                {/* Barras de categorías */}
+                {categoriasMisiones.map((cat, index) => {
+                  const maxVal = Math.max(...categoriasMisiones.map(c => c.total), 1);
+                  const altura = (cat.total / maxVal) * 100;
+                  const colores = ['#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899'];
+                  const color = colores[index % colores.length];
+
+                  return (
+                    <div key={index} style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      flex: 1,
+                      maxWidth: '70px',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      {/* Valor sobre la barra */}
+                      <div style={{
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                        color: '#ffffff',
+                        marginBottom: '0.25rem',
+                        opacity: altura > 0 ? 1 : 0
+                      }}>
+                        {cat.total}
+                      </div>
+
+                      {/* Barra */}
+                      <div
+                        style={{
+                          width: '100%',
+                          height: `${altura}%`,
+                          minHeight: altura > 0 ? '10px' : '0',
+                          background: `linear-gradient(180deg, ${color}, ${color}cc)`,
+                          borderRadius: '6px 6px 0 0',
+                          position: 'relative',
+                          boxShadow: `0 0 15px ${color}30`,
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer',
+                          animation: `barGrowVertical 0.8s ease ${index * 0.1}s backwards`,
+                          transformOrigin: 'bottom'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.filter = 'brightness(1.3)';
+                          e.currentTarget.style.boxShadow = `0 0 25px ${color}60`;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.filter = 'brightness(1)';
+                          e.currentTarget.style.boxShadow = `0 0 15px ${color}30`;
+                        }}
+                      />
+
+                      {/* Etiqueta de categoría */}
+                      <div style={{
+                        fontSize: '0.7rem',
+                        color: '#9ca3af',
+                        textAlign: 'center',
+                        textTransform: 'capitalize',
+                        maxWidth: '70px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontWeight: '500'
+                      }} title={cat.categoria}>
+                        {cat.categoria.length > 6 ? cat.categoria.substring(0, 6) + '.' : cat.categoria}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </article>
@@ -249,50 +386,61 @@ function AdminEstadisticas() {
           </header>
 
           <div className="admin-actividad-chart">
-            <svg
-              viewBox="0 0 100 50"
-              preserveAspectRatio="none"
-              className="admin-line-chart-svg"
-            >
-              <defs>
-                <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" style={{ stopColor: "#00a7d5", stopOpacity: 1 }} />
-                  <stop offset="100%" style={{ stopColor: "#228be6", stopOpacity: 1 }} />
-                </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              <polyline
-                className="admin-line-chart-path"
-                points="0,35 10,40 20,30 30,32 40,28 50,18 60,26 70,20 80,16 90,18 100,15"
-                style={{ stroke: "url(#lineGradient1)" }}
-              />
-              <circle className="admin-chart-dot" cx="0" cy="35" r="2" />
-              <circle className="admin-chart-dot" cx="10" cy="40" r="2" />
-              <circle className="admin-chart-dot" cx="20" cy="30" r="2" />
-              <circle className="admin-chart-dot" cx="30" cy="32" r="2" />
-              <circle className="admin-chart-dot" cx="40" cy="28" r="2" />
-              <circle className="admin-chart-dot" cx="50" cy="18" r="2" />
-              <circle className="admin-chart-dot" cx="60" cy="26" r="2" />
-              <circle className="admin-chart-dot" cx="70" cy="20" r="2" />
-              <circle className="admin-chart-dot" cx="80" cy="16" r="2" />
-              <circle className="admin-chart-dot" cx="90" cy="18" r="2" />
-              <circle className="admin-chart-dot" cx="100" cy="15" r="2" />
-            </svg>
-            <div className="admin-actividad-xlabels">
-              <span>Dom</span>
-              <span>Lun</span>
-              <span>Mar</span>
-              <span>Mié</span>
-              <span>Jue</span>
-              <span>Vie</span>
-              <span>Sáb</span>
-            </div>
+            {!estadisticas.actividadSemanal || estadisticas.actividadSemanal.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                No hay datos de actividad semanal
+              </div>
+            ) : (
+              <>
+                <svg
+                  viewBox="0 0 100 50"
+                  preserveAspectRatio="none"
+                  className="admin-line-chart-svg"
+                >
+                  <defs>
+                    <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" style={{ stopColor: "#00a7d5", stopOpacity: 1 }} />
+                      <stop offset="100%" style={{ stopColor: "#228be6", stopOpacity: 1 }} />
+                    </linearGradient>
+                  </defs>
+                  <polyline
+                    className="admin-line-chart-path"
+                    points={estadisticas.actividadSemanal
+                      .map((dia, i) => {
+                        const x = estadisticas.actividadSemanal.length > 1
+                          ? (i / (estadisticas.actividadSemanal.length - 1)) * 100
+                          : 50;
+                        const maxActividad = Math.max(...estadisticas.actividadSemanal.map(d => d.total), 1);
+                        const y = 45 - ((dia.total / maxActividad) * 35);
+                        return `${x},${y}`;
+                      })
+                      .join(' ')}
+                    style={{ stroke: "url(#lineGradient1)" }}
+                  />
+                  {estadisticas.actividadSemanal.map((dia, i) => {
+                    const x = estadisticas.actividadSemanal.length > 1
+                      ? (i / (estadisticas.actividadSemanal.length - 1)) * 100
+                      : 50;
+                    const maxActividad = Math.max(...estadisticas.actividadSemanal.map(d => d.total), 1);
+                    const y = 45 - ((dia.total / maxActividad) * 35);
+                    return (
+                      <circle
+                        key={i}
+                        className="admin-chart-dot"
+                        cx={x}
+                        cy={y}
+                        r="2"
+                      />
+                    );
+                  })}
+                </svg>
+                <div className="admin-actividad-xlabels">
+                  {estadisticas.actividadSemanal.map((dia, i) => (
+                    <span key={i}>{dia.dia}</span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </article>
 
@@ -325,7 +473,9 @@ function AdminEstadisticas() {
                     className="admin-line-chart-path admin-line-chart-path-2"
                     points={estadisticas.actividadMensual
                       .map((mes, i) => {
-                        const x = (i / (estadisticas.actividadMensual.length - 1)) * 100;
+                        const x = estadisticas.actividadMensual.length > 1
+                          ? (i / (estadisticas.actividadMensual.length - 1)) * 100
+                          : 50;
                         const maxActividad = Math.max(...estadisticas.actividadMensual.map(m => m.total), 1);
                         const y = 45 - ((mes.total / maxActividad) * 35);
                         return `${x},${y}`;
@@ -334,7 +484,9 @@ function AdminEstadisticas() {
                     style={{ stroke: "url(#lineGradient2)" }}
                   />
                   {estadisticas.actividadMensual.map((mes, i) => {
-                    const x = (i / (estadisticas.actividadMensual.length - 1)) * 100;
+                    const x = estadisticas.actividadMensual.length > 1
+                      ? (i / (estadisticas.actividadMensual.length - 1)) * 100
+                      : 50;
                     const maxActividad = Math.max(...estadisticas.actividadMensual.map(m => m.total), 1);
                     const y = 45 - ((mes.total / maxActividad) * 35);
                     return (

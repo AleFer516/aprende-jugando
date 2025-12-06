@@ -14,7 +14,10 @@
       "Bash(node --version:*)",
       "Bash(node -e:*)",
       "Bash(node recalcular_xp.js:*)",
-      "Bash(del recalcular_xp.js)"
+      "Bash(del recalcular_xp.js)",
+      "Bash(node ejecutar_actualizacion_misiones.js:*)",
+      "Bash(del ejecutar_actualizacion_misiones.js)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

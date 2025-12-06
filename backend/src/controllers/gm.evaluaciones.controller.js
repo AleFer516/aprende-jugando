@@ -200,7 +200,7 @@ const evaluarMision = async (req, res) => {
 
     const { id } = req.params;
     const gmRut = req.usuario.rut;
-    const { estado, retroalimentacion, puntuacion } = req.body;
+    const { estado, retroalimentacion } = req.body;
 
     // Validaciones
     const estadosValidos = ['aprobada', 'rechazada', 'revisada'];
@@ -214,7 +214,7 @@ const evaluarMision = async (req, res) => {
 
     // Verificar que la evaluación existe y la misión pertenece al GM
     const [evaluaciones] = await connection.query(
-      `SELECT em.id, em.estudiante_rut, em.mision_id, m.creador_rut
+      `SELECT em.id, em.estudiante_rut, em.mision_id, m.creador_rut, m.puntos_experiencia
       FROM estudiante_misiones em
       INNER JOIN misiones m ON em.mision_id = m.id
       WHERE em.id = ? AND m.creador_rut = ?`,
@@ -229,13 +229,50 @@ const evaluarMision = async (req, res) => {
       });
     }
 
+    const evaluacion = evaluaciones[0];
+
     // Actualizar estado de la misión del estudiante con retroalimentación
-    await connection.query(
-      `UPDATE estudiante_misiones
-      SET estado = ?, puntuacion = ?, retroalimentacion = ?
-      WHERE id = ?`,
-      [estado, puntuacion || null, retroalimentacion || null, id]
-    );
+    // Si se rechaza, resetear el progreso para permitir reintentar
+    if (estado === 'rechazada') {
+      await connection.query(
+        `UPDATE estudiante_misiones
+        SET estado = ?, retroalimentacion = ?, progreso = 0, fecha_completado = NULL
+        WHERE id = ?`,
+        [estado, retroalimentacion || null, id]
+      );
+    } else {
+      await connection.query(
+        `UPDATE estudiante_misiones
+        SET estado = ?, retroalimentacion = ?
+        WHERE id = ?`,
+        [estado, retroalimentacion || null, id]
+      );
+    }
+
+    // Si se aprueba, asignar XP al estudiante
+    if (estado === 'aprobada') {
+      const xpGanado = evaluacion.puntos_experiencia || 0;
+
+      // Actualizar experiencia del usuario
+      await connection.query(
+        'UPDATE usuarios SET experiencia = experiencia + ? WHERE rut = ?',
+        [xpGanado, evaluacion.estudiante_rut]
+      );
+
+      // Calcular y actualizar el nivel
+      const [usuarioActualizado] = await connection.query(
+        'SELECT experiencia FROM usuarios WHERE rut = ?',
+        [evaluacion.estudiante_rut]
+      );
+
+      const xpTotal = usuarioActualizado[0].experiencia;
+      const nuevoNivel = Math.floor(xpTotal / 300) + 1;
+
+      await connection.query(
+        'UPDATE usuarios SET nivel = ? WHERE rut = ?',
+        [nuevoNivel, evaluacion.estudiante_rut]
+      );
+    }
 
     // Crear o actualizar notificación para el estudiante
     const mensajeNotificacion = estado === 'aprobada'

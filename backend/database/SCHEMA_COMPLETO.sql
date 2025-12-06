@@ -80,6 +80,7 @@ CREATE TABLE configuracion_sistema (
   politicas_password JSON,
   autenticacion JSON,
   respaldo_automatico BOOLEAN DEFAULT TRUE,
+  frecuencia_respaldo ENUM('diaria', 'semanal', 'mensual') DEFAULT 'diaria' COMMENT 'Frecuencia del respaldo automático',
   ultimo_respaldo DATETIME,
   tamano_backup VARCHAR(50) DEFAULT '0 MB',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -240,7 +241,7 @@ CREATE TABLE curso_estudiantes (
 -- Misiones/actividades del curso
 CREATE TABLE misiones (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  curso_id INT NOT NULL,
+  curso_id INT NULL COMMENT 'Puede ser NULL si la misión no está asignada a ningún curso',
   titulo VARCHAR(150) NOT NULL,
   descripcion TEXT,
   tipo ENUM('lectura', 'ejercicio', 'examen', 'proyecto', 'desafio') NOT NULL,
@@ -1111,6 +1112,33 @@ ADD COLUMN valor TEXT COMMENT 'Valor de la opción (puede ser diferente del text
 ALTER TABLE estudiante_respuestas
 ADD COLUMN intentos INT DEFAULT 1 COMMENT 'Número de intentos realizados' AFTER es_correcta,
 ADD COLUMN tiempo_respuesta INT DEFAULT 0 COMMENT 'Tiempo en segundos que tomó responder' AFTER intentos;
+
+-- ==========================================
+-- NOTAS SOBRE MIGRACIONES Y ACTUALIZACIONES
+-- ==========================================
+--
+-- 📋 Script de migración para actualizar misiones existentes:
+--    - Archivo: backend/database/actualizar_misiones_existentes.sql
+--    - Propósito: Asignar valores por defecto a misiones sin XP, monedas o fecha límite
+--    - Ejecutar cuando: Se actualice una base de datos existente que tenga misiones sin estos campos
+--
+-- 🔄 Flujo de evaluación de misiones:
+--    1. Estudiante completa misión → estado: 'completada'
+--    2. GM recibe notificación → aparece en panel de evaluaciones
+--    3. GM aprueba → estado: 'aprobada' + se asigna XP al estudiante
+--    4. GM rechaza → estado: 'rechazada' + progreso = 0 + permite reintentar
+--    5. Si rechazada → estudiante puede volver a iniciar (se borran respuestas anteriores)
+--
+-- ⚠️ IMPORTANTE: Al aprobar una misión, el XP se otorga en ese momento, NO al completar
+--    - El controlador gm.evaluaciones.controller.js maneja la asignación de XP
+--    - El controlador estudiante.misiones.controller.js permite reiniciar misiones rechazadas
+--
+-- 🎯 Validaciones de cursos:
+--    - No se puede eliminar un curso si estudiantes han comenzado misiones (progreso > 0)
+--    - Solo se pueden eliminar cursos sin progreso de estudiantes
+--    - Validación en: backend/src/controllers/admin.cursos.controller.js
+--
+-- ==========================================
 
 SELECT '' as espacio;
 SELECT '🚀 TODO LISTO PARA USAR!' as mensaje;

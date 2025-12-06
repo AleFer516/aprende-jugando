@@ -92,14 +92,119 @@ const getEstadoSistema = async (req, res) => {
     const [dbStatus] = await pool.query('SELECT 1 as status');
     const dbOperativa = dbStatus[0].status === 1;
 
-    // Obtener último respaldo (simulado - esto debería venir de tu sistema de respaldos)
-    const ultimoRespaldo = "Hace 2 días";
+    // Obtener información real de respaldos desde configuracion_sistema
+    const [configData] = await pool.query(`
+      SELECT
+        ultimo_respaldo,
+        respaldo_automatico,
+        frecuencia_respaldo,
+        tamano_backup
+      FROM configuracion_sistema
+      WHERE id = 1
+    `);
+
+    const config = configData[0];
+    let textoRespaldo = 'Nunca';
+
+    if (config && config.ultimo_respaldo) {
+      const ahora = new Date();
+      const fechaRespaldo = new Date(config.ultimo_respaldo);
+      const diffMs = ahora - fechaRespaldo;
+      const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDias = Math.floor(diffHoras / 24);
+
+      if (diffHoras < 1) {
+        textoRespaldo = 'Hace menos de 1 hora';
+      } else if (diffHoras < 24) {
+        textoRespaldo = `Hace ${diffHoras} hora${diffHoras > 1 ? 's' : ''}`;
+      } else if (diffDias === 1) {
+        textoRespaldo = 'Hace 1 día';
+      } else {
+        textoRespaldo = `Hace ${diffDias} días`;
+      }
+    }
+
+    // Obtener tamaño de la base de datos
+    const [dbSize] = await pool.query(`
+      SELECT
+        ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) as tamano_mb
+      FROM information_schema.TABLES
+      WHERE table_schema = ?
+    `, [process.env.DB_NAME || 'aprende_jugando']);
+
+    // Contar usuarios activos en los últimos 7 días
+    const [usuariosActivos] = await pool.query(`
+      SELECT COUNT(*) as total
+      FROM usuarios
+      WHERE ultimo_acceso >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+    `);
+
+    // Obtener total de usuarios
+    const [totalUsuarios] = await pool.query('SELECT COUNT(*) as total FROM usuarios');
+
+    // Detectar alertas del sistema
+    const alertas = [];
+
+    // Alerta 1: Respaldo desactualizado (más de 7 días sin respaldo)
+    if (config && config.ultimo_respaldo) {
+      const fechaRespaldo = new Date(config.ultimo_respaldo);
+      const diffDias = Math.floor((new Date() - fechaRespaldo) / (1000 * 60 * 60 * 24));
+
+      if (diffDias > 7) {
+        alertas.push({
+          tipo: 'warning',
+          mensaje: `El último respaldo fue hace ${diffDias} días`,
+          icono: 'backup'
+        });
+      }
+    } else if (!config || !config.ultimo_respaldo) {
+      alertas.push({
+        tipo: 'error',
+        mensaje: 'No se ha generado ningún respaldo',
+        icono: 'backup'
+      });
+    }
+
+    // Alerta 2: Respaldo automático desactivado
+    if (config && !config.respaldo_automatico) {
+      alertas.push({
+        tipo: 'info',
+        mensaje: 'El respaldo automático está desactivado',
+        icono: 'info'
+      });
+    }
+
+    // Alerta 3: Base de datos grande (más de 500 MB)
+    if (dbSize[0].tamano_mb > 500) {
+      alertas.push({
+        tipo: 'warning',
+        mensaje: `Base de datos grande: ${dbSize[0].tamano_mb} MB`,
+        icono: 'database'
+      });
+    }
+
+    // Alerta 4: Baja actividad de usuarios (menos del 10% activos en los últimos 7 días)
+    const porcentajeActivos = (usuariosActivos[0].total / totalUsuarios[0].total) * 100;
+    if (totalUsuarios[0].total > 10 && porcentajeActivos < 10) {
+      alertas.push({
+        tipo: 'info',
+        mensaje: `Solo ${usuariosActivos[0].total} de ${totalUsuarios[0].total} usuarios activos en 7 días`,
+        icono: 'users'
+      });
+    }
 
     res.json({
       success: true,
       data: {
         baseDatos: dbOperativa ? 'Operativa' : 'Inactiva',
-        respaldos: ultimoRespaldo
+        respaldos: textoRespaldo,
+        respaldoAutomatico: config ? config.respaldo_automatico : false,
+        frecuenciaRespaldo: config ? config.frecuencia_respaldo : null,
+        tamanoBackup: config ? config.tamano_backup : '0 MB',
+        tamanoBaseDatos: `${dbSize[0].tamano_mb} MB`,
+        usuariosActivos7Dias: usuariosActivos[0].total,
+        totalUsuarios: totalUsuarios[0].total,
+        alertas: alertas
       }
     });
   } catch (error) {

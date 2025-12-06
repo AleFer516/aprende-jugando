@@ -16,6 +16,7 @@ import RestablecerContrasena from "./pages/RestablecerContrasena.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 import AdminUsuarios from "./pages/admin/AdminUsuarios.jsx";
+import AdminCursos from "./pages/admin/AdminCursos.jsx";
 import AdminEstadisticas from "./pages/admin/AdminEstadisticas.jsx";
 import AdminActividad from "./pages/admin/AdminActividad.jsx";
 import AdminConfiguracion from "./pages/admin/AdminConfiguracion.jsx";
@@ -87,6 +88,9 @@ function App() {
 
         {/* Gestión de usuarios */}
         <Route path="usuarios" element={<AdminUsuarios />} />
+
+        {/* Gestión de cursos */}
+        <Route path="cursos" element={<AdminCursos />} />
 
         {/* Estadísticas globales */}
         <Route path="estadisticas" element={<AdminEstadisticas />} />
