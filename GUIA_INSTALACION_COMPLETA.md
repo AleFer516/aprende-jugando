@@ -543,5 +543,125 @@ Si completaste todos los pasos, tu instalación está lista. Puedes comenzar a u
 
 ---
 
+## 🔧 Funcionalidades del Sistema de Administración
+
+### Panel de Administrador
+
+El rol de **Admin** tiene acceso a un panel completo de gestión con las siguientes funcionalidades:
+
+#### 📊 Dashboard Principal
+- **Estadísticas en tiempo real**: Usuarios, instituciones, misiones, estudiantes activos
+- **Estado del sistema**: Monitoreo de base de datos, respaldos, usuarios activos
+- **Sistema de alertas inteligente**:
+  - Alerta si el último respaldo tiene más de 7 días
+  - Alerta si no se ha generado ningún respaldo
+  - Alerta si el respaldo automático está desactivado
+  - Alerta si la base de datos es muy grande (>500 MB)
+  - Alerta si hay baja actividad de usuarios (<10% activos en 7 días)
+- **Registro de actividad**: Historial de acciones importantes del sistema
+
+#### ⚙️ Panel de Configuración
+
+Accede mediante: `Admin → Configuración`
+
+**1. Configuración General:**
+- Nombre del sistema
+- Tema (claro/oscuro)
+- Tiempo de inactividad
+- Zona horaria
+- Logotipo personalizado
+
+**2. Políticas de Contraseñas:**
+- Longitud mínima
+- Requerir mayúsculas
+- Requerir números
+- Requerir símbolos especiales
+- Expiración de contraseñas
+
+**3. Configuración de Autenticación:**
+- Máximo de intentos de inicio de sesión
+- Tiempo de bloqueo tras intentos fallidos
+- Sesiones múltiples permitidas
+
+**4. Sistema de Respaldos:**
+- **Respaldo manual**: Genera respaldos inmediatos de la base de datos
+- **Respaldo automático**: Configura respaldos programados
+  - Frecuencias disponibles: Diaria, Semanal, Mensual
+  - Mantiene automáticamente los últimos 10 respaldos
+  - Muestra fecha y tamaño del último respaldo
+- **Requisitos**: `mysqldump` debe estar instalado (ver `backend/backups/README.md`)
+
+**5. Mantenimiento del Sistema:**
+- **Ejecutar diagnóstico completo** del sistema que analiza:
+  - **Base de Datos**: Conexión, tamaño, número de tablas
+  - **Rendimiento**: Usuarios totales, usuarios activos, misiones en progreso
+  - **Mantenimiento**: Logs antiguos, cuentas inactivas, misiones sin uso
+  - **Seguridad**: Estado de respaldos, configuración de respaldo automático, número de administradores
+- Resultados codificados por colores (OK, Warning, Error)
+- Recomendaciones automáticas de mantenimiento
+
+**6. Gestión de Roles:**
+- Ver roles del sistema
+- Crear roles personalizados
+- Activar/desactivar roles
+- Eliminar roles no usados
+
+#### 👥 Gestión de Usuarios
+- Ver todos los usuarios del sistema
+- Filtrar por rol (Admin, GM, Estudiante)
+- Ver detalles completos de cada usuario
+- Editar información de usuarios
+- Activar/desactivar cuentas
+- Eliminar usuarios
+
+#### 📈 Estadísticas Avanzadas
+- Métricas de progreso de estudiantes
+- Misiones más completadas
+- Instituciones más activas
+- Gráficos y visualizaciones
+- Exportación de reportes
+
+#### 🏫 Gestión de Cursos
+- Crear y editar cursos
+- Asignar profesores (Game Masters)
+- Ver estudiantes inscritos
+- Gestión de niveles educativos
+
+#### 🔔 Centro de Notificaciones
+- Notificaciones del sistema en tiempo real
+- Gestión de notificaciones no leídas
+- Historial completo de notificaciones
+
+### Seguridad y Respaldos
+
+El sistema incluye funcionalidades robustas de seguridad:
+
+1. **Respaldos Automáticos**:
+   - Programación flexible (diaria, semanal, mensual)
+   - Limpieza automática de respaldos antiguos
+   - Almacenamiento seguro en `backend/backups/`
+   - Documentación completa en `backend/backups/README.md`
+
+2. **Monitoreo Proactivo**:
+   - Alertas automáticas en el dashboard
+   - Diagnóstico completo del sistema
+   - Detección de problemas potenciales
+
+3. **Restauración**:
+   - Los respaldos se pueden restaurar usando MySQL Workbench o línea de comandos
+   - Formato SQL estándar compatible con todas las herramientas MySQL
+
+Para más información sobre el sistema de respaldos, consulta: `backend/backups/README.md`
+
+---
+
+## 📚 Documentación Adicional
+
+- **Sistema de Respaldos**: `backend/backups/README.md` - Guía completa de instalación y configuración de `mysqldump`, restauración de respaldos, y solución de problemas
+- **Esquema de Base de Datos**: `backend/database/SCHEMA_COMPLETO.sql` - Estructura completa de la base de datos
+- **Arquitectura del Sistema**: Consulta los archivos en `backend/src/` para entender la estructura del backend
+
+---
+
 **Última actualización:** Diciembre 2024
-**Versión del proyecto:** 2.1 - Sistema de recuperación de contraseñas incluido
+**Versión del proyecto:** 3.0 - Sistema completo de administración, diagnósticos y respaldos automáticos
